@@ -19,6 +19,8 @@
  */
 package hmi.ml.cart;
 
+import hmi.ml.cart.LeafNode.FeatureVectorLeafNode;
+import hmi.ml.cart.LeafNode.IntArrayLeafNode;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
 
