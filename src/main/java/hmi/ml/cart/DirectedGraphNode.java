@@ -8,11 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A type of node that can be at the same time a decision node and a leaf node,
- * and that can have more than one parent. Other than tree nodes, thus, directed
- * graph nodes are not necessarily contained in a strict tree structure;
- * furthermore, each node can potentially carry data.
- *
+ * A type of node that can be a decision node and a leaf node, and that can have
+ * more than one parent. Other than tree nodes, directed graph nodes are not
+ * necessarily contained in a strict tree structure; each node can potentially
+ * carry data.
  */
 public class DirectedGraphNode extends Node {
 
@@ -23,9 +22,6 @@ public class DirectedGraphNode extends Node {
 	private List<Node> parents = new ArrayList<Node>();
 	private int uniqueID;
 
-	/**
-     * 
-     */
 	public DirectedGraphNode(DecisionNode decisionNode, Node leafNode) {
 		setDecisionNode(decisionNode);
 		setLeafNode(leafNode);
@@ -65,24 +61,12 @@ public class DirectedGraphNode extends Node {
 		parentToIdx.put(node, nodeIndex);
 	}
 
-	/**
-	 * Get a parent node of this node. DirectedGraphNodes can have more than one
-	 * node.
-	 * 
-	 * @return the first parent, or null if there is no parent.
-	 */
 	public Node getParent() {
 		if (parents.isEmpty())
 			return null;
 		return parents.get(0);
 	}
 
-	/**
-	 * Get the index of this node in the parent returned by getParent().
-	 * 
-	 * @return the index in the parent's children array, or 0 if there is no
-	 *         parent.
-	 */
 	public int getNodeIndex() {
 		Node firstParent = getParent();
 		if (firstParent != null)
@@ -94,27 +78,12 @@ public class DirectedGraphNode extends Node {
 		return parents;
 	}
 
-	/**
-	 * Return this node's index in the given parent's array of children.
-	 * 
-	 * @param aParent
-	 * @return
-	 * @throws IllegalArgumentException
-	 *             if parent is not a parent of this node.
-	 */
 	public int getNodeIndex(Node aParent) {
 		if (!parentToIdx.containsKey(aParent))
 			throw new IllegalArgumentException("The given node is not a parent of this node");
 		return parentToIdx.get(aParent);
 	}
 
-	/**
-	 * Remove the given node from the list of parents.
-	 * 
-	 * @param aParent
-	 * @throws IllegalArgumentException
-	 *             if parent is not a parent of this node.
-	 */
 	public void removeParent(Node aParent) {
 		if (!parentToIdx.containsKey(aParent))
 			throw new IllegalArgumentException("The given node is not a parent of this node");

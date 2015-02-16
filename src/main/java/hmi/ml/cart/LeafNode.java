@@ -73,11 +73,6 @@ public abstract class LeafNode extends Node {
 		return true;
 	}
 
-	/**
-	 * Count all the nodes at and below this node. A leaf will return 1; the
-	 * root node will report the total number of decision and leaf nodes in the
-	 * tree.
-	 */
 	public int getNumberOfNodes() {
 		return 1;
 	}
@@ -94,12 +89,6 @@ public abstract class LeafNode extends Node {
 		return "id" + uniqueLeafId;
 	}
 
-	/**
-	 * An LeafNode class suitable for representing the leaves of classification
-	 * trees -- the leaf is a collection of items identified by an index number.
-	 * 
-	 *
-	 */
 	public static class IntArrayLeafNode extends LeafNode {
 		protected int[] data;
 
@@ -108,11 +97,6 @@ public abstract class LeafNode extends Node {
 			this.data = data;
 		}
 
-		/**
-		 * Get all data in this leaf
-		 * 
-		 * @return the int array contained in this leaf
-		 */
 		public Object getAllData() {
 			return data;
 		}
@@ -168,8 +152,6 @@ public abstract class LeafNode extends Node {
 		 * For the int-float pairs in this leaf, return the int value for which
 		 * the associated float value is the highest one. If the float values
 		 * are probabilities, this method returns the most probable int.
-		 * 
-		 * @return
 		 */
 		public int mostProbableInt() {
 			int bestInd = 0;
@@ -187,8 +169,6 @@ public abstract class LeafNode extends Node {
 		/**
 		 * Delete a candidate of the leaf by its given data/index
 		 * 
-		 * @param target
-		 *            the given data
 		 */
 		public void eraseData(int target) {
 			int[] newData = new int[data.length - 1];
@@ -228,9 +208,6 @@ public abstract class LeafNode extends Node {
 		 * string representation using the featureIndex'th feature of the given
 		 * feature definition.
 		 * 
-		 * @param featureDefinition
-		 * @param featureIndex
-		 * @return
 		 */
 		public String mostProbableString(FeatureDefinition featureDefinition, int featureIndex) {
 			int bestInd = mostProbableInt();
@@ -254,22 +231,12 @@ public abstract class LeafNode extends Node {
 		private List<FeatureVector> featureVectorList;
 		private boolean growable;
 
-		/**
-		 * Build a new leaf node containing the given feature vectors
-		 * 
-		 * @param featureVectors
-		 *            the feature vectors
-		 */
 		public FeatureVectorLeafNode(FeatureVector[] featureVectors) {
 			super();
 			this.featureVectors = featureVectors;
 			growable = false;
 		}
 
-		/**
-		 * Build a new, empty leaf node to be filled with vectors later
-		 * 
-		 */
 		public FeatureVectorLeafNode() {
 			super();
 			featureVectorList = new ArrayList<FeatureVector>();
@@ -281,11 +248,6 @@ public abstract class LeafNode extends Node {
 			featureVectorList.add(fv);
 		}
 
-		/**
-		 * Get the feature vectors of this node
-		 * 
-		 * @return the feature vectors
-		 */
 		public FeatureVector[] getFeatureVectors() {
 			if (growable && (featureVectors == null || featureVectors.length == 0)) {
 				featureVectors = (FeatureVector[]) featureVectorList
@@ -298,11 +260,6 @@ public abstract class LeafNode extends Node {
 			this.featureVectors = fv;
 		}
 
-		/**
-		 * Get all data in this leaf
-		 * 
-		 * @return the featurevector array contained in this leaf
-		 */
 		public Object getAllData() {
 			if (growable && (featureVectors == null || featureVectors.length == 0)) {
 				featureVectors = (FeatureVector[]) featureVectorList
@@ -350,9 +307,6 @@ public abstract class LeafNode extends Node {
 	/**
 	 * A leaf class that is suitable for regression trees. Here, a leaf consists
 	 * of a mean and a standard deviation.
-	 * 
-	 * @author marc
-	 *
 	 */
 	public static class FloatLeafNode extends LeafNode {
 		private float[] data;
@@ -364,11 +318,6 @@ public abstract class LeafNode extends Node {
 			this.data = data;
 		}
 
-		/**
-		 * Get all data in this leaf
-		 * 
-		 * @return the mean/standard deviation value contained in this leaf
-		 */
 		public Object getAllData() {
 			return data;
 		}
@@ -423,16 +372,15 @@ public abstract class LeafNode extends Node {
 
 		/**
 		 * @param idx
-		 *            , a unique index number
+		 *            a unique index number
 		 * @param pdf
-		 *            , pdf[numStreams][2*vectorSize]
+		 *            pdf[numStreams][2*vectorSize]
 		 */
 		public PdfLeafNode(int idx, double pdf[][]) throws Exception {
 			super();
 			this.setUniqueLeafId(idx);
 			// System.out.println("adding leaf node: " + idx);
 			if (pdf != null) {
-				double val;
 				int i, j, vsize, nstream;
 				nstream = pdf.length;
 
@@ -454,10 +402,10 @@ public abstract class LeafNode extends Node {
 					for (int stream = 0; stream < nstream; stream++) {
 						mean[stream] = pdf[stream][0];
 						variance[stream] = pdf[stream][1];
-						// vw = lf0pdf[numStates][numPdfs][numStreams][2]; /*
-						// voiced weight */
-						// uvw = lf0pdf[numStates][numPdfs][numStreams][3]; /*
-						// unvoiced weight */
+						// vw = lf0pdf[numStates][numPdfs][numStreams][2];
+						// voiced weight
+						// uvw = lf0pdf[numStates][numPdfs][numStreams][3];
+						// unvoiced weight
 						if (stream == 0)
 							voicedWeight = pdf[stream][2];
 					}
@@ -492,13 +440,10 @@ public abstract class LeafNode extends Node {
 			throw new IllegalStateException("This method should not be called for PdfLeafNodes");
 		}
 
-		// not meaningful here.
 		public Object getAllData() {
 			return null;
 		}
 
-		// not meaningful here.
-		// i need this value positive when searching ???
 		public int getNumberOfData() {
 			return 1;
 		}

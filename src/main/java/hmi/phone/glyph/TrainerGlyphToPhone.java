@@ -2,8 +2,9 @@ package hmi.phone.glyph;
 
 import hmi.ml.cart.CART;
 import hmi.ml.cart.DecisionNode;
-import hmi.ml.cart.io.CARTWriter;
+import hmi.ml.cart.LeafNode.StringAndFloatLeafNode;
 import hmi.ml.feature.FeatureDefinition;
+import hmi.ml.feature.FeatureVector;
 import hmi.phone.Allophone;
 import hmi.phone.AllophoneSet;
 
@@ -249,6 +250,8 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
 		}
 		// an entry for "null", which maps to the empty string:
 		this.addAlreadySplit(new String[] { "null" }, new String[] { "" });
+		
+		System.out.println("readLexicon complete "+inSplit.size());
 	}
 
 	/**
@@ -304,17 +307,16 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
 	}
 
 	public static void main(String[] args) throws Exception {
+		String BP = "/Users/posttool/Documents/github/la/src/test/resources/en_US/";
 
-		String phFileLoc = "english/phone-list-engba.xml";
+		AllophoneSet as = AllophoneSet.getAllophoneSet(BP + "phones.xml");
+		TrainerGlyphToPhone tp = new TrainerGlyphToPhone(as, true, true, 2);
 
-		// initialize trainer
-		TrainerGlyphToPhone tp = new TrainerGlyphToPhone(AllophoneSet.getAllophoneSet(phFileLoc), true, true, 2);
-
-		BufferedReader lexReader = new BufferedReader(new InputStreamReader(new FileInputStream(
-				"english/sampa-lexicon.txt"), "ISO-8859-1"));
+		BufferedReader lexReader = new BufferedReader(new InputStreamReader(new FileInputStream(BP + "dict.txt"),
+				"UTF-8"));// ISO-8859-1
 
 		// read lexicon for training
-		tp.readLexicon(lexReader, "\\\\");
+		tp.readLexicon(lexReader, "\\s*\\|\\s*");
 
 		// make some alignment iterations
 		for (int i = 0; i < 5; i++) {
@@ -325,89 +327,47 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
 		CART st = tp.trainTree(100);
 		System.out.println(st);
 
-		CARTWriter cw = new CARTWriter();
-		cw.dump(st, "english/trees/");
+		// CARTWriter cw = new CARTWriter();
+		// cw.dump(st, "english/trees/");
+		predictPronunciation(as, st, "this is something that happened");
 	}
 
-	// protected void compileLTS() throws IOException {
-	// logger.info("Training letter-to-sound rules...");
-	// // initialize trainer
-	// LTSTrainer tp = new LTSTrainer(allophoneSet, convertToLowercase,
-	// predictStress, context);
-	// BufferedReader br = new BufferedReader(new InputStreamReader(new
-	// FileInputStream(lexiconFilename), "UTF-8"));
-	//
-	// logger.info(" - reading lexicon...");
-	// // read lexicon for training
-	// tp.readLexicon(br, "\\s*\\|\\s*");
-	//
-	// logger.info(" - aligning...");
-	// // make some alignment iterations
-	// for (int i = 0; i < 5; i++) {
-	// logger.info("     iteration " + (i + 1));
-	// tp.alignIteration();
-	//
-	// }
-	// logger.info(" - training decision tree...");
-	// CART st = tp.trainTree(10);
-	// logger.info(" - saving...");
-	// CARTWriter mcw = new CARTWriter();
-	// mcw.dump(st, ltsFilename);
-	//
-	// // Alternative ways of saving the CART would be:
-	// // PrintWriter pw = new
-	// PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.tree.txt", "UTF-8");
-	// // mcw.toTextOut(st, pw);
-	// // pw.close();
-	// // old wagon cart, text and binary format:
-	// // WagonCARTWriter wcw = new WagonCARTWriter();
-	// // wcw.dumpWagonCART(st,
-	// "lib/modules/en/us/lexicon/cmudict.lts.wagontree.binary");
-	// // pw = new
-	// PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.wagontree.txt",
-	// "UTF-8");
-	// // wcw.toTextOut(st, pw);
-	// // pw.close();
-	// // For all of these, it would also be necessary to separately save the
-	// feature definition:
-	// // pw = new PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.pfeats",
-	// "UTF-8");
-	// // st.getFeatureDefinition().writeTo(pw, false);
-	// // pw.close();
-	//
-	// }
-	//
-	// protected void testLTS() throws IOException, Exception {
-	// List<String> testGraphemes = new ArrayList<String>();
-	// List<String> testAllophones = new ArrayList<String>();
-	// List<String> testPos = new ArrayList<String>();
-	// int N = 100; // every N'th entry is put into tests...
-	// loadTestWords(testGraphemes, testAllophones, testPos, N);
-	//
-	// logger.info(" - loading LTS rules...");
-	// CARTReader cartReader = new CARTReader();
-	// CART st = cartReader.load(ltsFilename);
-	// TrainedLTS lts = new TrainedLTS(allophoneSet, st);
-	//
-	// logger.info(" - looking up " + testGraphemes.size() + " test words...");
-	// int max = testGraphemes.size();
-	// int correct = 0;
-	// for (int i = 0; i < max; i++) {
-	// String key = testGraphemes.get(i);
-	// String expected = testAllophones.get(i);
-	// try {
-	// String result = lts.syllabify(lts.predictPronunciation(key));
-	// if (!expected.equals(result))
-	// logger.info("    " + key + " -> " + result + " (expected: " + expected +
-	// ")");
-	// else
-	// correct++;
-	// } catch (Exception e){}
-	// }
-	// logger.info("   for " + correct + " out of " + max +
-	// " prediction is identical to lexicon entry.");
-	// logger.info("...done!\n");
-	// }
+	public static String predictPronunciation(AllophoneSet allophoneSet, CART tree, String graphemes) {
+		boolean convertToLowercase = true;
+		int context = 2;
+		if (convertToLowercase)
+			graphemes = graphemes.toLowerCase(allophoneSet.getLocale());
+
+		String returnStr = "";
+
+		for (int i = 0; i < graphemes.length(); i++) {
+			byte[] byteFeatures = new byte[2 * context + 1];
+			for (int fnr = 0; fnr < 2 * context + 1; fnr++) {
+				int pos = i - context + fnr;
+				String grAtPos = (pos < 0 || pos >= graphemes.length()) ? "null" : graphemes.substring(pos, pos + 1);
+				try {
+					byteFeatures[fnr] = tree.getFeatureDefinition().getFeatureValueAsByte(fnr, grAtPos);
+					// ... can also try to call explicit:
+					// features[fnr] = this.fd.getFeatureValueAsByte("att"+fnr,
+					// cg.substr(pos)
+				} catch (IllegalArgumentException iae) {
+					// Silently ignore unknown characters
+					byteFeatures[fnr] = tree.getFeatureDefinition().getFeatureValueAsByte(fnr, "null");
+				}
+			}
+
+			FeatureVector fv = new FeatureVector(byteFeatures, new short[] {}, new float[] {}, 0);
+
+			StringAndFloatLeafNode leaf = (StringAndFloatLeafNode) tree.interpretToNode(fv, 0);
+			FeatureDefinition featureDefinition = tree.getFeatureDefinition();
+			int indexPredictedFeature = featureDefinition.getFeatureIndex(GlyphToPhone.PREDICTED_STRING_FEATURENAME);
+			String prediction = leaf.mostProbableString(featureDefinition, indexPredictedFeature);
+			returnStr += prediction.substring(1, prediction.length() - 1);
+		}
+		System.out.println(">" + returnStr);
+		return returnStr;
+
+	}
 
 }
 // http://people.ds.cam.ac.uk/ssb22/gradint/lexconvert.html
