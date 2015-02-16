@@ -1,15 +1,15 @@
 package hmi.data;
 
 public enum Stress {
-	NONE(""), PRIMARY("'"), SECONDARY(",");
+    NONE(""), PRIMARY("'"), SECONDARY(",");
 
-	String ch;
+    String ch;
 
-	Stress(String ch) {
-		this.ch = ch;
-	}
+    Stress(String ch) {
+        this.ch = ch;
+    }
 
-	public String text() {
-		return ch;
-	}
+    public String text() {
+        return ch;
+    }
 }

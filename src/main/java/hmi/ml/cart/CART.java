@@ -16,71 +16,71 @@ import hmi.ml.feature.FeatureVector;
  */
 public class CART extends DirectedGraph {
 
-	public CART() {
-	}
+    public CART() {
+    }
 
-	public CART(FeatureDefinition featDef) {
-		super(featDef);
-	}
+    public CART(FeatureDefinition featDef) {
+        super(featDef);
+    }
 
-	public CART(Node rootNode, FeatureDefinition featDef) {
-		super(rootNode, featDef);
-	}
+    public CART(Node rootNode, FeatureDefinition featDef) {
+        super(rootNode, featDef);
+    }
 
-	public CART(Node rootNode, FeatureDefinition featDef, Properties properties) {
-		super(rootNode, featDef, properties);
-	}
+    public CART(Node rootNode, FeatureDefinition featDef, Properties properties) {
+        super(rootNode, featDef, properties);
+    }
 
-	// public Node interpretToNode(Target target, int minNumberOfData) {
-	// return interpretToNode(target.getFeatureVector(), minNumberOfData);
-	// }
+    // public Node interpretToNode(Target target, int minNumberOfData) {
+    // return interpretToNode(target.getFeatureVector(), minNumberOfData);
+    // }
 
-	/**
-	 * Passes the given item through this CART and returns the leaf Node, or the
-	 * Node it stopped walking down.
-	 */
-	public Node interpretToNode(FeatureVector featureVector, int minNumberOfData) {
-		Node currentNode = rootNode;
-		Node prevNode = null;
+    /**
+     * Passes the given item through this CART and returns the leaf Node, or the
+     * Node it stopped walking down.
+     */
+    public Node interpretToNode(FeatureVector featureVector, int minNumberOfData) {
+        Node currentNode = rootNode;
+        Node prevNode = null;
 
-		// logger.debug("Starting cart at "+nodeIndex);
-		while (currentNode != null && currentNode.getNumberOfData() > minNumberOfData
-				&& !(currentNode instanceof LeafNode)) {
-			// while we have not reached the bottom,
-			// get the next node based on the features of the target
-			prevNode = currentNode;
-			currentNode = ((DecisionNode) currentNode).getNextNode(featureVector);
-			// logger.debug(decision.toString() + " result '"+
-			// decision.findFeature(item) + "' => "+ nodeIndex);
-		}
-		// Now usually we will have gone down one level too far
-		if (currentNode == null || currentNode.getNumberOfData() < minNumberOfData && prevNode != null) {
-			currentNode = prevNode;
-		}
+        // logger.debug("Starting cart at "+nodeIndex);
+        while (currentNode != null && currentNode.getNumberOfData() > minNumberOfData
+                && !(currentNode instanceof LeafNode)) {
+            // while we have not reached the bottom,
+            // get the next node based on the features of the target
+            prevNode = currentNode;
+            currentNode = ((DecisionNode) currentNode).getNextNode(featureVector);
+            // logger.debug(decision.toString() + " result '"+
+            // decision.findFeature(item) + "' => "+ nodeIndex);
+        }
+        // Now usually we will have gone down one level too far
+        if (currentNode == null || currentNode.getNumberOfData() < minNumberOfData && prevNode != null) {
+            currentNode = prevNode;
+        }
 
-		assert currentNode.getNumberOfData() >= minNumberOfData || currentNode == rootNode;
+        assert currentNode.getNumberOfData() >= minNumberOfData || currentNode == rootNode;
 
-		assert minNumberOfData > 0 || (currentNode instanceof LeafNode);
-		return currentNode;
+        assert minNumberOfData > 0 || (currentNode instanceof LeafNode);
+        return currentNode;
 
-	}
+    }
 
-	// public Object interpret(Target target, int minNumberOfData) {
-	//
-	// // get the indices from the leaf node
-	// Object result = this.interpretToNode(target,
-	// minNumberOfData).getAllData();
-	//
-	// return result;
-	//
-	// }
+    // public Object interpret(Target target, int minNumberOfData) {
+    //
+    // // get the indices from the leaf node
+    // Object result = this.interpretToNode(target,
+    // minNumberOfData).getAllData();
+    //
+    // return result;
+    //
+    // }
 
-	public static Node replaceLeafByCart(CART cart, LeafNode leaf) {
-		DecisionNode parent = (DecisionNode) leaf.getParent();
-		Node newNode = cart.getRootNode();
-		parent.replaceChild(newNode, leaf.getNodeIndex());
-		newNode.setIsRoot(false);
-		return newNode;
-	}
+    public static Node replaceLeafByCart(CART cart, LeafNode leaf) {
+        DecisionNode parent = (DecisionNode) leaf.getParent();
+        Node newNode = cart.getRootNode();
+        parent.replaceChild(newNode, leaf.getNodeIndex());
+        newNode.setIsRoot(false);
+        return newNode;
+    }
 
 }

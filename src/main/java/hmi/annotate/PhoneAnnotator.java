@@ -4,9 +4,9 @@ import hmi.data.SpeechMarkup;
 
 public class PhoneAnnotator implements Annotator {
 
-	//
-	public SpeechMarkup annotate(SpeechMarkup sm) {
-		return sm;
-	}
+    //
+    public SpeechMarkup annotate(SpeechMarkup sm) {
+        return sm;
+    }
 
 }

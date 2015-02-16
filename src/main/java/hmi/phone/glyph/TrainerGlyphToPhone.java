@@ -33,341 +33,341 @@ import weka.core.Instances;
 
 public class TrainerGlyphToPhone extends TrainerStringAlignment {
 
-	protected AllophoneSet phSet;
+    protected AllophoneSet phSet;
 
-	protected int context;
-	protected boolean convertToLowercase;
-	protected boolean considerStress;
+    protected int context;
+    protected boolean convertToLowercase;
+    protected boolean considerStress;
 
-	public TrainerGlyphToPhone(AllophoneSet aPhSet, boolean convertToLowercase, boolean considerStress, int context) {
-		super();
-		this.phSet = aPhSet;
-		this.convertToLowercase = convertToLowercase;
-		this.considerStress = considerStress;
-		this.context = context;
-	}
+    public TrainerGlyphToPhone(AllophoneSet aPhSet, boolean convertToLowercase, boolean considerStress, int context) {
+        super();
+        this.phSet = aPhSet;
+        this.convertToLowercase = convertToLowercase;
+        this.considerStress = considerStress;
+        this.context = context;
+    }
 
-	public CART trainTree(int minLeafData) throws IOException {
+    public CART trainTree(int minLeafData) throws IOException {
 
-		Map<String, List<String[]>> grapheme2align = new HashMap<String, List<String[]>>();
-		for (String gr : this.graphemeSet) {
-			grapheme2align.put(gr, new ArrayList<String[]>());
-		}
+        Map<String, List<String[]>> grapheme2align = new HashMap<String, List<String[]>>();
+        for (String gr : this.graphemeSet) {
+            grapheme2align.put(gr, new ArrayList<String[]>());
+        }
 
-		Set<String> phChains = new HashSet<String>();
-		// for every alignment pair collect counts
-		for (int i = 0; i < this.inSplit.size(); i++) {
-			StringPair[] alignment = getAlignment(i);
-			for (int inNr = 0; inNr < alignment.length; inNr++) {
-				// System.err.println(alignment[inNr]);
-				// quotation signs allow representation of empty string
-				String outAlNr = "'" + alignment[inNr].getString2() + "'";
-				if (outAlNr.length() > 5) // 5?
-					continue;
-				phChains.add(outAlNr);
+        Set<String> phChains = new HashSet<String>();
+        // for every alignment pair collect counts
+        for (int i = 0; i < this.inSplit.size(); i++) {
+            StringPair[] alignment = getAlignment(i);
+            for (int inNr = 0; inNr < alignment.length; inNr++) {
+                // System.err.println(alignment[inNr]);
+                // quotation signs allow representation of empty string
+                String outAlNr = "'" + alignment[inNr].getString2() + "'";
+                if (outAlNr.length() > 5) // 5?
+                    continue;
+                phChains.add(outAlNr);
 
-				// storing context and target
-				String[] datapoint = new String[2 * context + 2];
-				for (int ct = 0; ct < 2 * context + 1; ct++) {
-					int pos = inNr - context + ct;
-					if (pos >= 0 && pos < alignment.length) {
-						datapoint[ct] = alignment[pos].getString1();
-					} else {
-						datapoint[ct] = "null";
-					}
-				}
+                // storing context and target
+                String[] datapoint = new String[2 * context + 2];
+                for (int ct = 0; ct < 2 * context + 1; ct++) {
+                    int pos = inNr - context + ct;
+                    if (pos >= 0 && pos < alignment.length) {
+                        datapoint[ct] = alignment[pos].getString1();
+                    } else {
+                        datapoint[ct] = "null";
+                    }
+                }
 
-				// set target
-				datapoint[2 * context + 1] = outAlNr;
+                // set target
+                datapoint[2 * context + 1] = outAlNr;
 
-				// add datapoint
-				grapheme2align.get(alignment[inNr].getString1()).add(datapoint);
-			}
-		}
+                // add datapoint
+                grapheme2align.get(alignment[inNr].getString1()).add(datapoint);
+            }
+        }
 
-		// for conversion need feature definition file
-		FeatureDefinition fd = graphemeFeatureDef(phChains);
+        // for conversion need feature definition file
+        FeatureDefinition fd = graphemeFeatureDef(phChains);
 
-		int centerGrapheme = fd.getFeatureIndex("att" + (context + 1));
+        int centerGrapheme = fd.getFeatureIndex("att" + (context + 1));
 
-		DecisionNode.ByteDecisionNode root = new DecisionNode.ByteDecisionNode(centerGrapheme,
-				fd.getNumberOfValues(centerGrapheme), fd);
+        DecisionNode.ByteDecisionNode root = new DecisionNode.ByteDecisionNode(centerGrapheme,
+                fd.getNumberOfValues(centerGrapheme), fd);
 
-		for (String gr : fd.getPossibleValues(centerGrapheme)) {
-			System.out.println("      Training decision tree for: " + gr);
+        for (String gr : fd.getPossibleValues(centerGrapheme)) {
+            System.out.println("      Training decision tree for: " + gr);
 
-			ArrayList<Attribute> attributeDeclarations = new ArrayList<Attribute>();
-			// attributes with values
-			for (int att = 1; att <= context * 2 + 1; att++) {
-				// ...collect possible values
-				ArrayList<String> attVals = new ArrayList<String>();
-				String featureName = "att" + att;
-				for (String usableGrapheme : fd.getPossibleValues(fd.getFeatureIndex(featureName))) {
-					attVals.add(usableGrapheme);
-				}
-				attributeDeclarations.add(new Attribute(featureName, attVals));
-			}
+            ArrayList<Attribute> attributeDeclarations = new ArrayList<Attribute>();
+            // attributes with values
+            for (int att = 1; att <= context * 2 + 1; att++) {
+                // ...collect possible values
+                ArrayList<String> attVals = new ArrayList<String>();
+                String featureName = "att" + att;
+                for (String usableGrapheme : fd.getPossibleValues(fd.getFeatureIndex(featureName))) {
+                    attVals.add(usableGrapheme);
+                }
+                attributeDeclarations.add(new Attribute(featureName, attVals));
+            }
 
-			List<String[]> datapoints = grapheme2align.get(gr);
-			// limit to grapheme
-			Set<String> graphSpecPh = new HashSet<String>();
-			for (String[] dp : datapoints) {
-				graphSpecPh.add(dp[dp.length - 1]);
-			}
+            List<String[]> datapoints = grapheme2align.get(gr);
+            // limit to grapheme
+            Set<String> graphSpecPh = new HashSet<String>();
+            for (String[] dp : datapoints) {
+                graphSpecPh.add(dp[dp.length - 1]);
+            }
 
-			// ...collect possible values
-			ArrayList<String> targetVals = new ArrayList<String>();
-			for (String phc : graphSpecPh) {// todo: use either fd of phChains
-				targetVals.add(phc);
-			}
-			attributeDeclarations.add(new Attribute(GlyphToPhone.PREDICTED_STRING_FEATURENAME, targetVals));
+            // ...collect possible values
+            ArrayList<String> targetVals = new ArrayList<String>();
+            for (String phc : graphSpecPh) {// todo: use either fd of phChains
+                targetVals.add(phc);
+            }
+            attributeDeclarations.add(new Attribute(GlyphToPhone.PREDICTED_STRING_FEATURENAME, targetVals));
 
-			// now, weka
-			Instances data = new Instances(gr, attributeDeclarations, 0);
-			for (String[] point : datapoints) {
-				Instance currInst = new DenseInstance(data.numAttributes());
-				currInst.setDataset(data);
-				for (int i = 0; i < point.length; i++) {
-					currInst.setValue(i, point[i]);
-				}
-				data.add(currInst);
-			}
+            // now, weka
+            Instances data = new Instances(gr, attributeDeclarations, 0);
+            for (String[] point : datapoints) {
+                Instance currInst = new DenseInstance(data.numAttributes());
+                currInst.setDataset(data);
+                for (int i = 0; i < point.length; i++) {
+                    currInst.setValue(i, point[i]);
+                }
+                data.add(currInst);
+            }
 
-			// Make the last attribute be the class
-			data.setClassIndex(data.numAttributes() - 1);
+            // Make the last attribute be the class
+            data.setClassIndex(data.numAttributes() - 1);
 
-			// build the tree without using the J48 wrapper class
-			// params are:
-			// binary split selection with minimum x instances at the leaves,
-			// tree is pruned, confidenced value, subtree raising,
-			// cleanup, don't collapse
-			C45PruneableClassifierTree decisionTree;
-			try {
-				decisionTree = new C45PruneableClassifierTreeWithUnary(
-						new BinC45ModelSelection(minLeafData, data, true), true, 0.25f, true, true, false);
-				decisionTree.buildClassifier(data);
-			} catch (Exception e) {
-				throw new RuntimeException("couldn't train decisiontree using weka: ", e);
-			}
+            // build the tree without using the J48 wrapper class
+            // params are:
+            // binary split selection with minimum x instances at the leaves,
+            // tree is pruned, confidenced value, subtree raising,
+            // cleanup, don't collapse
+            C45PruneableClassifierTree decisionTree;
+            try {
+                decisionTree = new C45PruneableClassifierTreeWithUnary(
+                        new BinC45ModelSelection(minLeafData, data, true), true, 0.25f, true, true, false);
+                decisionTree.buildClassifier(data);
+            } catch (Exception e) {
+                throw new RuntimeException("couldn't train decisiontree using weka: ", e);
+            }
 
-			CART t = TreeConverter.c45toStringCART(decisionTree, fd, data);
-			root.addChild(t.getRootNode());
-		}
+            CART t = TreeConverter.c45toStringCART(decisionTree, fd, data);
+            root.addChild(t.getRootNode());
+        }
 
-		Properties props = new Properties();
-		props.setProperty("lowercase", String.valueOf(convertToLowercase));
-		props.setProperty("stress", String.valueOf(considerStress));
-		props.setProperty("context", String.valueOf(context));
+        Properties props = new Properties();
+        props.setProperty("lowercase", String.valueOf(convertToLowercase));
+        props.setProperty("stress", String.valueOf(considerStress));
+        props.setProperty("context", String.valueOf(context));
 
-		return new CART(root, fd, props);
-	}
+        return new CART(root, fd, props);
+    }
 
-	private FeatureDefinition graphemeFeatureDef(Set<String> phChains) throws IOException {
+    private FeatureDefinition graphemeFeatureDef(Set<String> phChains) throws IOException {
 
-		String lineBreak = System.getProperty("line.separator");
+        String lineBreak = System.getProperty("line.separator");
 
-		StringBuilder fdString = new StringBuilder("ByteValuedFeatureProcessors");
-		fdString.append(lineBreak);
+        StringBuilder fdString = new StringBuilder("ByteValuedFeatureProcessors");
+        fdString.append(lineBreak);
 
-		// add attribute features
-		for (int att = 1; att <= context * 2 + 1; att++) {
-			fdString.append("att").append(att);
-			for (String gr : this.graphemeSet) {
-				fdString.append(" ").append(gr);
-			}
-			fdString.append(lineBreak);
-		}
-		fdString.append("ShortValuedFeatureProcessors").append(lineBreak);
+        // add attribute features
+        for (int att = 1; att <= context * 2 + 1; att++) {
+            fdString.append("att").append(att);
+            for (String gr : this.graphemeSet) {
+                fdString.append(" ").append(gr);
+            }
+            fdString.append(lineBreak);
+        }
+        fdString.append("ShortValuedFeatureProcessors").append(lineBreak);
 
-		// add class features
-		fdString.append(GlyphToPhone.PREDICTED_STRING_FEATURENAME);
-		for (String ph : phChains) {
-			fdString.append(" ").append(ph);
-		}
+        // add class features
+        fdString.append(GlyphToPhone.PREDICTED_STRING_FEATURENAME);
+        for (String ph : phChains) {
+            fdString.append(" ").append(ph);
+        }
 
-		fdString.append(lineBreak);
+        fdString.append(lineBreak);
 
-		fdString.append("ContinuousFeatureProcessors").append(lineBreak);
+        fdString.append("ContinuousFeatureProcessors").append(lineBreak);
 
-		BufferedReader featureReader = new BufferedReader(new StringReader(fdString.toString()));
+        BufferedReader featureReader = new BufferedReader(new StringReader(fdString.toString()));
 
-		return new FeatureDefinition(featureReader, false);
-	}
+        return new FeatureDefinition(featureReader, false);
+    }
 
-	/**
-	 * 
-	 * reads in a lexicon in text format, lines are of the kind:
-	 * 
-	 * graphemechain | phonechain | otherinformation
-	 * 
-	 * Stress is optionally preserved, marking the first vowel of a stressed
-	 * syllable with "1".
-	 * 
-	 * @param lexicon
-	 *            reader with lines of lexicon
-	 * @param splitPattern
-	 *            a regular expression used for identifying the field separator
-	 *            in each line.
-	 */
-	public void readLexicon(BufferedReader lexicon, String splitPattern) throws IOException {
+    /**
+     * 
+     * reads in a lexicon in text format, lines are of the kind:
+     * 
+     * graphemechain | phonechain | otherinformation
+     * 
+     * Stress is optionally preserved, marking the first vowel of a stressed
+     * syllable with "1".
+     * 
+     * @param lexicon
+     *            reader with lines of lexicon
+     * @param splitPattern
+     *            a regular expression used for identifying the field separator
+     *            in each line.
+     */
+    public void readLexicon(BufferedReader lexicon, String splitPattern) throws IOException {
 
-		String line;
+        String line;
 
-		while ((line = lexicon.readLine()) != null) {
-			String[] lineParts = line.trim().split(splitPattern);
-			String graphStr = lineParts[0];
-			if (convertToLowercase)
-				graphStr = graphStr.toLowerCase(phSet.getLocale());
-			graphStr = graphStr.replaceAll("['-.]", "");
+        while ((line = lexicon.readLine()) != null) {
+            String[] lineParts = line.trim().split(splitPattern);
+            String graphStr = lineParts[0];
+            if (convertToLowercase)
+                graphStr = graphStr.toLowerCase(phSet.getLocale());
+            graphStr = graphStr.replaceAll("['-.]", "");
 
-			// remove all secondary stress markers
-			String phonStr = lineParts[1].replaceAll(",", "");
-			String[] syllables = phonStr.split("-");
-			List<String> separatedPhones = new ArrayList<String>();
-			List<String> separatedGraphemes = new ArrayList<String>();
-			String currPh;
-			for (String syl : syllables) {
-				boolean stress = false;
-				if (syl.startsWith("'")) {
-					syl = syl.substring(1);
-					stress = true;
-				}
-				for (Allophone ph : phSet.splitIntoAllophones(syl)) {
-					currPh = ph.name();
-					if (stress && considerStress && ph.isVowel()) {
-						currPh += "1";
-						stress = false;
-					}
-					separatedPhones.add(currPh);
-				}// ... for each allophone
-			}
+            // remove all secondary stress markers
+            String phonStr = lineParts[1].replaceAll(",", "");
+            String[] syllables = phonStr.split("-");
+            List<String> separatedPhones = new ArrayList<String>();
+            List<String> separatedGraphemes = new ArrayList<String>();
+            String currPh;
+            for (String syl : syllables) {
+                boolean stress = false;
+                if (syl.startsWith("'")) {
+                    syl = syl.substring(1);
+                    stress = true;
+                }
+                for (Allophone ph : phSet.splitIntoAllophones(syl)) {
+                    currPh = ph.name();
+                    if (stress && considerStress && ph.isVowel()) {
+                        currPh += "1";
+                        stress = false;
+                    }
+                    separatedPhones.add(currPh);
+                }// ... for each allophone
+            }
 
-			for (int i = 0; i < graphStr.length(); i++) {
-				this.graphemeSet.add(graphStr.substring(i, i + 1));
-				separatedGraphemes.add(graphStr.substring(i, i + 1));
-			}
-			this.addAlreadySplit(separatedGraphemes, separatedPhones);
-		}
-		// an entry for "null", which maps to the empty string:
-		this.addAlreadySplit(new String[] { "null" }, new String[] { "" });
-		
-		System.out.println("readLexicon complete "+inSplit.size());
-	}
+            for (int i = 0; i < graphStr.length(); i++) {
+                this.graphemeSet.add(graphStr.substring(i, i + 1));
+                separatedGraphemes.add(graphStr.substring(i, i + 1));
+            }
+            this.addAlreadySplit(separatedGraphemes, separatedPhones);
+        }
+        // an entry for "null", which maps to the empty string:
+        this.addAlreadySplit(new String[] { "null" }, new String[] { "" });
 
-	/**
-	 * reads in a lexicon in text format, lines are of the kind:
-	 * 
-	 * graphemechain | phonechain | otherinformation
-	 * 
-	 * Stress is optionally preserved, marking the first vowel of a stressed
-	 * syllable with "1".
-	 * 
-	 */
-	public void readLexicon(HashMap<String, String> lexicon) {
+        System.out.println("readLexicon complete " + inSplit.size());
+    }
 
-		Iterator<String> it = lexicon.keySet().iterator();
-		while (it.hasNext()) {
-			String graphStr = it.next();
+    /**
+     * reads in a lexicon in text format, lines are of the kind:
+     * 
+     * graphemechain | phonechain | otherinformation
+     * 
+     * Stress is optionally preserved, marking the first vowel of a stressed
+     * syllable with "1".
+     * 
+     */
+    public void readLexicon(HashMap<String, String> lexicon) {
 
-			// remove all secondary stress markers
-			String phonStr = lexicon.get(graphStr).replaceAll(",", "");
-			if (convertToLowercase)
-				graphStr = graphStr.toLowerCase(phSet.getLocale());
-			graphStr = graphStr.replaceAll("['-.]", "");
+        Iterator<String> it = lexicon.keySet().iterator();
+        while (it.hasNext()) {
+            String graphStr = it.next();
 
-			String[] syllables = phonStr.split("-");
-			List<String> separatedPhones = new ArrayList<String>();
-			List<String> separatedGraphemes = new ArrayList<String>();
-			String currPh;
-			for (String syl : syllables) {
-				boolean stress = false;
-				if (syl.startsWith("'")) {
-					syl = syl.substring(1);
-					stress = true;
-				}
-				for (Allophone ph : phSet.splitIntoAllophones(syl)) {
-					currPh = ph.name();
-					if (stress && considerStress && ph.isVowel()) {
-						currPh += "1";
-						stress = false;
-					}
-					separatedPhones.add(currPh);
-				}// ... for each allophone
-			}
+            // remove all secondary stress markers
+            String phonStr = lexicon.get(graphStr).replaceAll(",", "");
+            if (convertToLowercase)
+                graphStr = graphStr.toLowerCase(phSet.getLocale());
+            graphStr = graphStr.replaceAll("['-.]", "");
 
-			for (int i = 0; i < graphStr.length(); i++) {
-				this.graphemeSet.add(graphStr.substring(i, i + 1));
-				separatedGraphemes.add(graphStr.substring(i, i + 1));
-			}
-			this.addAlreadySplit(separatedGraphemes, separatedPhones);
-		}
-		// Need one entry for the "null" grapheme, which maps to the empty
-		// string:
-		this.addAlreadySplit(new String[] { "null" }, new String[] { "" });
-	}
+            String[] syllables = phonStr.split("-");
+            List<String> separatedPhones = new ArrayList<String>();
+            List<String> separatedGraphemes = new ArrayList<String>();
+            String currPh;
+            for (String syl : syllables) {
+                boolean stress = false;
+                if (syl.startsWith("'")) {
+                    syl = syl.substring(1);
+                    stress = true;
+                }
+                for (Allophone ph : phSet.splitIntoAllophones(syl)) {
+                    currPh = ph.name();
+                    if (stress && considerStress && ph.isVowel()) {
+                        currPh += "1";
+                        stress = false;
+                    }
+                    separatedPhones.add(currPh);
+                }// ... for each allophone
+            }
 
-	public static void main(String[] args) throws Exception {
-		String BP = "/Users/posttool/Documents/github/la/src/test/resources/en_US/";
+            for (int i = 0; i < graphStr.length(); i++) {
+                this.graphemeSet.add(graphStr.substring(i, i + 1));
+                separatedGraphemes.add(graphStr.substring(i, i + 1));
+            }
+            this.addAlreadySplit(separatedGraphemes, separatedPhones);
+        }
+        // Need one entry for the "null" grapheme, which maps to the empty
+        // string:
+        this.addAlreadySplit(new String[] { "null" }, new String[] { "" });
+    }
 
-		AllophoneSet as = AllophoneSet.getAllophoneSet(BP + "phones.xml");
-		TrainerGlyphToPhone tp = new TrainerGlyphToPhone(as, true, true, 2);
+    public static void main(String[] args) throws Exception {
+        String BP = "/Users/posttool/Documents/github/la/src/test/resources/en_US/";
 
-		BufferedReader lexReader = new BufferedReader(new InputStreamReader(new FileInputStream(BP + "dict.txt"),
-				"UTF-8"));// ISO-8859-1
+        AllophoneSet as = AllophoneSet.getAllophoneSet(BP + "phones.xml");
+        TrainerGlyphToPhone tp = new TrainerGlyphToPhone(as, true, true, 2);
 
-		// read lexicon for training
-		tp.readLexicon(lexReader, "\\s*\\|\\s*");
+        BufferedReader lexReader = new BufferedReader(new InputStreamReader(new FileInputStream(BP + "dict.txt"),
+                "UTF-8"));// ISO-8859-1
 
-		// make some alignment iterations
-		for (int i = 0; i < 5; i++) {
-			System.out.println("iteration " + i);
-			tp.alignIteration();
-		}
+        // read lexicon for training
+        tp.readLexicon(lexReader, "\\s*\\|\\s*");
 
-		CART st = tp.trainTree(100);
-		System.out.println(st);
+        // make some alignment iterations
+        for (int i = 0; i < 5; i++) {
+            System.out.println("iteration " + i);
+            tp.alignIteration();
+        }
 
-		// CARTWriter cw = new CARTWriter();
-		// cw.dump(st, "english/trees/");
-		predictPronunciation(as, st, "this is something that happened");
-	}
+        CART st = tp.trainTree(100);
+        System.out.println(st);
 
-	public static String predictPronunciation(AllophoneSet allophoneSet, CART tree, String graphemes) {
-		boolean convertToLowercase = true;
-		int context = 2;
-		if (convertToLowercase)
-			graphemes = graphemes.toLowerCase(allophoneSet.getLocale());
+        // CARTWriter cw = new CARTWriter();
+        // cw.dump(st, "english/trees/");
+        predictPronunciation(as, st, "this is something that happened");
+    }
 
-		String returnStr = "";
+    public static String predictPronunciation(AllophoneSet allophoneSet, CART tree, String graphemes) {
+        boolean convertToLowercase = true;
+        int context = 2;
+        if (convertToLowercase)
+            graphemes = graphemes.toLowerCase(allophoneSet.getLocale());
 
-		for (int i = 0; i < graphemes.length(); i++) {
-			byte[] byteFeatures = new byte[2 * context + 1];
-			for (int fnr = 0; fnr < 2 * context + 1; fnr++) {
-				int pos = i - context + fnr;
-				String grAtPos = (pos < 0 || pos >= graphemes.length()) ? "null" : graphemes.substring(pos, pos + 1);
-				try {
-					byteFeatures[fnr] = tree.getFeatureDefinition().getFeatureValueAsByte(fnr, grAtPos);
-					// ... can also try to call explicit:
-					// features[fnr] = this.fd.getFeatureValueAsByte("att"+fnr,
-					// cg.substr(pos)
-				} catch (IllegalArgumentException iae) {
-					// Silently ignore unknown characters
-					byteFeatures[fnr] = tree.getFeatureDefinition().getFeatureValueAsByte(fnr, "null");
-				}
-			}
+        String returnStr = "";
 
-			FeatureVector fv = new FeatureVector(byteFeatures, new short[] {}, new float[] {}, 0);
+        for (int i = 0; i < graphemes.length(); i++) {
+            byte[] byteFeatures = new byte[2 * context + 1];
+            for (int fnr = 0; fnr < 2 * context + 1; fnr++) {
+                int pos = i - context + fnr;
+                String grAtPos = (pos < 0 || pos >= graphemes.length()) ? "null" : graphemes.substring(pos, pos + 1);
+                try {
+                    byteFeatures[fnr] = tree.getFeatureDefinition().getFeatureValueAsByte(fnr, grAtPos);
+                    // ... can also try to call explicit:
+                    // features[fnr] = this.fd.getFeatureValueAsByte("att"+fnr,
+                    // cg.substr(pos)
+                } catch (IllegalArgumentException iae) {
+                    // Silently ignore unknown characters
+                    byteFeatures[fnr] = tree.getFeatureDefinition().getFeatureValueAsByte(fnr, "null");
+                }
+            }
 
-			StringAndFloatLeafNode leaf = (StringAndFloatLeafNode) tree.interpretToNode(fv, 0);
-			FeatureDefinition featureDefinition = tree.getFeatureDefinition();
-			int indexPredictedFeature = featureDefinition.getFeatureIndex(GlyphToPhone.PREDICTED_STRING_FEATURENAME);
-			String prediction = leaf.mostProbableString(featureDefinition, indexPredictedFeature);
-			returnStr += prediction.substring(1, prediction.length() - 1);
-		}
-		System.out.println(">" + returnStr);
-		return returnStr;
+            FeatureVector fv = new FeatureVector(byteFeatures, new short[] {}, new float[] {}, 0);
 
-	}
+            StringAndFloatLeafNode leaf = (StringAndFloatLeafNode) tree.interpretToNode(fv, 0);
+            FeatureDefinition featureDefinition = tree.getFeatureDefinition();
+            int indexPredictedFeature = featureDefinition.getFeatureIndex(GlyphToPhone.PREDICTED_STRING_FEATURENAME);
+            String prediction = leaf.mostProbableString(featureDefinition, indexPredictedFeature);
+            returnStr += prediction.substring(1, prediction.length() - 1);
+        }
+        System.out.println(">" + returnStr);
+        return returnStr;
+
+    }
 
 }
 // http://people.ds.cam.ac.uk/ssb22/gradint/lexconvert.html
