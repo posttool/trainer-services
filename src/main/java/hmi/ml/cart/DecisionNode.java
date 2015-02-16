@@ -1,22 +1,3 @@
-/**
- * Copyright 2000-2009 DFKI GmbH.
- * All Rights Reserved.  Use is subject to license terms.
- *
- * This file is part of MARY TTS.
- *
- * MARY TTS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
 package hmi.ml.cart;
 
 import hmi.ml.cart.LeafNode.FeatureVectorLeafNode;
@@ -25,9 +6,17 @@ import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
 
 /**
- * A decision node that determines the next Node to go to in the CART. All decision nodes inherit from this class
+ * A decision node that determines the next Node to go to in the CART. All
+ * decision nodes inherit from this class
  */
 public abstract class DecisionNode extends Node {
+
+	public abstract String getNodeDefinition();
+
+	public abstract Type getDecisionNodeType();
+
+	public abstract Node getNextNode(FeatureVector featureVector);
+
 	public enum Type {
 		BinaryByteDecisionNode, BinaryShortDecisionNode, BinaryFloatDecisionNode, ByteDecisionNode, ShortDecisionNode
 	};
@@ -36,68 +25,42 @@ public abstract class DecisionNode extends Node {
 	// for debugging:
 	protected FeatureDefinition featureDefinition;
 
-	// a decision node has an array of daughters
-	protected Node[] daughters;
+	protected Node[] children;
 
-	// the feature index
 	protected int featureIndex;
 
 	// the feature name
 	protected String feature;
 
-	// remember last added daughter
-	protected int lastDaughter;
+	// remember last added child
+	protected int lastChild;
 
 	// the total number of data in the leaves below this node
 	protected int nData;
 
-	// unique index used in MaryCART format
+	// unique index
 	protected int uniqueDecisionNodeId;
 
-	/**
-	 * Construct a new DecisionNode
-	 * 
-	 * @param feature
-	 *            the feature
-	 * @param numDaughters
-	 *            the number of daughters
-	 */
-	public DecisionNode(String feature, int numDaughters, FeatureDefinition featureDefinition) {
+	public DecisionNode(String feature, int numChildren, FeatureDefinition featureDefinition) {
 		this.feature = feature;
 		this.featureIndex = featureDefinition.getFeatureIndex(feature);
-		daughters = new Node[numDaughters];
+		children = new Node[numChildren];
 		isRoot = false;
 		// for trace and getDecisionPath():
 		this.featureDefinition = featureDefinition;
 	}
 
-	/**
-	 * Construct a new DecisionNode
-	 * 
-	 * @param featureIndex
-	 *            the feature index
-	 * @param numDaughters
-	 *            the number of daughters
-	 */
-	public DecisionNode(int featureIndex, int numDaughters, FeatureDefinition featureDefinition) {
+	public DecisionNode(int featureIndex, int numChildren, FeatureDefinition featureDefinition) {
 		this.featureIndex = featureIndex;
 		this.feature = featureDefinition.getFeatureName(featureIndex);
-		daughters = new Node[numDaughters];
+		children = new Node[numChildren];
 		isRoot = false;
-		// for trace and getDecisionPath():
 		this.featureDefinition = featureDefinition;
 	}
 
-	/**
-	 * Construct a new DecisionNode
-	 * 
-	 * @param numDaughters
-	 *            the number of daughters
-	 */
-	public DecisionNode(int numDaughters, FeatureDefinition featureDefinition) {
-		daughters = new Node[numDaughters];
+	public DecisionNode(int numChildren, FeatureDefinition featureDefinition) {
+		children = new Node[numChildren];
 		isRoot = false;
-		// for trace and getDecisionPath():
 		this.featureDefinition = featureDefinition;
 	}
 
@@ -106,11 +69,6 @@ public abstract class DecisionNode extends Node {
 		return true;
 	}
 
-	/**
-	 * Get the name of the feature
-	 * 
-	 * @return the name of the feature
-	 */
 	public String getFeatureName() {
 		return feature;
 	}
@@ -123,70 +81,41 @@ public abstract class DecisionNode extends Node {
 		return featureDefinition;
 	}
 
-	/**
-	 * Add a daughter to the node
-	 * 
-	 * @param daughter
-	 *            the new daughter
-	 */
-	public void addDaughter(Node daughter) {
-		if (lastDaughter > daughters.length - 1) {
-			throw new RuntimeException("Can not add daughter number " + (lastDaughter + 1) + ", since node has only "
-					+ daughters.length + " daughters!");
+	public void addChild(Node child) {
+		if (lastChild > children.length - 1) {
+			throw new RuntimeException("Can not add child number " + (lastChild + 1) + ", since node has only "
+					+ children.length + " children!");
 		}
-		daughters[lastDaughter] = daughter;
-		if (daughter != null) {
-			daughter.setMother(this, lastDaughter);
+		children[lastChild] = child;
+		if (child != null) {
+			child.setParent(this, lastChild);
 		}
-		lastDaughter++;
+		lastChild++;
 	}
 
-	/**
-	 * Get the daughter at the specified index
-	 * 
-	 * @param index
-	 *            the index of the daughter
-	 * @return the daughter (potentially null); if index out of range: null
-	 */
-	public Node getDaughter(int index) {
-		if (index > daughters.length - 1 || index < 0) {
+	public Node getChild(int index) {
+		if (index > children.length - 1 || index < 0) {
 			return null;
 		}
-		return daughters[index];
+		return children[index];
 	}
 
-	/**
-	 * Replace daughter at given index with another daughter
-	 * 
-	 * @param newDaughter
-	 *            the new daughter
-	 * @param index
-	 *            the index of the daughter to replace
-	 */
-	public void replaceDaughter(Node newDaughter, int index) {
-		if (index > daughters.length - 1 || index < 0) {
-			throw new RuntimeException("Can not replace daughter number " + index + ", since daughter index goes from 0 to "
-					+ (daughters.length - 1) + "!");
+	public void replaceChild(Node newChild, int index) {
+		if (index > children.length - 1 || index < 0) {
+			throw new RuntimeException("Can not replace child number " + index + ", since child index goes from 0 to "
+					+ (children.length - 1) + "!");
 		}
-		daughters[index] = newDaughter;
-		newDaughter.setMother(this, index);
+		children[index] = newChild;
+		newChild.setParent(this, index);
 	}
 
-	/**
-	 * Tests, if the given index refers to a daughter
-	 * 
-	 * @param index
-	 *            the index
-	 * @return true, if the index is in range of the daughters array
-	 */
-	public boolean hasMoreDaughters(int index) {
-		return (index > -1 && index < daughters.length);
+	public boolean hasMoreChildren(int index) {
+		return (index > -1 && index < children.length);
 	}
 
 	/**
 	 * Get all unit indices from all leaves below this node
 	 * 
-	 * @return an int array containing the indices
 	 */
 	public Object getAllData() {
 		// What to do depends on the type of leaves.
@@ -194,7 +123,8 @@ public abstract class DecisionNode extends Node {
 		if (firstLeaf == null)
 			return null;
 		Object result;
-		if (firstLeaf instanceof IntArrayLeafNode) { // this includes subclass IntAndFloatArrayLeafNode
+		if (firstLeaf instanceof IntArrayLeafNode) { // this includes subclass
+														// IntAndFloatArrayLeafNode
 			result = new int[nData];
 		} else if (firstLeaf instanceof FeatureVectorLeafNode) {
 			result = new FeatureVector[nData];
@@ -207,26 +137,27 @@ public abstract class DecisionNode extends Node {
 
 	protected void fillData(Object target, int pos, int total) {
 		// assert pos + total <= target.length;
-		for (int i = 0; i < daughters.length; i++) {
-			if (daughters[i] == null)
+		for (int i = 0; i < children.length; i++) {
+			if (children[i] == null)
 				continue;
-			int len = daughters[i].getNumberOfData();
-			daughters[i].fillData(target, pos, len);
+			int len = children[i].getNumberOfData();
+			children[i].fillData(target, pos, len);
 			pos += len;
 		}
 	}
 
 	/**
-	 * Count all the nodes at and below this node. A leaf will return 1; the root node will report the total number of decision
-	 * and leaf nodes in the tree.
+	 * Count all the nodes at and below this node. A leaf will return 1; the
+	 * root node will report the total number of decision and leaf nodes in the
+	 * tree.
 	 * 
 	 * @return
 	 */
 	public int getNumberOfNodes() {
 		int nNodes = 1; // this node
-		for (int i = 0; i < daughters.length; i++) {
-			if (daughters[i] != null)
-				nNodes += daughters[i].getNumberOfNodes();
+		for (int i = 0; i < children.length; i++) {
+			if (children[i] != null)
+				nNodes += children[i].getNumberOfNodes();
 		}
 		return nNodes;
 	}
@@ -235,24 +166,22 @@ public abstract class DecisionNode extends Node {
 		return nData;
 	}
 
-	/** Number of daughters of current node. */
-	public int getNumberOfDaugthers() {
-		return daughters.length;
+	public int getNumberOfChildren() {
+		return children.length;
 	}
 
 	/**
-	 * Set the number of candidates correctly, by counting while walking down the tree. This needs to be done once for the entire
-	 * tree.
+	 * Set the number of candidates correctly, by counting while walking down
+	 * the tree. This needs to be done once for the entire tree.
 	 * 
 	 */
-	// protected void countData() {
 	public void countData() {
 		nData = 0;
-		for (int i = 0; i < daughters.length; i++) {
-			if (daughters[i] instanceof DecisionNode)
-				((DecisionNode) daughters[i]).countData();
-			if (daughters[i] != null) {
-				nData += daughters[i].getNumberOfData();
+		for (int i = 0; i < children.length; i++) {
+			if (children[i] instanceof DecisionNode)
+				((DecisionNode) children[i]).countData();
+			if (children[i] != null) {
+				nData += children[i].getNumberOfData();
 			}
 		}
 	}
@@ -262,14 +191,11 @@ public abstract class DecisionNode extends Node {
 	}
 
 	/**
-	 * Get the path leading to the daughter with the given index. This will recursively go up to the root node.
-	 * 
-	 * @param daughterIndex
-	 * @return
+	 * Get the path leading to the child with the given index. This will
+	 * recursively go up to the root node.
 	 */
-	public abstract String getDecisionPath(int daughterIndex);
+	public abstract String getDecisionPath(int childIdx);
 
-	// unique index used in MaryCART format
 	public void setUniqueDecisionNodeId(int id) {
 		this.uniqueDecisionNodeId = id;
 	}
@@ -278,45 +204,15 @@ public abstract class DecisionNode extends Node {
 		return uniqueDecisionNodeId;
 	}
 
-	/**
-	 * Gets the String that defines the decision done in the node
-	 * 
-	 * @return the node definition
-	 */
-	public abstract String getNodeDefinition();
-
-	/**
-	 * Get the decision node type
-	 * 
-	 * @return
-	 */
-	public abstract Type getDecisionNodeType();
-
-	/**
-	 * Select a daughter node according to the value in the given target
-	 * 
-	 * @param target
-	 *            the target
-	 * @return a daughter
-	 */
-	public abstract Node getNextNode(FeatureVector featureVector);
+	// DECISION NODES
 
 	/**
 	 * A binary decision Node that compares two byte values.
 	 */
 	public static class BinaryByteDecisionNode extends DecisionNode {
 
-		// the value of this node
 		private byte value;
 
-		/**
-		 * Create a new binary String DecisionNode.
-		 * 
-		 * @param feature
-		 *            the string used to get a value from an Item
-		 * @param value
-		 *            the value to compare to
-		 */
 		public BinaryByteDecisionNode(String feature, String value, FeatureDefinition featureDefinition) {
 			super(feature, 2, featureDefinition);
 			this.value = featureDefinition.getFeatureValueAsByte(feature, value);
@@ -327,26 +223,12 @@ public abstract class DecisionNode extends Node {
 			this.value = value;
 		}
 
-		/***
-		 * Creates an empty BinaryByteDecisionNode, the feature and feature value of this node should be filled with
-		 * setFeatureAndFeatureValue() function.
-		 * 
-		 * @param uniqueId
-		 *            unique index from tree HTS test file.
-		 * @param featureDefinition
-		 */
 		public BinaryByteDecisionNode(int uniqueId, FeatureDefinition featureDefinition) {
 			super(2, featureDefinition);
 			// System.out.println("adding decision node: " + uniqueId);
 			this.uniqueDecisionNodeId = uniqueId;
 		}
 
-		/***
-		 * Fill the feature and feature value of an already created (empty) BinaryByteDecisionNode.
-		 * 
-		 * @param feature
-		 * @param value
-		 */
 		public void setFeatureAndFeatureValue(String feature, String value) {
 			this.feature = feature;
 			this.featureIndex = featureDefinition.getFeatureIndex(feature);
@@ -361,24 +243,18 @@ public abstract class DecisionNode extends Node {
 			return featureDefinition.getFeatureValueAsString(featureIndex, value);
 		}
 
-		/**
-		 * Select a daughter node according to the value in the given target
-		 * 
-		 * @param target
-		 *            the target
-		 * @return a daughter
-		 */
 		public Node getNextNode(FeatureVector featureVector) {
 			byte val = featureVector.getByteFeature(featureIndex);
 			Node returnNode;
 			if (val == value) {
-				returnNode = daughters[0];
+				returnNode = children[0];
 			} else {
-				returnNode = daughters[1];
+				returnNode = children[1];
 			}
 			if (TRACE) {
-				System.out.print("    " + feature + ": " + featureDefinition.getFeatureValueAsString(featureIndex, value)
-						+ " == " + featureDefinition.getFeatureValueAsString(featureIndex, val));
+				System.out.print("    " + feature + ": "
+						+ featureDefinition.getFeatureValueAsString(featureIndex, value) + " == "
+						+ featureDefinition.getFeatureValueAsString(featureIndex, val));
 				if (val == value)
 					System.out.println(" YES ");
 				else
@@ -387,25 +263,20 @@ public abstract class DecisionNode extends Node {
 			return returnNode;
 		}
 
-		public String getDecisionPath(int daughterIndex) {
+		public String getDecisionPath(int childIdx) {
 			String thisNodeInfo;
-			if (daughterIndex == 0)
+			if (childIdx == 0)
 				thisNodeInfo = feature + "==" + featureDefinition.getFeatureValueAsString(featureIndex, value);
 			else
 				thisNodeInfo = feature + "!=" + featureDefinition.getFeatureValueAsString(featureIndex, value);
-			if (mother == null)
+			if (parent == null)
 				return thisNodeInfo;
-			else if (mother.isDecisionNode())
-				return ((DecisionNode) mother).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
+			else if (parent.isDecisionNode())
+				return ((DecisionNode) parent).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
 			else
-				return mother.getDecisionPath() + " - " + thisNodeInfo;
+				return parent.getDecisionPath() + " - " + thisNodeInfo;
 		}
 
-		/**
-		 * Gets the String that defines the decision done in the node
-		 * 
-		 * @return the node definition
-		 */
 		public String getNodeDefinition() {
 			return feature + " is " + featureDefinition.getFeatureValueAsString(featureIndex, value);
 		}
@@ -421,17 +292,8 @@ public abstract class DecisionNode extends Node {
 	 */
 	public static class BinaryShortDecisionNode extends DecisionNode {
 
-		// the value of this node
 		private short value;
 
-		/**
-		 * Create a new binary String DecisionNode.
-		 * 
-		 * @param feature
-		 *            the string used to get a value from an Item
-		 * @param value
-		 *            the value to compare to
-		 */
 		public BinaryShortDecisionNode(String feature, String value, FeatureDefinition featureDefinition) {
 			super(feature, 2, featureDefinition);
 			this.value = featureDefinition.getFeatureValueAsShort(feature, value);
@@ -450,20 +312,13 @@ public abstract class DecisionNode extends Node {
 			return featureDefinition.getFeatureValueAsString(featureIndex, value);
 		}
 
-		/**
-		 * Select a daughter node according to the value in the given target
-		 * 
-		 * @param target
-		 *            the target
-		 * @return a daughter
-		 */
 		public Node getNextNode(FeatureVector featureVector) {
 			short val = featureVector.getShortFeature(featureIndex);
 			Node returnNode;
 			if (val == value) {
-				returnNode = daughters[0];
+				returnNode = children[0];
 			} else {
-				returnNode = daughters[1];
+				returnNode = children[1];
 			}
 			if (TRACE) {
 				System.out.print(feature + ": " + featureDefinition.getFeatureValueAsString(featureIndex, val));
@@ -476,25 +331,20 @@ public abstract class DecisionNode extends Node {
 			return returnNode;
 		}
 
-		public String getDecisionPath(int daughterIndex) {
+		public String getDecisionPath(int childIdx) {
 			String thisNodeInfo;
-			if (daughterIndex == 0)
+			if (childIdx == 0)
 				thisNodeInfo = feature + "==" + featureDefinition.getFeatureValueAsString(featureIndex, value);
 			else
 				thisNodeInfo = feature + "!=" + featureDefinition.getFeatureValueAsString(featureIndex, value);
-			if (mother == null)
+			if (parent == null)
 				return thisNodeInfo;
-			else if (mother.isDecisionNode())
-				return ((DecisionNode) mother).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
+			else if (parent.isDecisionNode())
+				return ((DecisionNode) parent).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
 			else
-				return mother.getDecisionPath() + " - " + thisNodeInfo;
+				return parent.getDecisionPath() + " - " + thisNodeInfo;
 		}
 
-		/**
-		 * Gets the String that defines the decision done in the node
-		 * 
-		 * @return the node definition
-		 */
 		public String getNodeDefinition() {
 			return feature + " is " + featureDefinition.getFeatureValueAsString(featureIndex, value);
 		}
@@ -510,18 +360,9 @@ public abstract class DecisionNode extends Node {
 	 */
 	public static class BinaryFloatDecisionNode extends DecisionNode {
 
-		// the value of this node
 		private float value;
 		private boolean isByteFeature;
 
-		/**
-		 * Create a new binary String DecisionNode.
-		 * 
-		 * @param feature
-		 *            the string used to get a value from an Item
-		 * @param value
-		 *            the value to compare to
-		 */
 		public BinaryFloatDecisionNode(int featureIndex, float value, FeatureDefinition featureDefinition) {
 			this(featureDefinition.getFeatureName(featureIndex), value, featureDefinition);
 		}
@@ -545,13 +386,6 @@ public abstract class DecisionNode extends Node {
 			return String.valueOf(value);
 		}
 
-		/**
-		 * Select a daughter node according to the value in the given target
-		 * 
-		 * @param target
-		 *            the target
-		 * @return a daughter
-		 */
 		public Node getNextNode(FeatureVector featureVector) {
 			float val;
 			if (isByteFeature)
@@ -560,9 +394,9 @@ public abstract class DecisionNode extends Node {
 				val = featureVector.getContinuousFeature(featureIndex);
 			Node returnNode;
 			if (val < value) {
-				returnNode = daughters[0];
+				returnNode = children[0];
 			} else {
-				returnNode = daughters[1];
+				returnNode = children[1];
 			}
 			if (TRACE) {
 				System.out.print(feature + ": " + val);
@@ -576,25 +410,20 @@ public abstract class DecisionNode extends Node {
 			return returnNode;
 		}
 
-		public String getDecisionPath(int daughterIndex) {
+		public String getDecisionPath(int childIdx) {
 			String thisNodeInfo;
-			if (daughterIndex == 0)
+			if (childIdx == 0)
 				thisNodeInfo = feature + "<" + value;
 			else
 				thisNodeInfo = feature + ">=" + value;
-			if (mother == null)
+			if (parent == null)
 				return thisNodeInfo;
-			else if (mother.isDecisionNode())
-				return ((DecisionNode) mother).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
+			else if (parent.isDecisionNode())
+				return ((DecisionNode) parent).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
 			else
-				return mother.getDecisionPath() + " - " + thisNodeInfo;
+				return parent.getDecisionPath() + " - " + thisNodeInfo;
 		}
 
-		/**
-		 * Gets the String that defines the decision done in the node
-		 * 
-		 * @return the node definition
-		 */
 		public String getNodeDefinition() {
 			return feature + " < " + value;
 		}
@@ -606,67 +435,40 @@ public abstract class DecisionNode extends Node {
 	}
 
 	/**
-	 * An decision Node with an arbitrary number of daughters. Value of the target corresponds to the index number of next
-	 * daughter.
+	 * An decision Node with an arbitrary number of children. Value of the
+	 * target corresponds to the index number of next child.
 	 */
 	public static class ByteDecisionNode extends DecisionNode {
 
-		/**
-		 * Build a new byte decision node
-		 * 
-		 * @param feature
-		 *            the feature name
-		 * @param numDaughters
-		 *            the number of daughters
-		 */
-		public ByteDecisionNode(String feature, int numDaughters, FeatureDefinition featureDefinition) {
-			super(feature, numDaughters, featureDefinition);
+		public ByteDecisionNode(String feature, int numChildren, FeatureDefinition featureDefinition) {
+			super(feature, numChildren, featureDefinition);
 		}
 
-		/**
-		 * Build a new byte decision node
-		 * 
-		 * @param feature
-		 *            the feature name
-		 * @param numDaughters
-		 *            the number of daughters
-		 */
-		public ByteDecisionNode(int featureIndex, int numDaughters, FeatureDefinition featureDefinition) {
-			super(featureIndex, numDaughters, featureDefinition);
+		public ByteDecisionNode(int featureIndex, int numChildren, FeatureDefinition featureDefinition) {
+			super(featureIndex, numChildren, featureDefinition);
 		}
 
-		/**
-		 * Select a daughter node according to the value in the given target
-		 * 
-		 * @param target
-		 *            the target
-		 * @return a daughter
-		 */
 		public Node getNextNode(FeatureVector featureVector) {
 			byte val = featureVector.getByteFeature(featureIndex);
 			if (TRACE) {
 				System.out.println(feature + ": " + featureDefinition.getFeatureValueAsString(featureIndex, val));
 			}
-			return daughters[val];
+			return children[val];
 		}
 
-		public String getDecisionPath(int daughterIndex) {
-			String thisNodeInfo = feature + "==" + featureDefinition.getFeatureValueAsString(featureIndex, daughterIndex);
-			if (mother == null)
+		public String getDecisionPath(int childIdx) {
+			String thisNodeInfo = feature + "=="
+					+ featureDefinition.getFeatureValueAsString(featureIndex, childIdx);
+			if (parent == null)
 				return thisNodeInfo;
-			else if (mother.isDecisionNode())
-				return ((DecisionNode) mother).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
+			else if (parent.isDecisionNode())
+				return ((DecisionNode) parent).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
 			else
-				return mother.getDecisionPath() + " - " + thisNodeInfo;
+				return parent.getDecisionPath() + " - " + thisNodeInfo;
 		}
 
-		/**
-		 * Gets the String that defines the decision done in the node
-		 * 
-		 * @return the node definition
-		 */
 		public String getNodeDefinition() {
-			return feature + " isByteOf " + daughters.length;
+			return feature + " isByteOf " + children.length;
 		}
 
 		public Type getDecisionNodeType() {
@@ -676,67 +478,40 @@ public abstract class DecisionNode extends Node {
 	}
 
 	/**
-	 * An decision Node with an arbitrary number of daughters. Value of the target corresponds to the index number of next
-	 * daughter.
+	 * An decision Node with an arbitrary number of children. Value of the
+	 * target corresponds to the index number of next child.
 	 */
 	public static class ShortDecisionNode extends DecisionNode {
 
-		/**
-		 * Build a new short decision node
-		 * 
-		 * @param feature
-		 *            the feature name
-		 * @param numDaughters
-		 *            the number of daughters
-		 */
-		public ShortDecisionNode(String feature, int numDaughters, FeatureDefinition featureDefinition) {
-			super(feature, numDaughters, featureDefinition);
+		public ShortDecisionNode(String feature, int numChildren, FeatureDefinition featureDefinition) {
+			super(feature, numChildren, featureDefinition);
 		}
 
-		/**
-		 * Build a new short decision node
-		 * 
-		 * @param featureIndex
-		 *            the feature index
-		 * @param numDaughters
-		 *            the number of daughters
-		 */
-		public ShortDecisionNode(int featureIndex, int numDaughters, FeatureDefinition featureDefinition) {
-			super(featureIndex, numDaughters, featureDefinition);
+		public ShortDecisionNode(int featureIndex, int numChildren, FeatureDefinition featureDefinition) {
+			super(featureIndex, numChildren, featureDefinition);
 		}
 
-		/**
-		 * Select a daughter node according to the value in the given target
-		 * 
-		 * @param target
-		 *            the target
-		 * @return a daughter
-		 */
 		public Node getNextNode(FeatureVector featureVector) {
 			short val = featureVector.getShortFeature(featureIndex);
 			if (TRACE) {
 				System.out.println(feature + ": " + featureDefinition.getFeatureValueAsString(featureIndex, val));
 			}
-			return daughters[val];
+			return children[val];
 		}
 
-		public String getDecisionPath(int daughterIndex) {
-			String thisNodeInfo = feature + "==" + featureDefinition.getFeatureValueAsString(featureIndex, daughterIndex);
-			if (mother == null)
+		public String getDecisionPath(int childIdx) {
+			String thisNodeInfo = feature + "=="
+					+ featureDefinition.getFeatureValueAsString(featureIndex, childIdx);
+			if (parent == null)
 				return thisNodeInfo;
-			else if (mother.isDecisionNode())
-				return ((DecisionNode) mother).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
+			else if (parent.isDecisionNode())
+				return ((DecisionNode) parent).getDecisionPath(getNodeIndex()) + " - " + thisNodeInfo;
 			else
-				return mother.getDecisionPath() + " - " + thisNodeInfo;
+				return parent.getDecisionPath() + " - " + thisNodeInfo;
 		}
 
-		/**
-		 * Gets the String that defines the decision done in the node
-		 * 
-		 * @return the node definition
-		 */
 		public String getNodeDefinition() {
-			return feature + " isShortOf " + daughters.length;
+			return feature + " isShortOf " + children.length;
 		}
 
 		public Type getDecisionNodeType() {

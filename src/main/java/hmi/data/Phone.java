@@ -1,5 +1,6 @@
 package hmi.data;
 
+
 public class Phone extends Segment implements IsContained {
 	Syllable container;
 	String text;
@@ -17,6 +18,14 @@ public class Phone extends Segment implements IsContained {
 	public String getPhone() {
 		return text;
 	}
+	
+	public String name() {
+		return text;
+	}
+	
+	public void setPhone(String ph) {
+		this.text = ph;
+	}
 
 	public float getDuration() {
 		return d;
@@ -31,5 +40,6 @@ public class Phone extends Segment implements IsContained {
 		b.append("        Phone [" + text + "]\n");
 		return b.toString();
 	}
+
 
 }

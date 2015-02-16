@@ -1,4 +1,4 @@
-package hmi.phone;
+package hmi.phone.glyph;
 
 public class StringPair {
 

@@ -10,6 +10,8 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UTFDataFormatException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +24,6 @@ import java.util.Set;
  * continuous features by name and index position in the feature vector; the respective possible feature values (and corresponding
  * byte and short codes); and, optionally, the weights and, for continuous features, weighting functions for each feature.
  * 
- * @author Marc Schr&ouml;der
  *
  */
 public class FeatureDefinition {
@@ -357,69 +358,69 @@ public class FeatureDefinition {
 	 * @throws IOException
 	 *             if a reading problem occurs
 	 */
-//	public FeatureDefinition(ByteBuffer bb) throws IOException {
-//		// Section BYTEFEATURES
-//		numByteFeatures = bb.getInt();
-//		byteFeatureValues = new CLByte[numByteFeatures];
-//		// Initialise global arrays to byte feature length first;
-//		// we have no means of knowing how many short or continuous
-//		// features there will be, so we need to resize later.
-//		// This will happen automatically for featureNames, but needs
-//		// to be done by hand for featureWeights.
-//		featureNames = new CLInt(numByteFeatures);
-//		featureWeights = new float[numByteFeatures];
-//		// There is no need to normalise weights here, because
-//		// they have already been normalized before the binary
-//		// file was written.
-//		for (int i = 0; i < numByteFeatures; i++) {
-//			featureWeights[i] = bb.getFloat();
-//			String featureName = StreamUtils.readUTF(bb);
-//			featureNames.set(i, featureName);
-//			byte numberOfValuesEncoded = bb.get(); // attention: this is an unsigned byte
-//			int numberOfValues = numberOfValuesEncoded & 0xFF;
-//			byteFeatureValues[i] = new CLByte(numberOfValues);
-//			for (int b = 0; b < numberOfValues; b++) {
-//				String value = StreamUtils.readUTF(bb);
-//				byteFeatureValues[i].set((byte) b, value);
-//			}
-//		}
-//		// Section SHORTFEATURES
-//		numShortFeatures = bb.getInt();
-//		if (numShortFeatures > 0) {
-//			shortFeatureValues = new CLShort[numShortFeatures];
-//			// resize weight array:
-//			float[] newWeights = new float[numByteFeatures + numShortFeatures];
-//			System.arraycopy(featureWeights, 0, newWeights, 0, numByteFeatures);
-//			featureWeights = newWeights;
-//
-//			for (int i = 0; i < numShortFeatures; i++) {
-//				featureWeights[numByteFeatures + i] = bb.getFloat();
-//				String featureName = StreamUtils.readUTF(bb);
-//				featureNames.set(numByteFeatures + i, featureName);
-//				short numberOfValues = bb.getShort();
-//				shortFeatureValues[i] = new CLShort(numberOfValues);
-//				for (short s = 0; s < numberOfValues; s++) {
-//					String value = StreamUtils.readUTF(bb);
-//					shortFeatureValues[i].set(s, value);
-//				}
-//			}
-//		}
-//		// Section CONTINUOUSFEATURES
-//		numContinuousFeatures = bb.getInt();
-//		floatWeightFuncts = new String[numContinuousFeatures];
-//		if (numContinuousFeatures > 0) {
-//			// resize weight array:
-//			float[] newWeights = new float[numByteFeatures + numShortFeatures + numContinuousFeatures];
-//			System.arraycopy(featureWeights, 0, newWeights, 0, numByteFeatures + numShortFeatures);
-//			featureWeights = newWeights;
-//		}
-//		for (int i = 0; i < numContinuousFeatures; i++) {
-//			featureWeights[numByteFeatures + numShortFeatures + i] = bb.getFloat();
-//			floatWeightFuncts[i] = StreamUtils.readUTF(bb);
-//			String featureName = StreamUtils.readUTF(bb);
-//			featureNames.set(numByteFeatures + numShortFeatures + i, featureName);
-//		}
-//	}
+	public FeatureDefinition(ByteBuffer bb) throws IOException {
+		// Section BYTEFEATURES
+		numByteFeatures = bb.getInt();
+		byteFeatureValues = new CLByte[numByteFeatures];
+		// Initialise global arrays to byte feature length first;
+		// we have no means of knowing how many short or continuous
+		// features there will be, so we need to resize later.
+		// This will happen automatically for featureNames, but needs
+		// to be done by hand for featureWeights.
+		featureNames = new CLInt(numByteFeatures);
+		featureWeights = new float[numByteFeatures];
+		// There is no need to normalise weights here, because
+		// they have already been normalized before the binary
+		// file was written.
+		for (int i = 0; i < numByteFeatures; i++) {
+			featureWeights[i] = bb.getFloat();
+			String featureName = readUTF(bb);
+			featureNames.set(i, featureName);
+			byte numberOfValuesEncoded = bb.get(); // attention: this is an unsigned byte
+			int numberOfValues = numberOfValuesEncoded & 0xFF;
+			byteFeatureValues[i] = new CLByte(numberOfValues);
+			for (int b = 0; b < numberOfValues; b++) {
+				String value = readUTF(bb);
+				byteFeatureValues[i].set((byte) b, value);
+			}
+		}
+		// Section SHORTFEATURES
+		numShortFeatures = bb.getInt();
+		if (numShortFeatures > 0) {
+			shortFeatureValues = new CLShort[numShortFeatures];
+			// resize weight array:
+			float[] newWeights = new float[numByteFeatures + numShortFeatures];
+			System.arraycopy(featureWeights, 0, newWeights, 0, numByteFeatures);
+			featureWeights = newWeights;
+
+			for (int i = 0; i < numShortFeatures; i++) {
+				featureWeights[numByteFeatures + i] = bb.getFloat();
+				String featureName = readUTF(bb);
+				featureNames.set(numByteFeatures + i, featureName);
+				short numberOfValues = bb.getShort();
+				shortFeatureValues[i] = new CLShort(numberOfValues);
+				for (short s = 0; s < numberOfValues; s++) {
+					String value = readUTF(bb);
+					shortFeatureValues[i].set(s, value);
+				}
+			}
+		}
+		// Section CONTINUOUSFEATURES
+		numContinuousFeatures = bb.getInt();
+		floatWeightFuncts = new String[numContinuousFeatures];
+		if (numContinuousFeatures > 0) {
+			// resize weight array:
+			float[] newWeights = new float[numByteFeatures + numShortFeatures + numContinuousFeatures];
+			System.arraycopy(featureWeights, 0, newWeights, 0, numByteFeatures + numShortFeatures);
+			featureWeights = newWeights;
+		}
+		for (int i = 0; i < numContinuousFeatures; i++) {
+			featureWeights[numByteFeatures + numShortFeatures + i] = bb.getFloat();
+			floatWeightFuncts[i] = readUTF(bb);
+			String featureName = readUTF(bb);
+			featureNames.set(numByteFeatures + numShortFeatures + i, featureName);
+		}
+	}
 
 	/**
 	 * Write this feature definition in binary format to the given output.
@@ -1579,7 +1580,7 @@ public class FeatureDefinition {
 	 *            the destination of the data
 	 */
 	public void generateFeatureWeightsFile(PrintWriter out) {
-		out.println("# This file lists the features and their weights to be used for\n" + "# creating the MARY features file.\n"
+		out.println("# This file lists the features and their weights to be used for\n" + "# creating the features file.\n"
 				+ "# The same file can also be used to override weights in a run-time system.\n"
 				+ "# Three sections are distinguished: Byte-valued, Short-valued, and\n" + "# Continuous features.\n" + "#\n"
 				+ "# Lines starting with '#' are ignored; they can be used for comments\n"
@@ -1703,6 +1704,77 @@ public class FeatureDefinition {
 		 */
 
 		return (ret);
+	}
+	
+	public static String readUTF(ByteBuffer bb) throws BufferUnderflowException, UTFDataFormatException {
+		int utflen = readUnsignedShort(bb);
+		byte[] bytearr = new byte[utflen];
+		char[] chararr = new char[utflen];
+
+		int c, char2, char3;
+		int count = 0;
+		int chararr_count = 0;
+
+		bb.get(bytearr);
+
+		while (count < utflen) {
+			c = (int) bytearr[count] & 0xff;
+			if (c > 127)
+				break;
+			count++;
+			chararr[chararr_count++] = (char) c;
+		}
+
+		while (count < utflen) {
+			c = (int) bytearr[count] & 0xff;
+			switch (c >> 4) {
+			case 0:
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+				/* 0xxxxxxx */
+				count++;
+				chararr[chararr_count++] = (char) c;
+				break;
+			case 12:
+			case 13:
+				/* 110x xxxx 10xx xxxx */
+				count += 2;
+				if (count > utflen)
+					throw new UTFDataFormatException("malformed input: partial character at end");
+				char2 = (int) bytearr[count - 1];
+				if ((char2 & 0xC0) != 0x80)
+					throw new UTFDataFormatException("malformed input around byte " + count);
+				chararr[chararr_count++] = (char) (((c & 0x1F) << 6) | (char2 & 0x3F));
+				break;
+			case 14:
+				/* 1110 xxxx 10xx xxxx 10xx xxxx */
+				count += 3;
+				if (count > utflen)
+					throw new UTFDataFormatException("malformed input: partial character at end");
+				char2 = (int) bytearr[count - 2];
+				char3 = (int) bytearr[count - 1];
+				if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80))
+					throw new UTFDataFormatException("malformed input around byte " + (count - 1));
+				chararr[chararr_count++] = (char) (((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
+				break;
+			default:
+				/* 10xx xxxx, 1111 xxxx */
+				throw new UTFDataFormatException("malformed input around byte " + count);
+			}
+		}
+		// The number of chars produced may be less than utflen
+		return new String(chararr, 0, chararr_count);
+	}
+	
+	public static int readUnsignedShort(ByteBuffer bb) throws BufferUnderflowException {
+		int ch1 = bb.get() & 0xFF; // convert byte to unsigned byte
+		int ch2 = bb.get() & 0xFF; // convert byte to unsigned byte
+		return (ch1 << 8) + (ch2 << 0);
 	}
 
 }

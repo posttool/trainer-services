@@ -1,91 +1,51 @@
-
 package hmi.ml.cart;
 
 import java.util.Properties;
 
+import weka.classifiers.trees.j48.C45PruneableClassifierTreeWithUnary;
+import weka.classifiers.trees.j48.TreeConverter;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
 
 /**
- * A tree is a specific kind of directed graph in which each node can have only a single parent node. It consists exclusively of
- * DecisionNode and LeafNode nodes.
+ * Classification and Regression Tree
  * 
+ * @see C45PruneableClassifierTreeWithUnary
+ * @see TreeConverter
+ *
  */
 public class CART extends DirectedGraph {
 
-	/**
-	 * Build a new empty cart
-	 * 
-	 */
 	public CART() {
 	}
 
-	/**
-	 * Build a new empty cart with the given feature definition.
-	 * 
-	 * @param featDef
-	 */
 	public CART(FeatureDefinition featDef) {
 		super(featDef);
 	}
 
-	/**
-	 * Build a new cart with the given node as the root node
-	 * 
-	 * @param rootNode
-	 *            the root node of the CART
-	 * @param featDef
-	 *            the feature definition used for interpreting the meaning of decision node criteria.
-	 */
 	public CART(Node rootNode, FeatureDefinition featDef) {
 		super(rootNode, featDef);
 	}
 
-	/**
-	 * Build a new cart with the given node as the root node
-	 * 
-	 * @param rootNode
-	 *            the root node of the CART
-	 * @param featDef
-	 *            the feature definition used for interpreting the meaning of decision node criteria.
-	 * @param properties
-	 *            a generic properties object, which can be used to encode information about the tree and the way the data in it
-	 *            should be represented.
-	 */
 	public CART(Node rootNode, FeatureDefinition featDef, Properties properties) {
 		super(rootNode, featDef, properties);
 	}
 
-//	/**
-//	 * Passes the given item through this CART and returns the leaf Node, or the Node it stopped walking down.
-//	 * 
-//	 * @param target
-//	 *            the target to analyze
-//	 * @param minNumberOfData
-//	 *            the minimum number of data requested. If this is 0, walk down the CART until the leaf level.
-//	 * 
-//	 * @return the Node
-//	 */
-//	public Node interpretToNode(Target target, int minNumberOfData) {
-//		return interpretToNode(target.getFeatureVector(), minNumberOfData);
-//	}
+	// public Node interpretToNode(Target target, int minNumberOfData) {
+	// return interpretToNode(target.getFeatureVector(), minNumberOfData);
+	// }
 
 	/**
-	 * Passes the given item through this CART and returns the leaf Node, or the Node it stopped walking down.
-	 * 
-	 * @param target
-	 *            the target to analyze
-	 * @param minNumberOfData
-	 *            the minimum number of data requested. If this is 0, walk down the CART until the leaf level.
-	 * 
-	 * @return the Node
+	 * Passes the given item through this CART and returns the leaf Node, or the
+	 * Node it stopped walking down.
 	 */
 	public Node interpretToNode(FeatureVector featureVector, int minNumberOfData) {
 		Node currentNode = rootNode;
 		Node prevNode = null;
 
 		// logger.debug("Starting cart at "+nodeIndex);
-		while (currentNode != null && currentNode.getNumberOfData() > minNumberOfData && !(currentNode instanceof LeafNode)) {
+		while (currentNode != null && currentNode.getNumberOfData() > minNumberOfData
+				&& !(currentNode instanceof LeafNode)) {
 			// while we have not reached the bottom,
 			// get the next node based on the features of the target
 			prevNode = currentNode;
@@ -105,38 +65,20 @@ public class CART extends DirectedGraph {
 
 	}
 
-	/**
-	 * Passes the given item through this CART and returns the interpretation.
-	 * 
-	 * @param target
-	 *            the target to analyze
-	 * @param minNumberOfData
-	 *            the minimum number of data requested. If this is 0, walk down the CART until the leaf level.
-	 * 
-	 * @return the interpretation
-	 */
-//	public Object interpret(Target target, int minNumberOfData) {
-//
-//		// get the indices from the leaf node
-//		Object result = this.interpretToNode(target, minNumberOfData).getAllData();
-//
-//		return result;
-//
-//	}
+	// public Object interpret(Target target, int minNumberOfData) {
+	//
+	// // get the indices from the leaf node
+	// Object result = this.interpretToNode(target,
+	// minNumberOfData).getAllData();
+	//
+	// return result;
+	//
+	// }
 
-	/**
-	 * In this tree, replace the given leaf with the given CART
-	 * 
-	 * @param cart
-	 *            the CART
-	 * @param leaf
-	 *            the leaf
-	 * @return the ex-root node from cart which now replaces leaf.
-	 */
 	public static Node replaceLeafByCart(CART cart, LeafNode leaf) {
-		DecisionNode mother = (DecisionNode) leaf.getMother();
+		DecisionNode parent = (DecisionNode) leaf.getParent();
 		Node newNode = cart.getRootNode();
-		mother.replaceDaughter(newNode, leaf.getNodeIndex());
+		parent.replaceChild(newNode, leaf.getNodeIndex());
 		newNode.setIsRoot(false);
 		return newNode;
 	}

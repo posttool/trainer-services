@@ -1,23 +1,3 @@
-/**
- * Copyright 2009 DFKI GmbH.
- * All Rights Reserved.  Use is subject to license terms.
- *
- * This file is part of MARY TTS.
- *
- * MARY TTS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
 package hmi.ml.cart;
 
 import java.util.HashMap;
@@ -26,10 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * @author marc
- *
- */
 public class NodeIterator<T extends Node> implements Iterator<T> {
 	private Node root;
 	private Node current;
@@ -37,32 +13,16 @@ public class NodeIterator<T extends Node> implements Iterator<T> {
 	private boolean showDecisionNodes;
 	private boolean showDirectedGraphNodes;
 	private Set<Node> alreadySeen = new HashSet<Node>();
-	// we need to keep our own map of daughter-mother relationships,
-	// because for subgraphs, we could move out of a subgraph if we call node.getMother()
-	// if the mother via which we entered a multi-parent node is not the first mother.
-	private Map<Node, Node> daughterToMother = new HashMap<Node, Node>();
 
-	/**
-	 * Iterate over all nodes in the graph.
-	 * 
-	 * @param graph
-	 * @param showLeafNodes
-	 * @param showDecisionNodes
-	 * @param showDirectedGraphNodes
-	 */
-	protected NodeIterator(DirectedGraph graph, boolean showLeafNodes, boolean showDecisionNodes, boolean showDirectedGraphNodes) {
+	private Map<Node, Node> parentToChild = new HashMap<Node, Node>();
+
+	protected NodeIterator(DirectedGraph graph, boolean showLeafNodes, boolean showDecisionNodes,
+			boolean showDirectedGraphNodes) {
 		this(graph.getRootNode(), showLeafNodes, showDecisionNodes, showDirectedGraphNodes);
 	}
 
-	/**
-	 * Iterate over the subtree below rootNode.
-	 * 
-	 * @param rootNode
-	 * @param showLeafNodes
-	 * @param showDecisionNodes
-	 * @param showDirectedGraphNodes
-	 */
-	protected NodeIterator(Node rootNode, boolean showLeafNodes, boolean showDecisionNodes, boolean showDirectedGraphNodes) {
+	protected NodeIterator(Node rootNode, boolean showLeafNodes, boolean showDecisionNodes,
+			boolean showDirectedGraphNodes) {
 		this.root = rootNode;
 		this.showLeafNodes = showLeafNodes;
 		this.showDecisionNodes = showDecisionNodes;
@@ -86,8 +46,8 @@ public class NodeIterator<T extends Node> implements Iterator<T> {
 	}
 
 	private boolean currentIsSuitable() {
-		return (current == null || showDecisionNodes && current.isDecisionNode() || showLeafNodes && current.isLeafNode() || showDirectedGraphNodes
-				&& current.isDirectedGraphNode());
+		return (current == null || showDecisionNodes && current.isDecisionNode() || showLeafNodes
+				&& current.isLeafNode() || showDirectedGraphNodes && current.isDirectedGraphNode());
 	}
 
 	private void nextSuitableNodeDepthFirst() {
@@ -101,12 +61,12 @@ public class NodeIterator<T extends Node> implements Iterator<T> {
 			return;
 		if (current.isDecisionNode()) {
 			DecisionNode dec = (DecisionNode) current;
-			for (int i = 0; i < dec.getNumberOfDaugthers(); i++) {
-				Node daughter = dec.getDaughter(i);
-				if (daughter == null)
+			for (int i = 0; i < dec.getNumberOfChildren(); i++) {
+				Node child = dec.getChild(i);
+				if (child == null)
 					continue;
-				daughterToMother.put(daughter, dec);
-				if (unseenNode(dec.getDaughter(i)))
+				parentToChild.put(child, dec);
+				if (unseenNode(dec.getChild(i)))
 					return;
 			}
 		} else if (current.isDirectedGraphNode()) {
@@ -114,13 +74,13 @@ public class NodeIterator<T extends Node> implements Iterator<T> {
 			DirectedGraphNode g = (DirectedGraphNode) current;
 			Node leaf = g.getLeafNode();
 			if (leaf != null) {
-				daughterToMother.put(leaf, g);
+				parentToChild.put(leaf, g);
 				if (unseenNode(leaf))
 					return;
 			}
 			Node dec = g.getDecisionNode();
 			if (dec != null) {
-				daughterToMother.put(dec, g);
+				parentToChild.put(dec, g);
 				if (unseenNode(dec))
 					return;
 			}
@@ -130,21 +90,20 @@ public class NodeIterator<T extends Node> implements Iterator<T> {
 	}
 
 	private void backtrace() {
-		// Only go back to mothers we have come from.
+		// Only go back to parents we have come from.
 		// This has two effects:
 		// 1. We cannot go beyond root node;
 		// 2. we don't risk to leave the subgraph defined by root node
-		// in cases where we enter into a multi-parent node from a not-first mother
-		// (in such cases, getMother() would return the first mother).
-		current = daughterToMother.get(current);
+		// in cases where we enter into a multi-parent node from a not-first
+		// parent
+		// (in such cases, getParent() would return the first parent).
+		current = parentToChild.get(current);
 		nextNodeDepthFirst();
 	}
 
 	/**
-	 * Test whether the given node is unseen. If so, move current to it, and remember it as a seen node.
-	 * 
-	 * @param candidate
-	 * @return
+	 * Test whether the given node is unseen. If so, move current to it, and
+	 * remember it as a seen node.
 	 */
 	private boolean unseenNode(Node candidate) {
 		if (candidate != null && !alreadySeen.contains(candidate)) {

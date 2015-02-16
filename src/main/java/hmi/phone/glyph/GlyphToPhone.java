@@ -1,38 +1,21 @@
-/**
- * Copyright 2000-2009 DFKI GmbH.
- * All Rights Reserved.  Use is subject to license terms.
- *
- * This file is part of MARY TTS.
- *
- * MARY TTS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-package hmi.phone;
+package hmi.phone.glyph;
 
 import hmi.ml.cart.CART;
 import hmi.ml.cart.LeafNode.StringAndFloatLeafNode;
+import hmi.ml.cart.io.CARTReader;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
+import hmi.phone.AllophoneSet;
+import hmi.phone.Syllabifier;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Properties;
 
-
-public class TextToPhoneTrained {
+public class GlyphToPhone {
 	public static final String PREDICTED_STRING_FEATURENAME = "predicted-string";
 
 	private CART tree;
@@ -43,19 +26,18 @@ public class TextToPhoneTrained {
 	private boolean convertToLowercase;
 	protected boolean removeTrailingOneFromPhones = true;
 
-
-	public TextToPhoneTrained(AllophoneSet aPhonSet, InputStream treeStream, boolean removeTrailingOneFromPhones) throws IOException {
+	public GlyphToPhone(AllophoneSet aPhonSet, InputStream treeStream, boolean removeTrailingOneFromPhones)
+			throws Exception {
 		this.allophoneSet = aPhonSet;
 		this.loadTree(treeStream);
 		this.removeTrailingOneFromPhones = removeTrailingOneFromPhones;
 	}
 
-	
-	public TextToPhoneTrained(AllophoneSet aPhonSet, InputStream treeStream) throws IOException {
+	public GlyphToPhone(AllophoneSet aPhonSet, InputStream treeStream) throws Exception {
 		this(aPhonSet, treeStream, true);
 	}
 
-	public TextToPhoneTrained(AllophoneSet aPhonSet, CART predictionTree) {
+	public GlyphToPhone(AllophoneSet aPhonSet, CART predictionTree) {
 		this.allophoneSet = aPhonSet;
 		this.tree = predictionTree;
 		this.featureDefinition = tree.getFeatureDefinition();
@@ -67,9 +49,8 @@ public class TextToPhoneTrained {
 		context = Integer.parseInt(props.getProperty("context"));
 	}
 
-	
-	public void loadTree(InputStream treeStream) throws IOException {
-		MaryCARTReader cartReader = new MaryCARTReader();
+	public void loadTree(InputStream treeStream) throws Exception {
+		CARTReader cartReader = new CARTReader();
 		this.tree = cartReader.loadFromStream(treeStream);
 		this.featureDefinition = tree.getFeatureDefinition();
 		this.indexPredictedFeature = featureDefinition.getFeatureIndex(PREDICTED_STRING_FEATURENAME);
@@ -88,18 +69,15 @@ public class TextToPhoneTrained {
 		String returnStr = "";
 
 		for (int i = 0; i < graphemes.length(); i++) {
-
 			byte[] byteFeatures = new byte[2 * this.context + 1];
-
 			for (int fnr = 0; fnr < 2 * this.context + 1; fnr++) {
 				int pos = i - context + fnr;
-
 				String grAtPos = (pos < 0 || pos >= graphemes.length()) ? "null" : graphemes.substring(pos, pos + 1);
-
 				try {
 					byteFeatures[fnr] = this.tree.getFeatureDefinition().getFeatureValueAsByte(fnr, grAtPos);
 					// ... can also try to call explicit:
-					// features[fnr] = this.fd.getFeatureValueAsByte("att"+fnr, cg.substr(pos)
+					// features[fnr] = this.fd.getFeatureValueAsByte("att"+fnr,
+					// cg.substr(pos)
 				} catch (IllegalArgumentException iae) {
 					// Silently ignore unknown characters
 					byteFeatures[fnr] = this.tree.getFeatureDefinition().getFeatureValueAsByte(fnr, "null");
@@ -118,15 +96,18 @@ public class TextToPhoneTrained {
 	}
 
 	public String syllabify(String phones) {
-		return allophoneSet.syllabify(phones);
+		List<?> a = Syllabifier.syllabify(allophoneSet, phones);
+		for (Object o : a) {
+			System.out.println("silly " + o);
+		}
+		return "";
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
 		if (args.length < 2) {
 			System.out.println("Usage:");
-			System.out
-					.println("java TrainedLTS allophones.xml lts-model.lts [removeTrailingOneFromPhones]");
+			System.out.println("java GlyphToPhone allophones.xml lts-model.lts [removeTrailingOneFromPhones]");
 			System.exit(0);
 		}
 		String allophoneFile = args[0];
@@ -136,7 +117,7 @@ public class TextToPhoneTrained {
 			myRemoveTrailingOneFromPhones = Boolean.getBoolean(args[2]);
 		}
 
-		TextToPhoneTrained lts = new TextToPhoneTrained(AllophoneSet.getAllophoneSet(allophoneFile), new FileInputStream(ltsFile),
+		GlyphToPhone lts = new GlyphToPhone(AllophoneSet.getAllophoneSet(allophoneFile), new FileInputStream(ltsFile),
 				myRemoveTrailingOneFromPhones);
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

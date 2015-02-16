@@ -1,4 +1,4 @@
-package hmi.phone;
+package hmi.phone.glyph;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -62,7 +62,7 @@ import java.util.Set;
  * 
  *
  */
-public class StringAlignmentTrainer {
+public class TrainerStringAlignment {
 
 	// cost of translating first element of the pair into the second
 	private HashMap<StringPair, Integer> aligncost;
@@ -93,7 +93,7 @@ public class StringAlignmentTrainer {
 	 *            considered as belonging to the same symbol sets (alignment
 	 *            between identical symbol is then cost-free)
 	 */
-	public StringAlignmentTrainer(boolean inIsOutAlphabet, boolean hasOptInfo) {
+	public TrainerStringAlignment(boolean inIsOutAlphabet, boolean hasOptInfo) {
 
 		this.skipcost = this.defaultcost;
 		this.aligncost = new HashMap<StringPair, Integer>();
@@ -110,7 +110,7 @@ public class StringAlignmentTrainer {
 		}
 	}
 
-	public StringAlignmentTrainer() {
+	public TrainerStringAlignment() {
 		this(false, false);
 
 	}

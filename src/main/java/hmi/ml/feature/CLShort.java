@@ -1,22 +1,3 @@
-/**
- * Copyright 2000-2009 DFKI GmbH.
- * All Rights Reserved.  Use is subject to license terms.
- *
- * This file is part of MARY TTS.
- *
- * MARY TTS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
 package hmi.ml.feature;
 
 import java.util.ArrayList;
@@ -24,20 +5,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * A helper class converting between a given set of shorts and strings.
- * 
- * @author schroed
- *
- */
 public class CLShort {
 	ArrayList<String> list;
 	Map<String, Short> map;
 
-	/**
-	 * Initialize empty short-string two-way translator.
-	 *
-	 */
 	public CLShort() {
 		list = new ArrayList<String>();
 		map = new HashMap<String, Short>();
@@ -48,11 +19,6 @@ public class CLShort {
 		map = new HashMap<String, Short>();
 	}
 
-	/**
-	 * Initialize a short-string two-way translator, setting short values according to the position of strings in the array.
-	 * 
-	 * @param strings
-	 */
 	public CLShort(String[] strings) {
 		if (strings.length > Short.MAX_VALUE)
 			throw new IllegalArgumentException("Too many strings for a short-string translator");

@@ -1,23 +1,3 @@
-/**
- * Copyright 2009 DFKI GmbH.
- * All Rights Reserved.  Use is subject to license terms.
- *
- * This file is part of MARY TTS.
- *
- * MARY TTS is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
 package hmi.ml.cart;
 
 import hmi.ml.feature.FeatureVector;
@@ -28,11 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A type of node that can be at the same time a decision node and a leaf node, and that can have more than one mother. Other than
- * tree nodes, thus, directed graph nodes are not necessarily contained in a strict tree structure; furthermore, each node can
- * potentially carry data.
- * 
- * @author marc
+ * A type of node that can be at the same time a decision node and a leaf node,
+ * and that can have more than one parent. Other than tree nodes, thus, directed
+ * graph nodes are not necessarily contained in a strict tree structure;
+ * furthermore, each node can potentially carry data.
  *
  */
 public class DirectedGraphNode extends Node {
@@ -40,8 +19,8 @@ public class DirectedGraphNode extends Node {
 	private DecisionNode decisionNode;
 	private Node leafNode;
 
-	private Map<Node, Integer> motherToIndex = new HashMap<Node, Integer>();
-	private List<Node> mothers = new ArrayList<Node>();
+	private Map<Node, Integer> parentToIdx = new HashMap<Node, Integer>();
+	private List<Node> parents = new ArrayList<Node>();
 	private int uniqueID;
 
 	/**
@@ -64,7 +43,7 @@ public class DirectedGraphNode extends Node {
 	public void setDecisionNode(DecisionNode newNode) {
 		this.decisionNode = newNode;
 		if (newNode != null)
-			newNode.setMother(this, 0);
+			newNode.setParent(this, 0);
 	}
 
 	public Node getLeafNode() {
@@ -77,68 +56,70 @@ public class DirectedGraphNode extends Node {
 		}
 		this.leafNode = newNode;
 		if (newNode != null)
-			newNode.setMother(this, 0);
+			newNode.setParent(this, 0);
 	}
 
 	@Override
-	public void setMother(Node node, int nodeIndex) {
-		mothers.add(node);
-		motherToIndex.put(node, nodeIndex);
+	public void setParent(Node node, int nodeIndex) {
+		parents.add(node);
+		parentToIdx.put(node, nodeIndex);
 	}
 
 	/**
-	 * Get a mother node of this node. DirectedGraphNodes can have more than one node.
+	 * Get a parent node of this node. DirectedGraphNodes can have more than one
+	 * node.
 	 * 
-	 * @return the first mother, or null if there is no mother.
+	 * @return the first parent, or null if there is no parent.
 	 */
-	public Node getMother() {
-		if (mothers.isEmpty())
+	public Node getParent() {
+		if (parents.isEmpty())
 			return null;
-		return mothers.get(0);
+		return parents.get(0);
 	}
 
 	/**
-	 * Get the index of this node in the mother returned by getMother().
+	 * Get the index of this node in the parent returned by getParent().
 	 * 
-	 * @return the index in the mother's daughter array, or 0 if there is no mother.
+	 * @return the index in the parent's children array, or 0 if there is no
+	 *         parent.
 	 */
 	public int getNodeIndex() {
-		Node firstMother = getMother();
-		if (firstMother != null)
-			return motherToIndex.get(firstMother);
+		Node firstParent = getParent();
+		if (firstParent != null)
+			return parentToIdx.get(firstParent);
 		return 0;
 	}
 
-	public List<Node> getMothers() {
-		return mothers;
+	public List<Node> getParents() {
+		return parents;
 	}
 
 	/**
-	 * Return this node's index in the given mother's array of daughters.
+	 * Return this node's index in the given parent's array of children.
 	 * 
-	 * @param aMother
+	 * @param aParent
 	 * @return
 	 * @throws IllegalArgumentException
-	 *             if mother is not a mother of this node.
+	 *             if parent is not a parent of this node.
 	 */
-	public int getNodeIndex(Node aMother) {
-		if (!motherToIndex.containsKey(aMother))
-			throw new IllegalArgumentException("The given node is not a mother of this node");
-		return motherToIndex.get(aMother);
+	public int getNodeIndex(Node aParent) {
+		if (!parentToIdx.containsKey(aParent))
+			throw new IllegalArgumentException("The given node is not a parent of this node");
+		return parentToIdx.get(aParent);
 	}
 
 	/**
-	 * Remove the given node from the list of mothers.
+	 * Remove the given node from the list of parents.
 	 * 
-	 * @param aMother
+	 * @param aParent
 	 * @throws IllegalArgumentException
-	 *             if mother is not a mother of this node.
+	 *             if parent is not a parent of this node.
 	 */
-	public void removeMother(Node aMother) {
-		if (!motherToIndex.containsKey(aMother))
-			throw new IllegalArgumentException("The given node is not a mother of this node");
-		motherToIndex.remove(aMother);
-		mothers.remove(aMother);
+	public void removeParent(Node aParent) {
+		if (!parentToIdx.containsKey(aParent))
+			throw new IllegalArgumentException("The given node is not a parent of this node");
+		parentToIdx.remove(aParent);
+		parents.remove(aParent);
 	}
 
 	@Override
@@ -191,9 +172,9 @@ public class DirectedGraphNode extends Node {
 
 	public String getDecisionPath() {
 		StringBuilder ancestorInfo = new StringBuilder();
-		if (getMothers().size() == 0)
+		if (getParents().size() == 0)
 			ancestorInfo.append("null");
-		for (Node mum : getMothers()) {
+		for (Node mum : getParents()) {
 			if (ancestorInfo.length() > 0) {
 				ancestorInfo.append(" or\n");
 			}
@@ -210,8 +191,8 @@ public class DirectedGraphNode extends Node {
 		StringBuilder sb = new StringBuilder();
 		sb.append("DGN");
 		sb.append(uniqueID);
-		if (motherToIndex.size() > 1) {
-			sb.append(" (").append(motherToIndex.size()).append(" mothers)");
+		if (parentToIdx.size() > 1) {
+			sb.append(" (").append(parentToIdx.size()).append(" parents)");
 		}
 		return sb.toString();
 	}

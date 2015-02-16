@@ -1,7 +1,11 @@
+package hmi.phone.glyph;
 
-package hmi.phone;
-
+import hmi.ml.cart.CART;
+import hmi.ml.cart.DecisionNode;
+import hmi.ml.cart.io.CARTWriter;
 import hmi.ml.feature.FeatureDefinition;
+import hmi.phone.Allophone;
+import hmi.phone.AllophoneSet;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -17,41 +21,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import marytts.cart.CART;
-import marytts.cart.io.MaryCARTReader;
-import marytts.cart.io.MaryCARTWriter;
-import marytts.exceptions.MaryConfigurationException;
-import marytts.modules.phonemiser.TrainedLTS;
-import marytts.tools.newlanguage.LTSTrainer;
 import weka.classifiers.trees.j48.BinC45ModelSelection;
 import weka.classifiers.trees.j48.C45PruneableClassifierTree;
+import weka.classifiers.trees.j48.C45PruneableClassifierTreeWithUnary;
+import weka.classifiers.trees.j48.TreeConverter;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
-/**
- * 
- * This class is a generic approach to predict a phone sequence from a grapheme
- * sequence.
- * 
- * the normal sequence of steps is: 1) initialize the trainer with a phone set
- * and a locale
- * 
- * 2) read in the lexicon, preserve stress if you like
- * 
- * 3) make some alignment iterations (usually 5-10)
- * 
- * 4) train the trees and save them in wagon format in a specified directory
- * 
- * see main method for an example.
- * 
- * Apply the model using TrainedLTS
- * 
- *
- */
-
-public class TextToPhoneTrainer extends StringAlignmentTrainer {
+public class TrainerGlyphToPhone extends TrainerStringAlignment {
 
 	protected AllophoneSet phSet;
 
@@ -59,18 +38,7 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 	protected boolean convertToLowercase;
 	protected boolean considerStress;
 
-	/**
-	 * Create a new LTSTrainer.
-	 * 
-	 * @param aPhSet
-	 *            the allophone set to use.
-	 * @param convertToLowercase
-	 *            whether to convert all graphemes to lowercase, using the
-	 *            locale of the allophone set.
-	 * @param considerStress
-	 *            indicator if stress is preserved
-	 */
-	public TextToPhoneTrainer(AllophoneSet aPhSet, boolean convertToLowercase, boolean considerStress, int context) {
+	public TrainerGlyphToPhone(AllophoneSet aPhSet, boolean convertToLowercase, boolean considerStress, int context) {
 		super();
 		this.phSet = aPhSet;
 		this.convertToLowercase = convertToLowercase;
@@ -78,15 +46,6 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 		this.context = context;
 	}
 
-	/**
-	 * Train the tree, using binary decision nodes.
-	 * 
-	 * @param minLeafData
-	 *            the minimum number of instances that have to occur in at least
-	 *            two subsets induced by split
-	 * @return
-	 * @throws IOException
-	 */
 	public CART trainTree(int minLeafData) throws IOException {
 
 		Map<String, List<String[]>> grapheme2align = new HashMap<String, List<String[]>>();
@@ -95,37 +54,26 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 		}
 
 		Set<String> phChains = new HashSet<String>();
-
 		// for every alignment pair collect counts
 		for (int i = 0; i < this.inSplit.size(); i++) {
-
-			StringPair[] alignment = this.getAlignment(i);
-
+			StringPair[] alignment = getAlignment(i);
 			for (int inNr = 0; inNr < alignment.length; inNr++) {
-
 				// System.err.println(alignment[inNr]);
-
-				// quotation signs needed to represent empty string
+				// quotation signs allow representation of empty string
 				String outAlNr = "'" + alignment[inNr].getString2() + "'";
-
-				// TODO: don't consider alignments to more than three characters
-				if (outAlNr.length() > 5)
+				if (outAlNr.length() > 5) // 5?
 					continue;
-
 				phChains.add(outAlNr);
 
 				// storing context and target
 				String[] datapoint = new String[2 * context + 2];
-
 				for (int ct = 0; ct < 2 * context + 1; ct++) {
 					int pos = inNr - context + ct;
-
 					if (pos >= 0 && pos < alignment.length) {
 						datapoint[ct] = alignment[pos].getString1();
 					} else {
 						datapoint[ct] = "null";
 					}
-
 				}
 
 				// set target
@@ -137,63 +85,50 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 		}
 
 		// for conversion need feature definition file
-		FeatureDefinition fd = this.graphemeFeatureDef(phChains);
+		FeatureDefinition fd = graphemeFeatureDef(phChains);
 
 		int centerGrapheme = fd.getFeatureIndex("att" + (context + 1));
 
-		List<CART> stl = new ArrayList<CART>(fd.getNumberOfValues(centerGrapheme));
+		DecisionNode.ByteDecisionNode root = new DecisionNode.ByteDecisionNode(centerGrapheme,
+				fd.getNumberOfValues(centerGrapheme), fd);
 
 		for (String gr : fd.getPossibleValues(centerGrapheme)) {
 			System.out.println("      Training decision tree for: " + gr);
-			logger.debug("      Training decision tree for: " + gr);
 
 			ArrayList<Attribute> attributeDeclarations = new ArrayList<Attribute>();
-
 			// attributes with values
 			for (int att = 1; att <= context * 2 + 1; att++) {
-
 				// ...collect possible values
 				ArrayList<String> attVals = new ArrayList<String>();
-
 				String featureName = "att" + att;
-
 				for (String usableGrapheme : fd.getPossibleValues(fd.getFeatureIndex(featureName))) {
 					attVals.add(usableGrapheme);
 				}
-
 				attributeDeclarations.add(new Attribute(featureName, attVals));
 			}
 
 			List<String[]> datapoints = grapheme2align.get(gr);
-
-			// maybe training is faster with targets limited to grapheme
+			// limit to grapheme
 			Set<String> graphSpecPh = new HashSet<String>();
 			for (String[] dp : datapoints) {
 				graphSpecPh.add(dp[dp.length - 1]);
 			}
 
-			// targetattribute
 			// ...collect possible values
 			ArrayList<String> targetVals = new ArrayList<String>();
 			for (String phc : graphSpecPh) {// todo: use either fd of phChains
 				targetVals.add(phc);
 			}
-			attributeDeclarations.add(new Attribute(TextToPhoneTrained.PREDICTED_STRING_FEATURENAME, targetVals));
+			attributeDeclarations.add(new Attribute(GlyphToPhone.PREDICTED_STRING_FEATURENAME, targetVals));
 
-			// now, create the dataset adding the datapoints
+			// now, weka
 			Instances data = new Instances(gr, attributeDeclarations, 0);
-
-			// datapoints
 			for (String[] point : datapoints) {
-
 				Instance currInst = new DenseInstance(data.numAttributes());
 				currInst.setDataset(data);
-
 				for (int i = 0; i < point.length; i++) {
-
 					currInst.setValue(i, point[i]);
 				}
-
 				data.add(currInst);
 			}
 
@@ -201,29 +136,21 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 			data.setClassIndex(data.numAttributes() - 1);
 
 			// build the tree without using the J48 wrapper class
-			// standard parameters are:
+			// params are:
 			// binary split selection with minimum x instances at the leaves,
 			// tree is pruned, confidenced value, subtree raising,
 			// cleanup, don't collapse
-			// Here is used a modifed version of C45PruneableClassifierTree that
-			// allow using Unary Classes (see Issue #51)
 			C45PruneableClassifierTree decisionTree;
 			try {
-				decisionTree = new C45PruneableClassifierTree(new BinC45ModelSelection(minLeafData, data), true, 0.25f,
-						true, true);
+				decisionTree = new C45PruneableClassifierTreeWithUnary(
+						new BinC45ModelSelection(minLeafData, data, true), true, 0.25f, true, true, false);
 				decisionTree.buildClassifier(data);
 			} catch (Exception e) {
 				throw new RuntimeException("couldn't train decisiontree using weka: ", e);
 			}
 
-//			CART maryTree = TreeConverter.c45toStringCART(decisionTree, fd, data);
-
-			stl.add(decisionTree);
-		}
-
-		DecisionNode.ByteDecisionNode rootNode = new DecisionNode.ByteDecisionNode(centerGrapheme, stl.size(), fd);
-		for (C45PruneableClassifierTree st : stl) {
-			rootNode.addDaughter(st);
+			CART t = TreeConverter.c45toStringCART(decisionTree, fd, data);
+			root.addChild(t.getRootNode());
 		}
 
 		Properties props = new Properties();
@@ -231,11 +158,8 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 		props.setProperty("stress", String.valueOf(considerStress));
 		props.setProperty("context", String.valueOf(context));
 
-		CART bigTree = new CART(rootNode, fd, props);
-
-		return bigTree;
+		return new CART(root, fd, props);
 	}
-
 
 	private FeatureDefinition graphemeFeatureDef(Set<String> phChains) throws IOException {
 
@@ -247,7 +171,6 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 		// add attribute features
 		for (int att = 1; att <= context * 2 + 1; att++) {
 			fdString.append("att").append(att);
-
 			for (String gr : this.graphemeSet) {
 				fdString.append(" ").append(gr);
 			}
@@ -256,8 +179,7 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 		fdString.append("ShortValuedFeatureProcessors").append(lineBreak);
 
 		// add class features
-		fdString.append(TextToPhoneTrained.PREDICTED_STRING_FEATURENAME);
-
+		fdString.append(GlyphToPhone.PREDICTED_STRING_FEATURENAME);
 		for (String ph : phChains) {
 			fdString.append(" ").append(ph);
 		}
@@ -285,7 +207,6 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 	 * @param splitPattern
 	 *            a regular expression used for identifying the field separator
 	 *            in each line.
-	 * @throws IOException
 	 */
 	public void readLexicon(BufferedReader lexicon, String splitPattern) throws IOException {
 
@@ -326,8 +247,7 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 			}
 			this.addAlreadySplit(separatedGraphemes, separatedPhones);
 		}
-		// Need one entry for the "null" grapheme, which maps to the empty
-		// string:
+		// an entry for "null", which maps to the empty string:
 		this.addAlreadySplit(new String[] { "null" }, new String[] { "" });
 	}
 
@@ -339,8 +259,6 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 	 * Stress is optionally preserved, marking the first vowel of a stressed
 	 * syllable with "1".
 	 * 
-	 * @param lexicon
-	 * @throws IOException
 	 */
 	public void readLexicon(HashMap<String, String> lexicon) {
 
@@ -385,15 +303,15 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 		this.addAlreadySplit(new String[] { "null" }, new String[] { "" });
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
-		String phFileLoc = "/Users/benjaminroth/Desktop/mary/english/phone-list-engba.xml";
+		String phFileLoc = "english/phone-list-engba.xml";
 
 		// initialize trainer
-		TextToPhoneTrainer tp = new TextToPhoneTrainer(AllophoneSet.getAllophoneSet(phFileLoc), true, true, 2);
+		TrainerGlyphToPhone tp = new TrainerGlyphToPhone(AllophoneSet.getAllophoneSet(phFileLoc), true, true, 2);
 
 		BufferedReader lexReader = new BufferedReader(new InputStreamReader(new FileInputStream(
-				"/Users/benjaminroth/Desktop/mary/english/sampa-lexicon.txt"), "ISO-8859-1"));
+				"english/sampa-lexicon.txt"), "ISO-8859-1"));
 
 		// read lexicon for training
 		tp.readLexicon(lexReader, "\\\\");
@@ -402,88 +320,94 @@ public class TextToPhoneTrainer extends StringAlignmentTrainer {
 		for (int i = 0; i < 5; i++) {
 			System.out.println("iteration " + i);
 			tp.alignIteration();
-
 		}
 
 		CART st = tp.trainTree(100);
+		System.out.println(st);
 
-		tp.save(st, "/Users/benjaminroth/Desktop/mary/english/trees/");
-
+		CARTWriter cw = new CARTWriter();
+		cw.dump(st, "english/trees/");
 	}
-	
 
-//	protected void compileLTS() throws IOException {
-//		logger.info("Training letter-to-sound rules...");
-//		// initialize trainer
-//		LTSTrainer tp = new LTSTrainer(allophoneSet, convertToLowercase, predictStress, context);
-//		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(lexiconFilename), "UTF-8"));
-//
-//		logger.info(" - reading lexicon...");
-//		// read lexicon for training
-//		tp.readLexicon(br, "\\s*\\|\\s*");
-//
-//		logger.info(" - aligning...");
-//		// make some alignment iterations
-//		for (int i = 0; i < 5; i++) {
-//			logger.info("     iteration " + (i + 1));
-//			tp.alignIteration();
-//
-//		}
-//		logger.info(" - training decision tree...");
-//		CART st = tp.trainTree(10);
-//		logger.info(" - saving...");
-//		// new MARY cart format:
-//		MaryCARTWriter mcw = new MaryCARTWriter();
-//		mcw.dumpMaryCART(st, ltsFilename);
-//
-//		// Alternative ways of saving the CART would be:
-//		// MARY cart text format:
-//		// PrintWriter pw = new PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.tree.txt", "UTF-8");
-//		// mcw.toTextOut(st, pw);
-//		// pw.close();
-//		// old wagon cart, text and binary format:
-//		// WagonCARTWriter wcw = new WagonCARTWriter();
-//		// wcw.dumpWagonCART(st, "lib/modules/en/us/lexicon/cmudict.lts.wagontree.binary");
-//		// pw = new PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.wagontree.txt", "UTF-8");
-//		// wcw.toTextOut(st, pw);
-//		// pw.close();
-//		// For all of these, it would also be necessary to separately save the feature definition:
-//		// pw = new PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.pfeats", "UTF-8");
-//		// st.getFeatureDefinition().writeTo(pw, false);
-//		// pw.close();
-//
-//	}
-//
-//	protected void testLTS() throws IOException, MaryConfigurationException {
-//		List<String> testGraphemes = new ArrayList<String>();
-//		List<String> testAllophones = new ArrayList<String>();
-//		List<String> testPos = new ArrayList<String>();
-//		int N = 100; // every N'th entry is put into tests...
-//		loadTestWords(testGraphemes, testAllophones, testPos, N);
-//
-//		logger.info(" - loading LTS rules...");
-//		MaryCARTReader cartReader = new MaryCARTReader();
-//		CART st = cartReader.load(ltsFilename);
-//		TrainedLTS lts = new TrainedLTS(allophoneSet, st);
-//
-//		logger.info(" - looking up " + testGraphemes.size() + " test words...");
-//		int max = testGraphemes.size();
-//		int correct = 0;
-//		for (int i = 0; i < max; i++) {
-//			String key = testGraphemes.get(i);
-//			String expected = testAllophones.get(i);
-//			try {
-//			String result = lts.syllabify(lts.predictPronunciation(key));
-//			if (!expected.equals(result))
-//				logger.info("    " + key + " -> " + result + " (expected: " + expected + ")");
-//			else
-//				correct++;
-//			} catch (Exception e){}
-//		}
-//		logger.info("   for " + correct + " out of " + max + " prediction is identical to lexicon entry.");
-//		logger.info("...done!\n");
-//	}
-
+	// protected void compileLTS() throws IOException {
+	// logger.info("Training letter-to-sound rules...");
+	// // initialize trainer
+	// LTSTrainer tp = new LTSTrainer(allophoneSet, convertToLowercase,
+	// predictStress, context);
+	// BufferedReader br = new BufferedReader(new InputStreamReader(new
+	// FileInputStream(lexiconFilename), "UTF-8"));
+	//
+	// logger.info(" - reading lexicon...");
+	// // read lexicon for training
+	// tp.readLexicon(br, "\\s*\\|\\s*");
+	//
+	// logger.info(" - aligning...");
+	// // make some alignment iterations
+	// for (int i = 0; i < 5; i++) {
+	// logger.info("     iteration " + (i + 1));
+	// tp.alignIteration();
+	//
+	// }
+	// logger.info(" - training decision tree...");
+	// CART st = tp.trainTree(10);
+	// logger.info(" - saving...");
+	// CARTWriter mcw = new CARTWriter();
+	// mcw.dump(st, ltsFilename);
+	//
+	// // Alternative ways of saving the CART would be:
+	// // PrintWriter pw = new
+	// PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.tree.txt", "UTF-8");
+	// // mcw.toTextOut(st, pw);
+	// // pw.close();
+	// // old wagon cart, text and binary format:
+	// // WagonCARTWriter wcw = new WagonCARTWriter();
+	// // wcw.dumpWagonCART(st,
+	// "lib/modules/en/us/lexicon/cmudict.lts.wagontree.binary");
+	// // pw = new
+	// PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.wagontree.txt",
+	// "UTF-8");
+	// // wcw.toTextOut(st, pw);
+	// // pw.close();
+	// // For all of these, it would also be necessary to separately save the
+	// feature definition:
+	// // pw = new PrintWriter("lib/modules/en/us/lexicon/cmudict.lts.pfeats",
+	// "UTF-8");
+	// // st.getFeatureDefinition().writeTo(pw, false);
+	// // pw.close();
+	//
+	// }
+	//
+	// protected void testLTS() throws IOException, Exception {
+	// List<String> testGraphemes = new ArrayList<String>();
+	// List<String> testAllophones = new ArrayList<String>();
+	// List<String> testPos = new ArrayList<String>();
+	// int N = 100; // every N'th entry is put into tests...
+	// loadTestWords(testGraphemes, testAllophones, testPos, N);
+	//
+	// logger.info(" - loading LTS rules...");
+	// CARTReader cartReader = new CARTReader();
+	// CART st = cartReader.load(ltsFilename);
+	// TrainedLTS lts = new TrainedLTS(allophoneSet, st);
+	//
+	// logger.info(" - looking up " + testGraphemes.size() + " test words...");
+	// int max = testGraphemes.size();
+	// int correct = 0;
+	// for (int i = 0; i < max; i++) {
+	// String key = testGraphemes.get(i);
+	// String expected = testAllophones.get(i);
+	// try {
+	// String result = lts.syllabify(lts.predictPronunciation(key));
+	// if (!expected.equals(result))
+	// logger.info("    " + key + " -> " + result + " (expected: " + expected +
+	// ")");
+	// else
+	// correct++;
+	// } catch (Exception e){}
+	// }
+	// logger.info("   for " + correct + " out of " + max +
+	// " prediction is identical to lexicon entry.");
+	// logger.info("...done!\n");
+	// }
 
 }
 // http://people.ds.cam.ac.uk/ssb22/gradint/lexconvert.html
