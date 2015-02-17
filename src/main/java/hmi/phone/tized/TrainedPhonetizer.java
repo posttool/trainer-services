@@ -1,4 +1,4 @@
-package hmi.phone.glyph;
+package hmi.phone.tized;
 
 import hmi.ml.cart.CART;
 import hmi.ml.cart.LeafNode.StringAndFloatLeafNode;
