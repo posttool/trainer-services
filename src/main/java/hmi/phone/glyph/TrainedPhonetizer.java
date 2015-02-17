@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Properties;
 
-public class GlyphToPhone {
+public class TrainedPhonetizer {
     public static final String PREDICTED_STRING_FEATURENAME = "predicted-string";
 
     private CART tree;
@@ -26,18 +26,18 @@ public class GlyphToPhone {
     private boolean convertToLowercase;
     protected boolean removeTrailingOneFromPhones = true;
 
-    public GlyphToPhone(AllophoneSet aPhonSet, InputStream treeStream, boolean removeTrailingOneFromPhones)
+    public TrainedPhonetizer(AllophoneSet aPhonSet, InputStream treeStream, boolean removeTrailingOneFromPhones)
             throws Exception {
         this.allophoneSet = aPhonSet;
         this.loadTree(treeStream);
         this.removeTrailingOneFromPhones = removeTrailingOneFromPhones;
     }
 
-    public GlyphToPhone(AllophoneSet aPhonSet, InputStream treeStream) throws Exception {
+    public TrainedPhonetizer(AllophoneSet aPhonSet, InputStream treeStream) throws Exception {
         this(aPhonSet, treeStream, true);
     }
 
-    public GlyphToPhone(AllophoneSet aPhonSet, CART predictionTree) {
+    public TrainedPhonetizer(AllophoneSet aPhonSet, CART predictionTree) {
         this.allophoneSet = aPhonSet;
         this.tree = predictionTree;
         this.featureDefinition = tree.getFeatureDefinition();
@@ -117,7 +117,7 @@ public class GlyphToPhone {
             myRemoveTrailingOneFromPhones = Boolean.getBoolean(args[2]);
         }
 
-        GlyphToPhone lts = new GlyphToPhone(AllophoneSet.getAllophoneSet(allophoneFile), new FileInputStream(ltsFile),
+        TrainedPhonetizer lts = new TrainedPhonetizer(AllophoneSet.getAllophoneSet(allophoneFile), new FileInputStream(ltsFile),
                 myRemoveTrailingOneFromPhones);
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

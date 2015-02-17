@@ -91,6 +91,8 @@ public abstract class DecisionNode extends Node {
             child.setParent(this, lastChild);
         }
         lastChild++;
+        // does it hurt performance to countData() here?
+        // TODO profile while reading large file
     }
 
     public Node getChild(int index) {
@@ -113,18 +115,12 @@ public abstract class DecisionNode extends Node {
         return (index > -1 && index < children.length);
     }
 
-    /**
-     * Get all unit indices from all leaves below this node
-     * 
-     */
     public Object getAllData() {
-        // What to do depends on the type of leaves.
         LeafNode firstLeaf = new NodeIterator<LeafNode>(this, true, false, false).next();
         if (firstLeaf == null)
             return null;
         Object result;
-        if (firstLeaf instanceof IntArrayLeafNode) { // this includes subclass
-                                                     // IntAndFloatArrayLeafNode
+        if (firstLeaf instanceof IntArrayLeafNode) {
             result = new int[nData];
         } else if (firstLeaf instanceof FeatureVectorLeafNode) {
             result = new FeatureVector[nData];
@@ -146,13 +142,6 @@ public abstract class DecisionNode extends Node {
         }
     }
 
-    /**
-     * Count all the nodes at and below this node. A leaf will return 1; the
-     * root node will report the total number of decision and leaf nodes in the
-     * tree.
-     * 
-     * @return
-     */
     public int getNumberOfNodes() {
         int nNodes = 1; // this node
         for (int i = 0; i < children.length; i++) {
@@ -206,9 +195,6 @@ public abstract class DecisionNode extends Node {
 
     // DECISION NODES
 
-    /**
-     * A binary decision Node that compares two byte values.
-     */
     public static class BinaryByteDecisionNode extends DecisionNode {
 
         private byte value;
@@ -287,9 +273,6 @@ public abstract class DecisionNode extends Node {
 
     }
 
-    /**
-     * A binary decision Node that compares two short values.
-     */
     public static class BinaryShortDecisionNode extends DecisionNode {
 
         private short value;
@@ -355,9 +338,6 @@ public abstract class DecisionNode extends Node {
 
     }
 
-    /**
-     * A binary decision Node that compares two float values.
-     */
     public static class BinaryFloatDecisionNode extends DecisionNode {
 
         private float value;
@@ -434,10 +414,6 @@ public abstract class DecisionNode extends Node {
 
     }
 
-    /**
-     * An decision Node with an arbitrary number of children. Value of the
-     * target corresponds to the index number of next child.
-     */
     public static class ByteDecisionNode extends DecisionNode {
 
         public ByteDecisionNode(String feature, int numChildren, FeatureDefinition featureDefinition) {
@@ -476,10 +452,6 @@ public abstract class DecisionNode extends Node {
 
     }
 
-    /**
-     * An decision Node with an arbitrary number of children. Value of the
-     * target corresponds to the index number of next child.
-     */
     public static class ShortDecisionNode extends DecisionNode {
 
         public ShortDecisionNode(String feature, int numChildren, FeatureDefinition featureDefinition) {
