@@ -97,9 +97,7 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
             System.out.println("      Training decision tree for: " + gr);
 
             ArrayList<Attribute> attributeDeclarations = new ArrayList<Attribute>();
-            // attributes with values
             for (int att = 1; att <= context * 2 + 1; att++) {
-                // ...collect possible values
                 ArrayList<String> attVals = new ArrayList<String>();
                 String featureName = "att" + att;
                 for (String usableGrapheme : fd.getPossibleValues(fd.getFeatureIndex(featureName))) {
@@ -109,20 +107,17 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
             }
 
             List<String[]> datapoints = grapheme2align.get(gr);
-            // limit to grapheme
             Set<String> graphSpecPh = new HashSet<String>();
             for (String[] dp : datapoints) {
                 graphSpecPh.add(dp[dp.length - 1]);
             }
 
-            // ...collect possible values
             ArrayList<String> targetVals = new ArrayList<String>();
             for (String phc : graphSpecPh) {// todo: use either fd of phChains
                 targetVals.add(phc);
             }
             attributeDeclarations.add(new Attribute(GlyphToPhone.PREDICTED_STRING_FEATURENAME, targetVals));
 
-            // now, weka
             Instances data = new Instances(gr, attributeDeclarations, 0);
             for (String[] point : datapoints) {
                 Instance currInst = new DenseInstance(data.numAttributes());
@@ -133,7 +128,6 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
                 data.add(currInst);
             }
 
-            // Make the last attribute be the class
             data.setClassIndex(data.numAttributes() - 1);
 
             // build the tree without using the J48 wrapper class
@@ -144,7 +138,7 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
             C45PruneableClassifierTree decisionTree;
             try {
                 decisionTree = new C45PruneableClassifierTreeWithUnary(
-                        new BinC45ModelSelection(minLeafData, data, true), true, 0.25f, true, true, false);
+                        new BinC45ModelSelection(minLeafData, data, false), true, 0.25f, true, true, false);
                 decisionTree.buildClassifier(data);
             } catch (Exception e) {
                 throw new RuntimeException("couldn't train decisiontree using weka: ", e);
@@ -153,6 +147,7 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
             CART t = TreeConverter.c45toStringCART(decisionTree, fd, data);
             root.addChild(t.getRootNode());
         }
+        root.countData();//duh
 
         Properties props = new Properties();
         props.setProperty("lowercase", String.valueOf(convertToLowercase));
@@ -324,12 +319,14 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
             tp.alignIteration();
         }
 
-        CART st = tp.trainTree(100);
+        CART st = tp.trainTree(20);
         System.out.println(st);
 
         // CARTWriter cw = new CARTWriter();
         // cw.dump(st, "english/trees/");
-        predictPronunciation(as, st, "this is something that happened");
+        predictPronunciation(as, st, "this");
+        predictPronunciation(as, st, "however");
+        predictPronunciation(as, st, "youbelaline");
     }
 
     public static String predictPronunciation(AllophoneSet allophoneSet, CART tree, String graphemes) {
@@ -337,6 +334,8 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
         int context = 2;
         if (convertToLowercase)
             graphemes = graphemes.toLowerCase(allophoneSet.getLocale());
+        FeatureDefinition featureDefinition = tree.getFeatureDefinition();
+        int indexPredictedFeature = featureDefinition.getFeatureIndex(GlyphToPhone.PREDICTED_STRING_FEATURENAME);
 
         String returnStr = "";
 
@@ -359,8 +358,6 @@ public class TrainerGlyphToPhone extends TrainerStringAlignment {
             FeatureVector fv = new FeatureVector(byteFeatures, new short[] {}, new float[] {}, 0);
 
             StringAndFloatLeafNode leaf = (StringAndFloatLeafNode) tree.interpretToNode(fv, 0);
-            FeatureDefinition featureDefinition = tree.getFeatureDefinition();
-            int indexPredictedFeature = featureDefinition.getFeatureIndex(GlyphToPhone.PREDICTED_STRING_FEATURENAME);
             String prediction = leaf.mostProbableString(featureDefinition, indexPredictedFeature);
             returnStr += prediction.substring(1, prediction.length() - 1);
         }
