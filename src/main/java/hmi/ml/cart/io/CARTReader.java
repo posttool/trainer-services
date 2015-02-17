@@ -5,6 +5,7 @@ import hmi.ml.cart.DecisionNode;
 import hmi.ml.cart.LeafNode;
 import hmi.ml.cart.Node;
 import hmi.ml.feature.FeatureDefinition;
+import hmi.ml.feature.FeatureIO;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -55,7 +56,7 @@ public class CARTReader {
         }
 
         // Read the feature definition
-        FeatureDefinition featureDefinition = new FeatureDefinition(raf);
+        FeatureDefinition featureDefinition = FeatureIO.process(raf);
 
         // read the decision nodes
         int numDecNodes = raf.readInt(); // number of decision nodes
@@ -217,7 +218,7 @@ public class CARTReader {
         }
 
         // Read the feature definition
-        FeatureDefinition featureDefinition = new FeatureDefinition(bb);
+        FeatureDefinition featureDefinition = FeatureIO.process(bb);
 
         // read the decision nodes
         int numDecNodes = bb.getInt(); // number of decision nodes

@@ -4,6 +4,7 @@ import hmi.ml.cart.CART;
 import hmi.ml.cart.DecisionNode;
 import hmi.ml.cart.LeafNode.StringAndFloatLeafNode;
 import hmi.ml.feature.FeatureDefinition;
+import hmi.ml.feature.FeatureIO;
 import hmi.ml.feature.FeatureVector;
 import hmi.ml.string.StringAligner;
 import hmi.ml.string.StringPair;
@@ -195,7 +196,7 @@ public class TrainerGlyphPhoneAligner {
 
         BufferedReader featureReader = new BufferedReader(new StringReader(fdString.toString()));
 
-        return new FeatureDefinition(featureReader, false);
+        return FeatureIO.process(featureReader, false);
     }
 
     /**

@@ -12,6 +12,7 @@ import hmi.ml.cart.LeafNode.IntAndFloatArrayLeafNode;
 import hmi.ml.cart.LeafNode.IntArrayLeafNode;
 import hmi.ml.cart.LeafNode.LeafType;
 import hmi.ml.cart.Node;
+import hmi.ml.feature.FeatureIO;
 import hmi.ml.feature.FeatureVector;
 
 import java.io.BufferedOutputStream;
@@ -49,7 +50,7 @@ public class CARTWriter {
         }
 
         // feature definition
-        cart.getFeatureDefinition().writeBinaryTo(out);
+        FeatureIO.writeBinaryTo(cart.getFeatureDefinition(), out);
 
         // dump CART
         dumpBinary(cart.getRootNode(), out);
