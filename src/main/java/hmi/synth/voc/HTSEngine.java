@@ -579,7 +579,7 @@ public class HTSEngine {
 
         try {
             /*
-             * Process  context features file and creates UttModel um, a
+             * Process context features file and creates UttModel um, a
              * linked list of all the models in the utterance. For each model,
              * it searches in each tree, dur, cmp, etc, the pdf index that
              * corresponds to a triphone context feature and with that index
@@ -599,7 +599,7 @@ public class HTSEngine {
              */
             /*
              * the generated parameters will be saved in tmp.mfc and tmp.f0,
-             * including Mary header.
+             * including header.
              */
             boolean debug = true; /*
                                    * so it save the generated parameters in

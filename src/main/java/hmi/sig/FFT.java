@@ -1,7 +1,5 @@
 package hmi.sig;
 
-
-
 public class FFT {
     static double[] cosDelta;
     static double[] sinDelta;
@@ -799,6 +797,5 @@ public class FFT {
         System.arraycopy(fftAutocorr, 0, result, halfLength, halfLength + odd);
         return result;
     }
-
 
 }
