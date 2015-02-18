@@ -39,7 +39,7 @@ public class VocoderTest extends Vocoder {
         outFile = "/Users/posttool/Documents/tmp.wav";
 
         String hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/hts/";
-        String voiceExample = "snum1149"; // sstr0007 sdsg0596 slis0208 snum1142
+        String voiceExample = "snum1143"; // sstr0007 sdsg0596 slis0208 snum1142
         // sbas0150
 
         // Properties p = new Properties();

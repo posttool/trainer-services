@@ -1,11 +1,7 @@
 package hmi.synth.voc;
 
-import hmi.sig.Mfccs;
 import hmi.synth.voc.HMMData.FeatureType;
 
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -87,7 +83,7 @@ public class ParameterGeneration {
         return 1.0 / x;
     }
 
-    public void htsMaximumLikelihoodParameterGeneration(HTSUttModel um, final HMMData htsData) throws Exception {
+    public void htsMaximumLikelihoodParameterGeneration(UttModel um, final HMMData htsData) throws Exception {
         CartTreeSet ms = htsData.getCartTreeSet();
 
         /* Initialisation of PStream objects */
@@ -275,156 +271,156 @@ public class ParameterGeneration {
     } /* method htsMaximumLikelihoodParameterGeneration */
 
     /* Save generated parameters in a binary file */
-    public void saveParams(String fileName, PStream par, HMMData.FeatureType type) {
-        int t, m, i;
-        double ws = 0.025; /* window size in seconds */
-        double ss = 0.005; /* skip size in seconds */
-        int fs = 16000; /* sampling rate */
+//    public void saveParams(String fileName, PStream par, HMMData.FeatureType type) {
+//        int t, m, i;
+//        double ws = 0.025; /* window size in seconds */
+//        double ss = 0.005; /* skip size in seconds */
+//        int fs = 16000; /* sampling rate */
+//
+//        try {
+//
+//            if (type == HMMData.FeatureType.LF0) {
+//                fileName += ".ptc";
+//                /*
+//                 * DataOutputStream data_out = new DataOutputStream (new
+//                 * FileOutputStream (fileName));
+//                 * data_out.writeFloat((float)(ws*fs));
+//                 * data_out.writeFloat((float)(ss*fs));
+//                 * data_out.writeFloat((float)fs);
+//                 * data_out.writeFloat(voiced.length);
+//                 * 
+//                 * i=0; for(t=0; t<voiced.length; t++){ // here par.getT are
+//                 * just the voiced!!! so the actual length of frames can be
+//                 * taken from the voiced array if( voiced[t] ){
+//                 * data_out.writeFloat((float)Math.exp(par.getPar(i,0))); i++;
+//                 * }System.out.println("GEN f0s[" + t + "]=" +
+//                 * Math.exp(lf0Pst.getPar(i,0))); else
+//                 * data_out.writeFloat((float)0.0); } data_out.close();
+//                 */
+//
+//                i = 0;
+//                double f0s[] = new double[voiced.length];
+//                // System.out.println("voiced.length=" + voiced.length);
+//                for (t = 0; t < voiced.length; t++) { // here par.getT are just
+//                                                      // the voiced!!! so the
+//                                                      // actual length of frames
+//                                                      // can
+//                                                      // be taken from the
+//                                                      // voiced array
+//                    if (voiced[t]) {
+//                        f0s[t] = Math.exp(par.getPar(i, 0));
+//                        i++;
+//                    } else
+//                        f0s[t] = 0.0;
+//                    System.out.println("GEN f0s[" + t + "]=" + f0s[t]);
+//
+//                }
+//                /*
+//                 * i am using this function but it changes the values of sw, and
+//                 * ss *samplingrate+0.5??? for the HTS values ss=0.005 and
+//                 * sw=0.025 is not a problem though
+//                 */
+//                write_pitch_file(fileName, f0s, (float) (ws), (float) (ss), fs);
+//
+//            } else if (type == HMMData.FeatureType.MGC) {
+//
+//                int numfrm = par.getT();
+//                int dimension = par.getOrder();
+//                Mfccs mgc = new Mfccs(numfrm, dimension);
+//
+//                fileName += ".mfc";
+//
+//                for (t = 0; t < par.getT(); t++)
+//                    for (m = 0; m < par.getOrder(); m++)
+//                        mgc.mfccs[t][m] = par.getPar(t, m);
+//
+//                mgc.params.samplingRate = fs; /* samplingRateInHz */
+//                mgc.params.skipsize = (float) ss; /* skipSizeInSeconds */
+//                mgc.params.winsize = (float) ws; /* windowSizeInSeconds */
+//
+//                mgc.writeMfccFile(fileName);
+//
+//                /*
+//                 * The whole set for header is in the following order:
+//                 * ler.writeInt(numfrm); ler.writeInt(dimension);
+//                 * ler.writeFloat(winsize); ler.writeFloat(skipsize);
+//                 * ler.writeInt(samplingRate);
+//                 */
+//
+//            }
+//
+//            System.out.println("saveParam in file: " + fileName);
+//
+//        } catch (IOException e) {
+//            System.out.println("IO exception = " + e);
+//        }
+//    }
+//
+//    public static void write_pitch_file(String ptcFile, double[] f0s, float windowSizeInSeconds,
+//            float skipSizeInSeconds, int samplingRate) throws IOException {
+//        float[] f0sFloat = new float[f0s.length];
+//        for (int i = 0; i < f0s.length; i++)
+//            f0sFloat[i] = (float) f0s[i];
+//
+//        write_pitch_file(ptcFile, f0sFloat, windowSizeInSeconds, skipSizeInSeconds, samplingRate);
+//    }
+//
+//    public static void write_pitch_file(String ptcFile, float[] f0s, float windowSizeInSeconds,
+//            float skipSizeInSeconds, int samplingRate) throws IOException {
+//        LEDataOutputStream lw = new LEDataOutputStream(new DataOutputStream(new FileOutputStream(ptcFile)));
+//
+//        if (lw != null) {
+//            int winsize = (int) Math.floor(windowSizeInSeconds * samplingRate + 0.5);
+//            lw.writeFloat(winsize);
+//
+//            int skipsize = (int) Math.floor(skipSizeInSeconds * samplingRate + 0.5);
+//            lw.writeFloat(skipsize);
+//            lw.writeFloat(samplingRate);
+//            lw.writeFloat(f0s.length);
+//            lw.writeFloat(f0s);
+//
+//            lw.close();
+//        }
+//    }
+//
+//    /* Save generated parameters in a binary file */
+//    public void saveParam(String fileName, PStream par, HMMData.FeatureType type) {
+//        int t, m, i;
+//        try {
+//
+//            if (type == HMMData.FeatureType.LF0) {
+//                fileName += ".f0";
+//                DataOutputStream data_out = new DataOutputStream(new FileOutputStream(fileName));
+//                i = 0;
+//                for (t = 0; t < voiced.length; t++) { /*
+//                                                       * here par.getT are just
+//                                                       * the voiced!!!
+//                                                       */
+//                    if (voiced[t]) {
+//                        data_out.writeFloat((float) Math.exp(par.getPar(i, 0)));
+//                        i++;
+//                    } else
+//                        data_out.writeFloat((float) 0.0);
+//                }
+//                data_out.close();
+//
+//            } else if (type == HMMData.FeatureType.MGC) {
+//                fileName += ".mgc";
+//                DataOutputStream data_out = new DataOutputStream(new FileOutputStream(fileName));
+//                for (t = 0; t < par.getT(); t++)
+//                    for (m = 0; m < par.getOrder(); m++)
+//                        data_out.writeFloat((float) par.getPar(t, m));
+//                data_out.close();
+//            }
+//
+//            System.out.println("saveParam in file: " + fileName);
+//
+//        } catch (IOException e) {
+//            System.out.println("IO exception = " + e);
+//        }
+//    }
 
-        try {
-
-            if (type == HMMData.FeatureType.LF0) {
-                fileName += ".ptc";
-                /*
-                 * DataOutputStream data_out = new DataOutputStream (new
-                 * FileOutputStream (fileName));
-                 * data_out.writeFloat((float)(ws*fs));
-                 * data_out.writeFloat((float)(ss*fs));
-                 * data_out.writeFloat((float)fs);
-                 * data_out.writeFloat(voiced.length);
-                 * 
-                 * i=0; for(t=0; t<voiced.length; t++){ // here par.getT are
-                 * just the voiced!!! so the actual length of frames can be
-                 * taken from the voiced array if( voiced[t] ){
-                 * data_out.writeFloat((float)Math.exp(par.getPar(i,0))); i++;
-                 * }System.out.println("GEN f0s[" + t + "]=" +
-                 * Math.exp(lf0Pst.getPar(i,0))); else
-                 * data_out.writeFloat((float)0.0); } data_out.close();
-                 */
-
-                i = 0;
-                double f0s[] = new double[voiced.length];
-                // System.out.println("voiced.length=" + voiced.length);
-                for (t = 0; t < voiced.length; t++) { // here par.getT are just
-                                                      // the voiced!!! so the
-                                                      // actual length of frames
-                                                      // can
-                                                      // be taken from the
-                                                      // voiced array
-                    if (voiced[t]) {
-                        f0s[t] = Math.exp(par.getPar(i, 0));
-                        i++;
-                    } else
-                        f0s[t] = 0.0;
-                    System.out.println("GEN f0s[" + t + "]=" + f0s[t]);
-
-                }
-                /*
-                 * i am using this function but it changes the values of sw, and
-                 * ss *samplingrate+0.5??? for the HTS values ss=0.005 and
-                 * sw=0.025 is not a problem though
-                 */
-                write_pitch_file(fileName, f0s, (float) (ws), (float) (ss), fs);
-
-            } else if (type == HMMData.FeatureType.MGC) {
-
-                int numfrm = par.getT();
-                int dimension = par.getOrder();
-                Mfccs mgc = new Mfccs(numfrm, dimension);
-
-                fileName += ".mfc";
-
-                for (t = 0; t < par.getT(); t++)
-                    for (m = 0; m < par.getOrder(); m++)
-                        mgc.mfccs[t][m] = par.getPar(t, m);
-
-                mgc.params.samplingRate = fs; /* samplingRateInHz */
-                mgc.params.skipsize = (float) ss; /* skipSizeInSeconds */
-                mgc.params.winsize = (float) ws; /* windowSizeInSeconds */
-
-                mgc.writeMfccFile(fileName);
-
-                /*
-                 * The whole set for header is in the following order:
-                 * ler.writeInt(numfrm); ler.writeInt(dimension);
-                 * ler.writeFloat(winsize); ler.writeFloat(skipsize);
-                 * ler.writeInt(samplingRate);
-                 */
-
-            }
-
-            System.out.println("saveParam in file: " + fileName);
-
-        } catch (IOException e) {
-            System.out.println("IO exception = " + e);
-        }
-    }
-
-    public static void write_pitch_file(String ptcFile, double[] f0s, float windowSizeInSeconds,
-            float skipSizeInSeconds, int samplingRate) throws IOException {
-        float[] f0sFloat = new float[f0s.length];
-        for (int i = 0; i < f0s.length; i++)
-            f0sFloat[i] = (float) f0s[i];
-
-        write_pitch_file(ptcFile, f0sFloat, windowSizeInSeconds, skipSizeInSeconds, samplingRate);
-    }
-
-    public static void write_pitch_file(String ptcFile, float[] f0s, float windowSizeInSeconds,
-            float skipSizeInSeconds, int samplingRate) throws IOException {
-        LEDataOutputStream lw = new LEDataOutputStream(new DataOutputStream(new FileOutputStream(ptcFile)));
-
-        if (lw != null) {
-            int winsize = (int) Math.floor(windowSizeInSeconds * samplingRate + 0.5);
-            lw.writeFloat(winsize);
-
-            int skipsize = (int) Math.floor(skipSizeInSeconds * samplingRate + 0.5);
-            lw.writeFloat(skipsize);
-            lw.writeFloat(samplingRate);
-            lw.writeFloat(f0s.length);
-            lw.writeFloat(f0s);
-
-            lw.close();
-        }
-    }
-
-    /* Save generated parameters in a binary file */
-    public void saveParam(String fileName, PStream par, HMMData.FeatureType type) {
-        int t, m, i;
-        try {
-
-            if (type == HMMData.FeatureType.LF0) {
-                fileName += ".f0";
-                DataOutputStream data_out = new DataOutputStream(new FileOutputStream(fileName));
-                i = 0;
-                for (t = 0; t < voiced.length; t++) { /*
-                                                       * here par.getT are just
-                                                       * the voiced!!!
-                                                       */
-                    if (voiced[t]) {
-                        data_out.writeFloat((float) Math.exp(par.getPar(i, 0)));
-                        i++;
-                    } else
-                        data_out.writeFloat((float) 0.0);
-                }
-                data_out.close();
-
-            } else if (type == HMMData.FeatureType.MGC) {
-                fileName += ".mgc";
-                DataOutputStream data_out = new DataOutputStream(new FileOutputStream(fileName));
-                for (t = 0; t < par.getT(); t++)
-                    for (m = 0; m < par.getOrder(); m++)
-                        data_out.writeFloat((float) par.getPar(t, m));
-                data_out.close();
-            }
-
-            System.out.println("saveParam in file: " + fileName);
-
-        } catch (IOException e) {
-            System.out.println("IO exception = " + e);
-        }
-    }
-
-    private void loadXmlF0(HTSUttModel um, HMMData htsData) throws Exception {
+    private void loadXmlF0(UttModel um, HMMData htsData) throws Exception {
         System.out.println("Using f0 from XML acoustparams");
         int i, n, numVoiced;
         HMMModel m;
@@ -550,7 +546,7 @@ public class ParameterGeneration {
         }
     }
 
-    private void setRealisedF0(PStream lf0Pst, HTSUttModel um, int numStates) {
+    private void setRealisedF0(PStream lf0Pst, UttModel um, int numStates) {
         int t = 0;
         int vt = 0;
         for (int i = 0; i < um.getNumUttModel(); i++) {

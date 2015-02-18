@@ -107,7 +107,7 @@ public class HMMEngine {
          * objects. It will contain the list of models for current label file.
          */
         /* Process label file of context features and creates UttModel um */
-        HTSUttModel um = processTargetList(targetFeaturesList, d.getSentences().get(0).getSegments(), hmmv.getHMMData());
+        UttModel um = processTargetList(targetFeaturesList, d.getSentences().get(0).getSegments(), hmmv.getHMMData());
 
         /* Process UttModel */
         ParameterGeneration pdf2par = new ParameterGeneration();
@@ -153,7 +153,7 @@ public class HMMEngine {
 
     }
 
-    public static void setRealisedProsody(List<Segment> tokensAndBoundaries, HTSUttModel um) {
+    public static void setRealisedProsody(List<Segment> tokensAndBoundaries, UttModel um) {
         int i, j, index;
         NodeList no1, no2;
         NamedNodeMap att;
@@ -207,7 +207,7 @@ public class HMMEngine {
         }
     }
 
-    public HTSUttModel processUttFromFile(String feaFile, HMMData htsData) throws Exception {
+    public UttModel processUttFromFile(String feaFile, HMMData htsData) throws Exception {
 
         List<Target> targetFeaturesList = getTargetsFromFile(feaFile, htsData);
         return processTargetList(targetFeaturesList, null, htsData);
@@ -294,9 +294,9 @@ public class HMMEngine {
      *            : parameters and configuration of the voice
      * @throws Exception
      */
-    protected HTSUttModel processTargetList(List<Target> targetFeaturesList, List<Segment> segmentsAndBoundaries,
+    protected UttModel processTargetList(List<Target> targetFeaturesList, List<Segment> segmentsAndBoundaries,
             HMMData htsData) throws Exception {
-        HTSUttModel um = new HTSUttModel();
+        UttModel um = new UttModel();
         CartTreeSet cart = htsData.getCartTreeSet();
         realisedDurations = "#\n";
         int numLab = 0;
@@ -570,7 +570,7 @@ public class HMMEngine {
          * The utterance model, um, is a Vector (or linked list) of Model
          * objects. It will contain the list of models for current label file.
          */
-        HTSUttModel um;
+        UttModel um;
         ParameterGeneration pdf2par = new ParameterGeneration();
         Vocoder par2speech = new Vocoder();
         AudioInputStream ais;

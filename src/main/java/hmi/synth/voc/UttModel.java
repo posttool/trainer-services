@@ -2,7 +2,7 @@ package hmi.synth.voc;
 
 import java.util.Vector;
 
-public class HTSUttModel {
+public class UttModel {
 
     private int numModel; /* # of models for current utterance */
     private int numState; /* # of HMM states for current utterance */
@@ -17,7 +17,7 @@ public class HTSUttModel {
                                           * durations for each one
                                           */
 
-    public HTSUttModel() {
+    public UttModel() {
         numModel = 0;
         numState = 0;
         totalFrame = 0;

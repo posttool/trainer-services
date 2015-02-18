@@ -6,7 +6,7 @@ import hmi.synth.voc.HMMData;
 import hmi.synth.voc.HMMEngine;
 import hmi.synth.voc.PStream;
 import hmi.synth.voc.ParameterGeneration;
-import hmi.synth.voc.HTSUttModel;
+import hmi.synth.voc.UttModel;
 import hmi.synth.voc.Vocoder;
 import hmi.synth.voc.LEDataInputStream;
 import hmi.synth.voc.PhonemeDuration;
@@ -84,7 +84,7 @@ public class Test1 {
 		 * The utterance model, um, is a Vector (or linked list) of Model objects. It will contain the list of models for current
 		 * label file.
 		 */
-		HTSUttModel um = new HTSUttModel();
+		UttModel um = new UttModel();
 		ParameterGeneration pdf2par = new ParameterGeneration();
 		Vocoder par2speech = new Vocoder();
 		AudioInputStream ais;
@@ -152,7 +152,7 @@ public class Test1 {
 		 * The utterance model, um, is a Vector (or linked list) of Model objects. It will contain the list of models for current
 		 * label file.
 		 */
-		HTSUttModel um = new HTSUttModel();
+		UttModel um = new UttModel();
 		ParameterGeneration pdf2par = new ParameterGeneration();
 		Vocoder par2speech = new Vocoder();
 		AudioInputStream ais;
@@ -388,7 +388,7 @@ public class Test1 {
 				 * The utterance model, um, is a Vector (or linked list) of Model objects. It will contain the list of models for
 				 * the current label file.
 				 */
-				HTSUttModel um = new HTSUttModel();
+				UttModel um = new UttModel();
 				ParameterGeneration pdf2par = new ParameterGeneration();
 				Vocoder par2speech = new Vocoder();
 				AudioInputStream ais;
