@@ -196,7 +196,7 @@ public class TrainerGlyphPhoneAligner {
 
         BufferedReader featureReader = new BufferedReader(new StringReader(fdString.toString()));
 
-        return FeatureIO.process(featureReader, false);
+        return FeatureIO.read(featureReader, false);
     }
 
     /**

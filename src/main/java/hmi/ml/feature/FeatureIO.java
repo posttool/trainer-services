@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FeatureIO {
-    public static FeatureDefinition process(BufferedReader input, boolean readWeights) throws IOException {
+    public static FeatureDefinition read(BufferedReader input, boolean readWeights) throws IOException {
         FeatureDefinition fd = new FeatureDefinition();
         // Section BYTEFEATURES
         String line = input.readLine();
@@ -239,7 +239,7 @@ public class FeatureIO {
 
     }
 
-    public static FeatureDefinition process(DataInput input) throws IOException {
+    public static FeatureDefinition read(DataInput input) throws IOException {
         FeatureDefinition fd = new FeatureDefinition();
         // Section BYTEFEATURES
         fd.numByteFeatures = input.readInt();
@@ -306,7 +306,7 @@ public class FeatureIO {
         return fd;
     }
 
-    public static FeatureDefinition process(ByteBuffer bb) throws IOException {
+    public static FeatureDefinition read(ByteBuffer bb) throws IOException {
         FeatureDefinition fd = new FeatureDefinition();
         // Section BYTEFEATURES
         fd.numByteFeatures = bb.getInt();
@@ -373,7 +373,7 @@ public class FeatureIO {
         return fd;
     }
 
-    public static void writeBinaryTo(FeatureDefinition fd, DataOutput out) throws IOException {
+    public static void write(FeatureDefinition fd, DataOutput out) throws IOException {
         // TODO to avoid duplicate code, replace this with writeBinaryTo(out,
         // List<Integer>()) or some such
 
@@ -426,7 +426,7 @@ public class FeatureIO {
         }
     }
 
-    public static void writeBinaryTo(FeatureDefinition fd, DataOutput out, List<Integer> featuresToDrop)
+    public static void write(FeatureDefinition fd, DataOutput out, List<Integer> featuresToDrop)
             throws IOException {
         // how many features of each type are to be dropped
         int droppedByteFeatures = 0;

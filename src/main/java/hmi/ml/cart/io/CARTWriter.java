@@ -50,7 +50,7 @@ public class CARTWriter {
         }
 
         // feature definition
-        FeatureIO.writeBinaryTo(cart.getFeatureDefinition(), out);
+        FeatureIO.write(cart.getFeatureDefinition(), out);
 
         // dump CART
         dumpBinary(cart.getRootNode(), out);

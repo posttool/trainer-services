@@ -472,4 +472,37 @@ public class FeatureDefinition {
         return (ret);
     }
 
+    public FeatureVector toFeatureVector(int unitIndex, byte[] bytes, short[] shorts, float[] floats) {
+        if (!((numByteFeatures == 0 && bytes == null || numByteFeatures == bytes.length)
+                && (numShortFeatures == 0 && shorts == null || numShortFeatures == shorts.length) && (numContinuousFeatures == 0
+                && floats == null || numContinuousFeatures == floats.length))) {
+            throw new IllegalArgumentException("Expected " + numByteFeatures + " bytes (got "
+                    + (bytes == null ? "0" : bytes.length) + "), " + numShortFeatures + " shorts (got "
+                    + (shorts == null ? "0" : shorts.length) + "), " + numContinuousFeatures + " floats (got "
+                    + (floats == null ? "0" : floats.length) + ")");
+        }
+        return new FeatureVector(bytes, shorts, floats, unitIndex);
+    }
+    
+    public FeatureVector toFeatureVector(int unitIndex, String featureString) {
+        String[] featureValues = featureString.split("\\s+");
+        if (featureValues.length != numByteFeatures + numShortFeatures + numContinuousFeatures)
+            throw new IllegalArgumentException("Expected "
+                    + (numByteFeatures + numShortFeatures + numContinuousFeatures) + " features, got "
+                    + featureValues.length);
+        byte[] bytes = new byte[numByteFeatures];
+        short[] shorts = new short[numShortFeatures];
+        float[] floats = new float[numContinuousFeatures];
+        for (int i = 0; i < numByteFeatures; i++) {
+            bytes[i] = Byte.parseByte(featureValues[i]);
+        }
+        for (int i = 0; i < numShortFeatures; i++) {
+            shorts[i] = Short.parseShort(featureValues[numByteFeatures + i]);
+        }
+        for (int i = 0; i < numContinuousFeatures; i++) {
+            floats[i] = Float.parseFloat(featureValues[numByteFeatures + numShortFeatures + i]);
+        }
+        return new FeatureVector(bytes, shorts, floats, unitIndex);
+    }
+
 }

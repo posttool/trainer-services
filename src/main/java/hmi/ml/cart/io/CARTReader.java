@@ -56,7 +56,7 @@ public class CARTReader {
         }
 
         // Read the feature definition
-        FeatureDefinition featureDefinition = FeatureIO.process(raf);
+        FeatureDefinition featureDefinition = FeatureIO.read(raf);
 
         // read the decision nodes
         int numDecNodes = raf.readInt(); // number of decision nodes
@@ -218,7 +218,7 @@ public class CARTReader {
         }
 
         // Read the feature definition
-        FeatureDefinition featureDefinition = FeatureIO.process(bb);
+        FeatureDefinition featureDefinition = FeatureIO.read(bb);
 
         // read the decision nodes
         int numDecNodes = bb.getInt(); // number of decision nodes

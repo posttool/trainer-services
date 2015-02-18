@@ -1,5 +1,8 @@
 package hmi.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 // sentence
 //   phrase
 //     text
@@ -21,6 +24,16 @@ public class SpeechMarkup {
 
     public void addSentence(Sentence s) {
         document.add(s);
+    }
+
+    public List<Sentence> getSentences() {
+        List<Sentence> sentences = new ArrayList<Sentence>();
+        for (Paragraph p : document.paragraphs) {
+            for (Sentence sentence : p.sentences) {
+                sentences.add(sentence);
+            }
+        }
+        return sentences;
     }
 
     public String toString() {
