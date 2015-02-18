@@ -6,9 +6,6 @@ import hmi.data.Segment;
 import hmi.ml.feature.FeatureVector;
 import hmi.phone.Allophone;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.UserDataHandler;
-
 public class Target {
     protected String name;
     protected Segment sm;
@@ -76,16 +73,16 @@ public class Target {
         return featureVector != null;
     }
 
-    public static UserDataHandler targetFeatureCloner = new UserDataHandler() {
-        public void handle(short operation, String key, Object data, Node src, Node dest) {
-            if (operation == UserDataHandler.NODE_CLONED && key == "target") {
-                dest.setUserData(key, data, this);
-                System.err.println("yay");
-            } else {
-                System.err.println("nay");
-            }
-        }
-    };
+//    public static UserDataHandler targetFeatureCloner = new UserDataHandler() {
+//        public void handle(short operation, String key, Object data, Node src, Node dest) {
+//            if (operation == UserDataHandler.NODE_CLONED && key == "target") {
+//                dest.setUserData(key, data, this);
+//                System.err.println("yay");
+//            } else {
+//                System.err.println("nay");
+//            }
+//        }
+//    };
 
     /**
      * Determine whether this target is a silence target
