@@ -1483,7 +1483,7 @@ public class MathUtils {
                 z = new ComplexNumber[rowSizex][colSizey];
 
                 /**
-                 * Marc Schröder, 3 July 2009: The following implementation used
+                 * The following implementation used
                  * up about 93% of total processing time. Replacing it with a
                  * less elegant but more efficient implementation:
                  * 

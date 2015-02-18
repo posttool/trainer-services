@@ -1,21 +1,21 @@
 package hmi.synth.voc;
 
+import hmi.sig.AudioPlayer;
 import hmi.sig.BufferedDoubleDataSource;
 import hmi.sig.DDSAudioInputStream;
 import hmi.sig.MathUtils;
-import hmi.sig.ProducingDoubleDataSource;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.Properties;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
 public class HTSVocoderTest extends HTSVocoder {
@@ -23,9 +23,7 @@ public class HTSVocoderTest extends HTSVocoder {
     /**
      * Stand alone testing reading parameters from files in SPTK format
      */
-    public static void main1(String[] args) throws IOException, InterruptedException, Exception {
-        /* configure log info */
-        // org.apache.log4j.BasicConfigurator.configure();
+    public static void main(String[] args) throws IOException, InterruptedException, Exception {
 
         HMMData htsData = new HMMData();
         HTSPStream lf0Pst, mcepPst, strPst, magPst;
@@ -35,9 +33,7 @@ public class HTSVocoderTest extends HTSVocoder {
         String lf0File, mcepFile, strFile, magFile, outFile, residualFile;
         String voiceName, voiceConfig, outDir, voiceExample, hmmTrainDir;
 
-        String BP = "//";
-        outDir = "//tmp/";
-        outFile = outDir + "tmp.wav";
+        outFile = "/Users/posttool/Documents/tmp.wav";
 
         // Voice
         /*
@@ -46,22 +42,48 @@ public class HTSVocoderTest extends HTSVocoder {
          * "/HMM-voices/HTS-demo_CMU-ARCTIC-SLT/"; // The directory where the
          * voice was trained
          */
-        voiceName = "hsmm-ot";
-        voiceConfig = "tr-hsmm-ot.config";
-        voiceExample = "ot0010";
-        hmmTrainDir = "/HMM-voices/turkish/"; // The
-                                              // directory
-                                              // where the
-                                              // voice was
-                                              // trained
+        
+//        Properties p = new Properties();
+//        p.setProperty("base", "/Users/posttool/Documents/github/voice-enst-catherine-hsmm/src/main/resources/marytts/voice/EnstCatherineHsmm/");
+//        p.setProperty("gender", "female");
+//        p.setProperty("rate", "16000");
+//        p.setProperty("alpha", "0.42");
+//        p.setProperty("logGain", "false");
+//        p.setProperty("useGV", "true");
+//        p.setProperty("maxMgcGvIter", "200");
+//        p.setProperty("maxLf0GvIter", "200");
+//        p.setProperty("featuresFile", "utt_2513.pfeats");
 
-        htsData.initHMMData(voiceName, BP, voiceConfig);
+        Properties p = new Properties();
+        p.setProperty("base", "/Users/posttool/Documents/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
+        p.setProperty("gender", "female");
+        p.setProperty("rate", "16000");
+        p.setProperty("alpha", "0.45");
+        p.setProperty("beta", "0.3");
+        p.setProperty("logGain", "false");
+        p.setProperty("useGV", "true");
+        p.setProperty("featuresFile", "cmu_us_arctic_slt_b0487.pfeats");
+
+
+//        # acoustic models to use (HMM models or carts from other voices can be specified)
+//        acousticModels = duration F0
+//
+//        duration.model = hmm
+//        duration.attribute = d
+//
+//        F0.model = hmm
+//        F0.attribute = f0
+
+        htsData.initHMMData(p);
         htsData.setUseMixExc(true);
-        htsData.setUseFourierMag(true); /*
-                                         * use Fourier magnitudes for pulse
-                                         * generation
-                                         */
+        /* use Fourier magnitudes for pulse generation */
+        htsData.setUseFourierMag(false);
 
+        hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/hts/";
+//        voiceName = "hsmm-ot";
+//        voiceConfig = "tr-hsmm-ot.config";
+        voiceExample = "slis0208";// sstr0007 sdsg0596 slis0208 snum1142
+                                  // sbas0150
         /* parameters extracted from real data with SPTK and snack */
         lf0File = hmmTrainDir + "data/lf0/" + voiceExample + ".lf0";
         mcepFile = hmmTrainDir + "data/mgc/" + voiceExample + ".mgc";
@@ -140,15 +162,15 @@ public class HTSVocoderTest extends HTSVocoder {
         strData.close();
 
         /* load mag data */
-        magData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(magFile)));
-        for (i = 0; i < totalFrame; i++) {
-            for (j = 0; j < magPst.getOrder(); j++)
-                magPst.setPar(i, j, magData.readFloat());
-            // System.out.println("i:" + i + "  f0=" + Math.exp(lf0Pst.getPar(i,
-            // 0)) + "  mag(1)=" + magPst.getPar(i, 0) +
-            // "  str(1)=" + strPst.getPar(i, 0) );
-        }
-        magData.close();
+//        magData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(magFile)));
+//        for (i = 0; i < totalFrame; i++) {
+//            for (j = 0; j < magPst.getOrder(); j++)
+//                magPst.setPar(i, j, magData.readFloat());
+//            // System.out.println("i:" + i + "  f0=" + Math.exp(lf0Pst.getPar(i,
+//            // 0)) + "  mag(1)=" + magPst.getPar(i, 0) +
+//            // "  str(1)=" + strPst.getPar(i, 0) );
+//        }
+//        magData.close();
 
         AudioFormat af = getHTSAudioFormat(htsData);
         double[] audio_double = null;
@@ -165,7 +187,7 @@ public class HTSVocoderTest extends HTSVocoder {
         System.out.println("length in samples=" + lengthInSamples);
 
         /*
-         * Normalise the signal before return, this will normalise between 1 and
+         * Normalize the signal before return, this will normalize between 1 and
          * -1
          */
         double MaxSample = MathUtils.getAbsMax(audio_double);
@@ -383,22 +405,22 @@ public class HTSVocoderTest extends HTSVocoder {
         boolean play = Boolean.parseBoolean(args[ind++]);
 
         boolean trans = true;
-        if (args[ind].contentEquals("loud")) {
-            f0Trans = f0LoudFemale;
-            strTrans = strLoudFemale;
-            magTrans = magLoudFemale;
-            mcepTrans = mcepLoudFemale;
-            System.out.println("Generating loud voice");
-        } else if (args[ind].contentEquals("soft")) {
-            f0Trans = f0SoftFemale;
-            strTrans = strSoftFemale;
-            magTrans = magSoftFemale;
-            mcepTrans = mcepSoftFemale;
-            System.out.println("Generating soft voice");
-        } else {
-            trans = false;
-            System.out.println("Generating modal voice");
-        }
+        // if (args[ind].contentEquals("loud")) {
+         f0Trans = f0LoudFemale;
+         strTrans = strLoudFemale;
+         magTrans = magLoudFemale;
+         mcepTrans = mcepLoudFemale;
+         System.out.println("Generating loud voice");
+        // } else if (args[ind].contentEquals("soft")) {
+        // f0Trans = f0SoftFemale;
+        // strTrans = strSoftFemale;
+        // magTrans = magSoftFemale;
+        // mcepTrans = mcepSoftFemale;
+        // System.out.println("Generating soft voice");
+        // } else {
+//        trans = false;
+//        System.out.println("Generating modal voice");
+        // }
 
         // Change these for voice effects:
         // [min][max]
@@ -575,44 +597,17 @@ public class HTSVocoderTest extends HTSVocoder {
 
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException, Exception {
-        /* configure log info */
+    public static void main0(String[] args) throws IOException, InterruptedException, Exception {
 
-        // copy synthesis: requires a hmm voice
-        // main1(args);
+        // sequ0202 sstr0007 sdsg0596 slis0208 snum1142 sbas0150
 
-        // copy synthesis: requires parameters, see description
-        // example of parameters:
-        /*
-         * 0 0.45 0 16000 80 /HMM-voices/roger/hts/data/mgc/roger_5739.mgc 75
-         * /HMM-voices/roger/hts/data/lf0/roger_5739.lf0 3
-         * /HMM-voices/roger/vocoder_out.wav
-         * /HMM-voices/roger/hts/data/str/roger_5739.str 15
-         * /HMM-voices/roger/hts/data/filters/ mix_excitation_filters.txt 5 48
-         * /HMM-voices/roger/hts/data/mag/roger_5739.mag 30
-         * 
-         * example input parameters without mixed excitation: 0 0.45 0 16000 80
-         * /HMM-voices/roger/hts/data/mgc/roger_5739.mgc 75
-         * /HMM-voices/roger/hts/data/lf0/roger_5739.lf0 3
-         * /HMM-voices/roger/vocoder_out1.wav
-         */
-
-        /*
-         * String topic = "pru013"; String path =
-         * "/HMM-voices/prudence/hts/data/"; // with mixed excitation String
-         * args1[] = {"0", "0.45", "0", "16000", "80", path + "mgc/" + topic +
-         * ".mgc", "75", path + "lf0/" + topic + ".lf0", "3", path + "vocoder/"
-         * + topic + ".wav", path + "str/" + topic + ".str", "15", path +
-         * "filters/mix_excitation_filters.txt", "5", "48", path + "mag/" +
-         * topic + ".mag", "30", "true"};
-         * 
-         * // without mixed excitation String args2[] = {"0", "0.45", "0",
-         * "16000", "80", path + "mgc/" + topic + ".mgc", "75", path + "lf0/" +
-         * topic + ".lf0", "3", path + "/" + topic + ".wav", "true"};
-         * 
-         * HTSVocoder vocoder = new HTSVocoder();
-         * vocoder.htsMLSAVocoderCommand(args2);
-         */
+        String path = "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/hts/data/";
+        String topic = "sbas0150";
+        String args1[] = { "0", "0.42", "0.02", "0.15", "16000", "80", path + "mgc/" + topic + ".mgc", "75",
+                path + "lf0/" + topic + ".lf0", "3", path + "vocoder/" + topic + ".wav",
+                path + "str/" + topic + ".str", "15", path + "filters/mix_excitation_5filters_99taps_16Kz.txt", "5",
+                "true" };
+        htsMLSAVocoderCommand(args1);
 
         /*
          * String path = "/HMM-voices/BITS/bits1/hts/data/"; String args3[] =
@@ -656,23 +651,13 @@ public class HTSVocoderTest extends HTSVocoder {
 
     public static void vocoderList(String[] args) throws IOException, InterruptedException, Exception {
 
-        // String path =
-        // "/HMM-voices/SEMAINE/prudence/hts/data/";
-        // String path =
-        // "/HMM-voices/arctic_test/hts/data/";
-        // String path =
-        // "/HMM-voices/SEMAINE/spike/hts/data/";
-        // String path =
-        // "/HMM-voices/arctic_slt/hts/data/";
-        // String path =
-        // "/HMM-voices/BITS/bits1/hts/data/";
-        String path = "/quality_parameters/necadbs/hts/data/";
+        String path = "/ccc/hts/data/";
 
         File outDir = new File(path + "vocoder");
         if (!outDir.exists())
             outDir.mkdir();
         File directory = new File(path + "raw");
-        String files[] = FileUtils.listBasenames(directory, ".raw");
+        String files[] = listBasenames(directory, ".raw");
 
         // the output will be in path/vocoder directory, it has to be created
         // beforehand
@@ -695,19 +680,10 @@ public class HTSVocoderTest extends HTSVocoder {
              */
 
             // without Fourier magnitudes
+            // the last true/false is for playing or not the generated file
             String args1[] = { "0", "0.42", "0.05", "0.15", "16000", "80", path + "mgc/" + files[i] + ".mgc", "75",
                     path + "lf0/" + files[i] + ".lf0", "3", path + "vocoder/" + files[i] + ".wav",
-                    path + "str/" + files[i] + ".str", "15", path + "filters/mix_excitation_filters.txt", "5", "true" }; // the
-                                                                                                                         // last
-                                                                                                                         // true/false
-                                                                                                                         // is
-                                                                                                                         // for
-                                                                                                                         // playing
-                                                                                                                         // or
-                                                                                                                         // not
-                                                                                                                         // the
-                                                                                                                         // generated
-                                                                                                                         // file
+                    path + "str/" + files[i] + ".str", "15", path + "filters/mix_excitation_filters.txt", "5", "true" };
 
             // without Mixed excitation and Fourier magnitudes
             /*
@@ -720,6 +696,24 @@ public class HTSVocoderTest extends HTSVocoder {
 
         }
 
+    }
+
+    public static String[] listBasenames(File directory, String suffix) {
+        final String theSuffix = suffix;
+        String[] filenames = directory.list(new FilenameFilter() {
+
+            public boolean accept(File dir, String name) {
+                return name.endsWith(theSuffix);
+            }
+        });
+
+        /* Sort the file names alphabetically */
+        Arrays.sort(filenames);
+
+        for (int i = 0; i < filenames.length; i++) {
+            filenames[i] = filenames[i].substring(0, filenames[i].length() - suffix.length());
+        }
+        return filenames;
     }
 
 }

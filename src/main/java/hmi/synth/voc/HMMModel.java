@@ -4,76 +4,79 @@ import hmi.synth.voc.HMMData.FeatureType;
 
 import java.util.Arrays;
 
+public class HMMModel {
 
-public class HTSModel {
-
-    // private String name; /* the name of this HMM, it includes
-    // ph(-2)^ph(-1)-ph(0)+ph(1)=ph(2) + context features */
-    private String phoneName; /*
-                               * the name of the phone corresponding to this
-                               * model, ph(0) in name
-                               */
+    /* the name of the phone corresponding to this model ph(0) */
+    private String phoneName;
 
     private double durError;
-    private int dur[]; /* duration for each state of this HMM */
-    private int totalDur; /* total duration of this HMM in frames */
-    private int totalDurMillisec; /*
-                                   * total duration of this model in
-                                   * milliseconds
-                                   */
-    private double lf0Mean[][]; /*
-                                 * mean vector of log f0 pdfs for each state of
-                                 * this HMM
-                                 */
-    private double lf0Variance[][]; /*
-                                     * variance (diag) elements of log f0 for
-                                     * each state of this HMM
-                                     */
-    private double mcepMean[][]; /*
-                                  * mean vector of mel-cepstrum pdfs for each
-                                  * state of this HMM
-                                  */
-    private double mcepVariance[][]; /*
-                                      * variance (diag) elements of mel-cepstrum
-                                      * for each state of this HMM
-                                      */
+    /* duration for each state */
+    private int dur[];
 
-    private double strMean[][]; /*
-                                 * mean vector of strengths pdfs for each state
-                                 * of this HMM
-                                 */
-    private double strVariance[][]; /*
-                                     * variance (diag) elements of strengths for
-                                     * each state of this HMM
-                                     */
-    private double magMean[][]; /*
-                                 * mean vector of fourier magnitude pdfs for
-                                 * each state of this HMM
-                                 */
-    private double magVariance[][]; /*
-                                     * variance (diag) elements of fourier
-                                     * magnitudes for each state of this HMM
-                                     */
+    /* total duration in frames */
+    private int totalDur;
 
-    private boolean voiced[]; /*
-                               * voiced/unvoiced decision for each state of this
-                               * HMM
-                               */
+    /* total duration of this model in milliseconds */
+    private int totalDurMillisec;
 
-    private String xmlDur; /*
-                                * duration in x input acoustparams, format
-                                * d="val" in millisec.
-                                */
-    private String xmlF0; /*
-                               * F0 values in x input acoustparams, format
-                               * f0="(1,val1)...(100,val2)" (%pos in total
-                               * duration, f0 Hz)
-                               */
+    /* mean vector of log f0 pdfs for each state */
+    private double lf0Mean[][];
 
-    private boolean gvSwitch; /*
-                               * GV switch, applies to all the states of this
-                               * model
-                               */
+    /* variance (diag) elements of log f0 for each state */
+    private double lf0Variance[][];
+    /* mean vector of mel-cepstrum pdfs for each state */
+    private double mcepMean[][];
+
+    /* variance (diag) elements of mel-cepstrum for each state */
+    private double mcepVariance[][];
+
+    /* mean vector of strengths pdfs for each state */
+    private double strMean[][];
+
+    /* variance (diag) elements of strengths for each state */
+    private double strVariance[][];
+
+    /* mean vector of fourier magnitude pdfs for each state */
+    private double magMean[][];
+
+    /* variance (diag) elements of fourier magnitudes for each state */
+    private double magVariance[][];
+
+    /* voiced/unvoiced decision for each state */
+    private boolean voiced[];
+
+    /* duration in x input acoustparams, format d="val" in millisec. */
+    private String xmlDur;
+
+    /*
+     * F0 values in x input acoustparams, format f0="(1,val1)...(100,val2)"
+     * (%pos in total duration, f0 Hz)
+     */
+    private String xmlF0;
+
+    private boolean gvSwitch;
+
+    public HMMModel(int nstate) {
+        totalDur = 0;
+        dur = new int[nstate];
+        lf0Mean = new double[nstate][];
+        lf0Variance = new double[nstate][];
+        voiced = new boolean[nstate];
+
+        mcepMean = new double[nstate][];
+        mcepVariance = new double[nstate][];
+
+        strMean = new double[nstate][];
+        strVariance = new double[nstate][];
+
+        magMean = new double[nstate][];
+        magVariance = new double[nstate][];
+
+        xmlDur = null;
+        xmlF0 = null;
+
+        gvSwitch = true;
+    }
 
     public void setPhoneName(String var) {
         phoneName = var;
@@ -135,7 +138,6 @@ public class HTSModel {
         return lf0Variance[i][j];
     }
 
-    // set the vector per state
     public void setLf0Mean(int i, double val[]) {
         lf0Mean[i] = val;
     }
@@ -160,7 +162,6 @@ public class HTSModel {
         return mcepVariance[i][j];
     }
 
-    // set the vector per state
     public void setMcepMean(int i, double val[]) {
         mcepMean[i] = val;
     }
@@ -199,23 +200,14 @@ public class HTSModel {
         }
     }
 
-    /**
-     * Print mean and variance of each state
-     */
     public void printMcepMean() {
         printVectors(mcepMean, mcepVariance);
     }
 
-    /**
-     * Print mean and variance of each state
-     */
     public void printLf0Mean() {
         printVectors(lf0Mean, lf0Variance);
     }
 
-    /**
-     * Print mean and variance vectors
-     */
     public void printVectors(double m[][], double v[][]) {
         for (int i = 0; i < v.length; i++) {
             System.out.print("  mean[" + i + "]: ");
@@ -235,16 +227,6 @@ public class HTSModel {
         System.out.println("  totalDur=" + totalDur + "  totalDurMillisec=" + totalDurMillisec);
     }
 
-    /**
-     * NOT USED -- remove? public String getShortPhoneName(){ String aux; int
-     * l,r; l = name.indexOf("-"); r = name.indexOf("+"); aux =
-     * name.substring(l+1, r);
-     * 
-     * return aux;
-     * 
-     * }
-     */
-
     public void setStrMean(int i, int j, double val) {
         strMean[i][j] = val;
     }
@@ -261,7 +243,6 @@ public class HTSModel {
         return strVariance[i][j];
     }
 
-    // set the vector per state
     public void setStrMean(int i, double val[]) {
         strMean[i] = val;
     }
@@ -286,7 +267,6 @@ public class HTSModel {
         return magVariance[i][j];
     }
 
-    // set the vector per state
     public void setMagMean(int i, double val[]) {
         magMean[i] = val;
     }
@@ -299,7 +279,6 @@ public class HTSModel {
         voiced[i] = val;
     }
 
-    /** whether state i is voiced or not */
     public boolean getVoiced(int i) {
         return voiced[i];
     }
@@ -337,33 +316,9 @@ public class HTSModel {
         return gvSwitch;
     }
 
-    public HTSModel(int nstate) {
-        int i;
-        totalDur = 0;
-        dur = new int[nstate];
-        lf0Mean = new double[nstate][];
-        lf0Variance = new double[nstate][];
-        voiced = new boolean[nstate];
-
-        mcepMean = new double[nstate][];
-        mcepVariance = new double[nstate][];
-
-        strMean = new double[nstate][];
-        strVariance = new double[nstate][];
-
-        magMean = new double[nstate][];
-        magVariance = new double[nstate][];
-
-        xmlDur = null;
-        xmlF0 = null;
-
-        gvSwitch = true;
-
-    } /* method Model, initialise a Model object */
-
     @Override
     public String toString() {
         return getPhoneName();
     }
 
-} /* class Model */
+}

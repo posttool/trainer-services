@@ -1,19 +1,16 @@
 package hmi.synth.voc;
 
 import hmi.ml.feature.FeatureDefinition;
+import hmi.ml.feature.FeatureIO;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
@@ -21,7 +18,6 @@ import java.util.Vector;
 
 public class HMMData {
 
-    /** Number of model and identificator for the models */
     public static final int HTS_NUMMTYPE = 5;
 
     public static enum FeatureType {
@@ -512,71 +508,78 @@ public class HMMData {
         gv.loadGVModelSet(this, feaDef);
     }
 
-    public void initHMMData(PropertiesAccessor p, String voiceName) throws IOException, Exception {
+    public InputStream getStream(String path, String file) throws FileNotFoundException {
+        InputStream is = new FileInputStream(path + file);
+        return is;
+    }
+
+    public void initHMMData(Properties p) throws IOException, Exception {
         System.out.println("Reached new initHMMData");
-        String prefix = "voice." + voiceName;
-        rate = p.getInteger(prefix + ".samplingRate", rate);
-        fperiod = p.getInteger(prefix + ".framePeriod", fperiod);
-        alpha = p.getDouble(prefix + ".alpha", alpha);
-        stage = p.getInteger(prefix + ".gamma", stage);
-        useLogGain = p.getBoolean(prefix + ".logGain", useLogGain);
-        beta = p.getDouble(prefix + ".beta", beta);
+        String bp = p.getProperty("base");
+        this.rate = Integer.parseInt(p.getProperty("rate", "16000"));
+        this.fperiod = Integer.parseInt(p.getProperty("fperiod", "80"));
+        this.alpha = Double.parseDouble(p.getProperty("alpha", "0.55"));
+        this.stage = Integer.parseInt(p.getProperty("stage", "0"));
+        this.useLogGain = Boolean.parseBoolean(p.getProperty("useLogGain", "false"));
+        this.beta = Double.parseDouble(p.getProperty("beta", "0.0"));
 
-        treeDurStream = p.getStream(prefix + ".Ftd"); /* Tree DUR */
-        treeLf0Stream = p.getStream(prefix + ".Ftf"); /* Tree LF0 */
-        treeMgcStream = p.getStream(prefix + ".Ftm"); /* Tree MCP */
-        treeStrStream = p.getStream(prefix + ".Fts"); /* Tree STR */
-        treeMagStream = p.getStream(prefix + ".Fta"); /* Tree MAG */
+        treeDurStream = getStream(bp, "tree-dur.inf"); /* Tree DUR Ftd? */
+        treeLf0Stream = getStream(bp, "tree-lf0.inf"); /* Tree LF0 */
+        treeMgcStream = getStream(bp, "tree-mgc.inf"); /* Tree MCP */
+        treeStrStream = getStream(bp, "tree-str.inf"); /* Tree STR Fts */
+        // treeMagStream = p.getStream(prefix + ".Fta"); /* Tree MAG */?
 
-        pdfDurStream = p.getStream(prefix + ".Fmd"); /* Model DUR */
-        pdfLf0Stream = p.getStream(prefix + ".Fmf"); /* Model LF0 */
-        pdfMgcStream = p.getStream(prefix + ".Fmm"); /* Model MCP */
-        pdfStrStream = p.getStream(prefix + ".Fms"); /* Model STR */
-        pdfMagStream = p.getStream(prefix + ".Fma"); /* Model MAG */
-        /* use AcousticModeller , so prosody modification is enabled */
-        useAcousticModels = p.getBoolean(prefix + ".useAcousticModels");
+        pdfDurStream = getStream(bp, "dur.pdf"); /* Model DUR Fmd */
+        pdfLf0Stream = getStream(bp, "lf0.pdf"); /* Model LF0 */
+        pdfMgcStream = getStream(bp, "mgc.pdf"); /* Model MCP */
+        pdfStrStream = getStream(bp, "str.pdf"); /* Model STR */
+        // pdfMagStream = getStream(bp, "?????.Fma"); /* Model MAG */
+        /* use AcousticModeller, so prosody modification is enabled */
+        this.useAcousticModels = Boolean.parseBoolean(p.getProperty("useAcousticModels", "false"));
         /* Use Mixed excitation */
-        useMixExc = p.getBoolean(prefix + ".useMixExc");
+        this.useMixExc = Boolean.parseBoolean(p.getProperty("useMixExc", "false"));
         /* Use Fourier magnitudes for pulse generation */
-        useFourierMag = p.getBoolean(prefix + ".useFourierMag");
+        this.useFourierMag = Boolean.parseBoolean(p.getProperty("useFourierMag", "false"));
         /* Use Global Variance in parameter generation */
-        useGV = p.getBoolean(prefix + ".useGV");
+        this.useGV = Boolean.parseBoolean(p.getProperty("useGV", "false"));
         if (useGV) {
-            useContextDependentGV = p.getBoolean(prefix + ".useContextDependentGV"); 
-            String gvMethod = p.getProperty(prefix + ".gvMethod"); 
+            useContextDependentGV = Boolean.parseBoolean(p.getProperty("useContextDependentGV", "false"));
+            String gvMethod = p.getProperty("gvMethod");
             if (gvMethod != null)
                 setGvMethod(gvMethod);
 
             // Number of iteration for GV
-            maxMgcGvIter = p.getInteger(prefix + ".maxMgcGvIter", maxMgcGvIter); 
-            maxLf0GvIter = p.getInteger(prefix + ".maxLf0GvIter", maxLf0GvIter); 
-            maxStrGvIter = p.getInteger(prefix + ".maxStrGvIter", maxStrGvIter); 
+            maxMgcGvIter = Integer.parseInt(p.getProperty("maxMgcGvIter", "100"));
+            maxLf0GvIter = Integer.parseInt(p.getProperty("maxLf0GvIter", "100"));
+            maxStrGvIter = Integer.parseInt(p.getProperty("maxStrGvIter", "100"));
 
             // weights for GV
-            gvWeightMgc = p.getDouble(prefix + ".gvWeightMgc", gvWeightMgc); 
-            gvWeightLf0 = p.getDouble(prefix + ".gvWeightLf0", gvWeightLf0); 
-            gvWeightStr = p.getDouble(prefix + ".gvWeightStr", gvWeightStr);
+            gvWeightMgc = Double.parseDouble(p.getProperty("gvWeightMgc", "1.0"));
+            gvWeightLf0 = Double.parseDouble(p.getProperty("gvWeightLf0", "1.0"));
+            gvWeightStr = Double.parseDouble(p.getProperty("gvWeightStr", "1.0"));
 
             // GV pdf files: mean and variance (diagonal covariance)
-            pdfLf0GVStream = p.getStream(prefix + ".Fgvf"); /* GV Model LF0 */
-            pdfMgcGVStream = p.getStream(prefix + ".Fgvm"); /* GV Model MCP */
-            pdfStrGVStream = p.getStream(prefix + ".Fgvs"); /* GV Model STR */
-            pdfMagGVStream = p.getStream(prefix + ".Fgva"); /* GV Model MAG */
+            pdfLf0GVStream = getStream(bp, "gv-lf0.pdf"); /* GV Model LF0 */
+            pdfMgcGVStream = getStream(bp, "gv-mgc.pdf"); /* GV Model MCP */
+            pdfStrGVStream = getStream(bp, "gv-str.pdf"); /* GV Model STR */
+            // pdfMagGVStream = p.getStream(prefix + ".Fgva"); /* GV Model MAG
+            // */
         }
 
         /* targetfeatures file, for testing */
         /* Example context feature file in TARGETFEATURES format */
-        InputStream featureStream = p.getStream(prefix + ".FeaFile");
-        feaDef = FeatureUtils.readFeatureDefinition(featureStream);
+        String ff = p.getProperty("featuresFile", "b0487.pfeats");
+        InputStream featureStream = getStream(bp, ff);
+        feaDef = FeatureIO.read(featureStream, false);
 
         /* trickyPhones file if any */
-        trickyPhones = new PhoneTranslator(p.getStream(prefix + ".trickyPhonesFile"));
+        trickyPhones = new PhoneTranslator(getStream(bp, p.getProperty("trickyPhonesFile", "trickyPhones.txt")));
 
         /* Configuration for mixed excitation */
-        InputStream mixFiltersStream = p.getStream(prefix + ".Fif"); 
+        InputStream mixFiltersStream = getStream(bp, p.getProperty("excitationFilters", "mix_excitation_filters.txt"));
         if (mixFiltersStream != null) {
-            numFilters = p.getInteger(prefix + ".in"); /* Number of filters */
-            System.out.println("Loading Mixed Excitation Filters File:");
+            numFilters = Integer.parseInt(p.getProperty("numExcitationFilters", "5"));
+            System.out.println("Loading Mixed Excitation Filters File: "+numFilters);
             readMixedExcitationFilters(mixFiltersStream);
         }
 
@@ -591,79 +594,72 @@ public class HMMData {
         System.out.println("InitHMMData complete");
     }
 
-    /**
-     * Reads from configuration file all the data files in this class this
-     * method is used when running HTSengine stand alone.
-     */
-    public void initHMMData(String voiceName, String bp, String configFile) throws Exception {
+    // public void initHMMData(String voiceName, String bp, String configFile)
+    // throws Exception {
+    //
+    // Properties props = new Properties();
+    //
+    // FileInputStream fis = new FileInputStream(bp + configFile);
+    // props.load(fis);
+    // fis.close();
+    // Map<String, String> pr = new HashMap<String, String>();
+    // pr.put("jar:", bp);
+    // initHMMData(new PropertiesAccessor(props, false, pr), voiceName);
+    // }
+    //
+    // public void initHMMData(String voiceName) throws IOException, Exception {
+    // initHMMData(Config.getVoiceConfig(voiceName).getPropertiesAccessor(true),
+    // voiceName);
+    // }
+    //
+    //
+    // public void initHMMDataForHMMModel(String voiceName) throws IOException,
+    // Exception {
+    // String prefix = "voice." + voiceName;
+    // treeDurStream = p.getStream(prefix + ".Ftd");
+    // pdfDurStream = p.getStream(prefix + ".Fmd");
+    //
+    // treeLf0Stream = p.getStream(prefix + ".Ftf");
+    // pdfLf0Stream = p.getStream(prefix + ".Fmf");
+    // useGV = p.getBoolean(prefix + ".useGV");
+    // if (useGV) {
+    // useContextDependentGV = p.getBoolean(prefix + ".useContextDependentGV",
+    // useContextDependentGV);
+    // if (p.getProperty(prefix + ".gvMethod") != null) {
+    // String sval = p.getProperty(prefix + ".gvMethod");
+    // setGvMethod(sval);
+    // }
+    // maxLf0GvIter = p.getInteger(prefix + ".maxLf0GvIter", maxLf0GvIter);
+    // gvWeightLf0 = p.getDouble(prefix + ".gvWeightLf0", gvWeightLf0);
+    //
+    // pdfLf0GVStream = p.getStream(prefix + ".Fgvf");
+    // maxLf0GvIter = p.getInteger(prefix + ".maxLf0GvIter", maxLf0GvIter);
+    //
+    // }
+    //
+    // InputStream feaStream = p.getStream(prefix + ".FeaFile");
+    // feaDef = FeatureIO.read(feaStream, false);
+    //
+    // /*
+    // * trickyPhones file, if any. If aliases for tricky phones were used
+    // * during the training of HMMs then these aliases are in this file, if
+    // * no aliases were used then the string is empty. This file will be used
+    // * during the loading of HMM trees, so aliases of tricky phone are
+    // * aplied back.
+    // */
+    // InputStream trickyPhonesStream = p.getStream(prefix +
+    // ".trickyPhonesFile");
+    // trickyPhones = new PhoneTranslator(trickyPhonesStream);
+    //
+    // /* Load TreeSet ts and ModelSet ms for current voice */
+    // System.out.println("Loading Tree Set in CARTs:");
+    // cart.loadTreeSet(this, feaDef, trickyPhones);
+    //
+    // System.out.println("Loading GV Model Set:");
+    // gv.loadGVModelSet(this, feaDef);
+    //
+    // }
 
-        Properties props = new Properties();
-
-        FileInputStream fis = new FileInputStream(bp + configFile);
-        props.load(fis);
-        fis.close();
-        Map<String, String> pr = new HashMap<String, String>();
-        pr.put("jar:", bp);
-        initHMMData(new PropertiesAccessor(props, false, pr), voiceName);
-    }
-
-    public void initHMMData(String voiceName) throws IOException, Exception {
-        initHMMData(Config.getVoiceConfig(voiceName).getPropertiesAccessor(true), voiceName);
-    }
-
-    /**
-     * Reads from configuration file tree and pdf data for duration and f0 this
-     * method is used by HMMModel
-     */
-    public void initHMMDataForHMMModel(String voiceName) throws IOException, Exception {
-        PropertiesAccessor p = Config.getVoiceConfig(voiceName).getPropertiesAccessor(true);
-        String prefix = "voice." + voiceName;
-        treeDurStream = p.getStream(prefix + ".Ftd");
-        pdfDurStream = p.getStream(prefix + ".Fmd");
-
-        treeLf0Stream = p.getStream(prefix + ".Ftf");
-        pdfLf0Stream = p.getStream(prefix + ".Fmf");
-        useGV = p.getBoolean(prefix + ".useGV");
-        if (useGV) {
-            useContextDependentGV = p.getBoolean(prefix + ".useContextDependentGV", useContextDependentGV);
-            if (p.getProperty(prefix + ".gvMethod") != null) {
-                String sval = p.getProperty(prefix + ".gvMethod");
-                setGvMethod(sval);
-            }
-            maxLf0GvIter = p.getInteger(prefix + ".maxLf0GvIter", maxLf0GvIter);
-            gvWeightLf0 = p.getDouble(prefix + ".gvWeightLf0", gvWeightLf0);
-
-            pdfLf0GVStream = p.getStream(prefix + ".Fgvf");
-            maxLf0GvIter = p.getInteger(prefix + ".maxLf0GvIter", maxLf0GvIter);
-
-        }
-
-        InputStream feaStream = p.getStream(prefix + ".FeaFile");
-        feaDef = FeatureUtils.readFeatureDefinition(feaStream);
-
-        /*
-         * trickyPhones file, if any. If aliases for tricky phones were used
-         * during the training of HMMs then these aliases are in this file, if
-         * no aliases were used then the string is empty. This file will be used
-         * during the loading of HMM trees, so aliases of tricky phone are
-         * aplied back.
-         */
-        InputStream trickyPhonesStream = p.getStream(prefix + ".trickyPhonesFile");
-        trickyPhones = new PhoneTranslator(trickyPhonesStream);
-
-        /* Load TreeSet ts and ModelSet ms for current voice */
-        System.out.println("Loading Tree Set in CARTs:");
-        cart.loadTreeSet(this, feaDef, trickyPhones);
-
-        System.out.println("Loading GV Model Set:");
-        gv.loadGVModelSet(this, feaDef);
-
-    }
-
-    /**
-     * Initialisation for mixed excitation : it loads the filter taps, they are
-     * read from MixFilterFile specified in the configuration file.
-     */
     public void readMixedExcitationFilters(InputStream mixFiltersStream) throws IOException {
         String line;
         // first read the taps and then divide the total amount equally among

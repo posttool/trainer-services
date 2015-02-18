@@ -4,6 +4,7 @@ import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
+import hmi.sig.AudioPlayer;
 import hmi.synth.target.Target;
 
 import java.io.BufferedReader;
@@ -160,7 +161,7 @@ public class HTSEngine {
         String line, str[];
         float totalDur = 0f; // total duration, in seconds
         double f0[];
-        HTSModel m;
+        HMMModel m;
 
         int numModel = 0;
 
@@ -202,7 +203,7 @@ public class HTSEngine {
                         e.setAttribute("duration", String.valueOf(currentDur));
                     }
                 }
-            } // else ignore whatever other label...
+            }
         }
     }
 
@@ -322,7 +323,7 @@ public class HTSEngine {
 
             FeatureVector fv = target.getFeatureVector(); // feaDef.toFeatureVector(0,
                                                           // nextLine);
-            HTSModel m = new HTSModel(cart.getNumStates());
+            HMMModel m = new HMMModel(cart.getNumStates());
             um.addUttModel(m);
             m.setPhoneName(fv.getFeatureAsString(featureIndex, feaDef));
 
@@ -498,7 +499,7 @@ public class HTSEngine {
                         + ") is greater than the number of feature vectors (" + um.getNumUttModel() + ").");
 
         for (i = 0; i < um.getNumUttModel(); i++) {
-            HTSModel m = um.getUttModel(i);
+            HMMModel m = um.getUttModel(i);
             for (int mstate = 0; mstate < cart.getNumStates(); mstate++)
                 if (m.getVoiced(mstate))
                     for (int frame = 0; frame < m.getDur(mstate); frame++)
@@ -579,9 +580,9 @@ public class HTSEngine {
 
         try {
             /*
-             * Process context features file and creates UttModel um, a
-             * linked list of all the models in the utterance. For each model,
-             * it searches in each tree, dur, cmp, etc, the pdf index that
+             * Process context features file and creates UttModel um, a linked
+             * list of all the models in the utterance. For each model, it
+             * searches in each tree, dur, cmp, etc, the pdf index that
              * corresponds to a triphone context feature and with that index
              * retrieves from the ModelSet the mean and variance for each state
              * of the HMM.

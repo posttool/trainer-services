@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UTFDataFormatException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -12,6 +14,18 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FeatureIO {
+    
+    public static FeatureDefinition read(InputStream stream, boolean readWeights) throws IOException {
+        FeatureDefinition fd = null;
+        BufferedReader in = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+        try {
+            fd = read(in, readWeights);
+        } finally {
+            in.close();
+        }
+        return fd;
+    }
+
     public static FeatureDefinition read(BufferedReader input, boolean readWeights) throws IOException {
         FeatureDefinition fd = new FeatureDefinition();
         // Section BYTEFEATURES
@@ -426,8 +440,7 @@ public class FeatureIO {
         }
     }
 
-    public static void write(FeatureDefinition fd, DataOutput out, List<Integer> featuresToDrop)
-            throws IOException {
+    public static void write(FeatureDefinition fd, DataOutput out, List<Integer> featuresToDrop) throws IOException {
         // how many features of each type are to be dropped
         int droppedByteFeatures = 0;
         int droppedShortFeatures = 0;

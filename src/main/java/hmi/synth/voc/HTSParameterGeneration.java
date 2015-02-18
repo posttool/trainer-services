@@ -72,20 +72,9 @@ public class HTSParameterGeneration {
 
     public void setVoicedArray(boolean[] var) {
         voiced = var;
-    } // only used in HTSEngineTest
+    } // only used in EngineTest
 
-    /* Inverse of a given double */
-    /*
-     * We actually need the inverse of the matrix of covariance, but since this
-     * matrix
-     */
-    /*
-     * is a diagonal matrix, then we just need to calculate the inverse of each
-     * of the
-     */
-    /* numbers in the diagonal. */
     static public double finv(double x) {
-
         if (x >= INFTY2)
             return 0.0;
         if (x <= -INFTY2)
@@ -96,32 +85,22 @@ public class HTSParameterGeneration {
             return -INFTY;
 
         return 1.0 / x;
-
     }
 
-    /**
-     * HTS maximum likelihood parameter generation
-     * 
-     * @param um
-     *            : utterance model sequence after processing context features
-     * @param ms
-     *            : HMM pdfs model set.
-     */
     public void htsMaximumLikelihoodParameterGeneration(HTSUttModel um, final HMMData htsData) throws Exception {
         CartTreeSet ms = htsData.getCartTreeSet();
 
         /* Initialisation of PStream objects */
-        /* Initialise Parameter generation using UttModel um and Modelset ms */
+        /* init Parameter generation using UttModel um and Modelset ms */
         /*
-         * initialise PStream objects for all the parameters that are going to
-         * be generated:
+         * init PStream objects for all the parameters that are going to be
+         * generated:
          */
         /* mceppst, strpst, magpst, lf0pst */
         /*
-         * Here i should pass the window files to initialise the dynamic windows
-         * dw
+         * ...pass the window files to init the dynamic windows dw - for the
+         * moment the dw are all the same and hard-coded
          */
-        /* for the moment the dw are all the same and hard-coded */
         if (htsData.getPdfMgcStream() != null)
             mcepPst = new HTSPStream(ms.getMcepVsize(), um.getTotalFrame(), HMMData.FeatureType.MGC,
                     htsData.getMaxMgcGvIter());
@@ -149,7 +128,7 @@ public class HTSParameterGeneration {
         int msNumStates = ms.getNumStates();
         int totalFrames = um.getTotalFrame();
         for (int i = 0; i < um.getNumUttModel(); i++) {
-            HTSModel m = um.getUttModel(i);
+            HMMModel m = um.getUttModel(i);
             int numVoicedInModel = 0;
             for (int state = 0; state < msNumStates; state++) {
                 Arrays.fill(voiced, uttFrame, uttFrame += m.getDur(state), m.getVoiced(state));
@@ -159,10 +138,10 @@ public class HTSParameterGeneration {
             }
         }
         /*
-         * mcepframe and lf0frame are used in the original code to initialise
-         * the T field
+         * mcepframe and lf0frame are used in the original code to init the T
+         * field
          */
-        /* in each pst, but here the pst are already initialised .... */
+        /* in each pst, but here the pst are already initd .... */
         System.out.println("utteranceFrame=" + uttFrame + " lf0frame=" + lf0Frame);
         // Step 1: initialize fields in the parameter streams
         uttFrame = 0;
@@ -170,7 +149,7 @@ public class HTSParameterGeneration {
 
         /* copy pdfs */
         for (int i = 0; i < um.getNumUttModel(); i++) {
-            HTSModel m = um.getUttModel(i);
+            HMMModel m = um.getUttModel(i);
             boolean gvSwitch = m.getGvSwitch();
             for (int state = 0; state < msNumStates; state++) {
 
@@ -345,7 +324,7 @@ public class HTSParameterGeneration {
                  * ss *samplingrate+0.5??? for the HTS values ss=0.005 and
                  * sw=0.025 is not a problem though
                  */
-                PitchReaderWriter.write_pitch_file(fileName, f0s, (float) (ws), (float) (ss), fs);
+                write_pitch_file(fileName, f0s, (float) (ws), (float) (ss), fs);
 
             } else if (type == HMMData.FeatureType.MGC) {
 
@@ -378,6 +357,33 @@ public class HTSParameterGeneration {
 
         } catch (IOException e) {
             System.out.println("IO exception = " + e);
+        }
+    }
+
+    public static void write_pitch_file(String ptcFile, double[] f0s, float windowSizeInSeconds,
+            float skipSizeInSeconds, int samplingRate) throws IOException {
+        float[] f0sFloat = new float[f0s.length];
+        for (int i = 0; i < f0s.length; i++)
+            f0sFloat[i] = (float) f0s[i];
+
+        write_pitch_file(ptcFile, f0sFloat, windowSizeInSeconds, skipSizeInSeconds, samplingRate);
+    }
+
+    public static void write_pitch_file(String ptcFile, float[] f0s, float windowSizeInSeconds,
+            float skipSizeInSeconds, int samplingRate) throws IOException {
+        LEDataOutputStream lw = new LEDataOutputStream(new DataOutputStream(new FileOutputStream(ptcFile)));
+
+        if (lw != null) {
+            int winsize = (int) Math.floor(windowSizeInSeconds * samplingRate + 0.5);
+            lw.writeFloat(winsize);
+
+            int skipsize = (int) Math.floor(skipSizeInSeconds * samplingRate + 0.5);
+            lw.writeFloat(skipsize);
+            lw.writeFloat(samplingRate);
+            lw.writeFloat(f0s.length);
+            lw.writeFloat(f0s);
+
+            lw.close();
         }
     }
 
@@ -421,7 +427,7 @@ public class HTSParameterGeneration {
     private void loadXmlF0(HTSUttModel um, HMMData htsData) throws Exception {
         System.out.println("Using f0 from XML acoustparams");
         int i, n, numVoiced;
-        HTSModel m;
+        HMMModel m;
         double[] dval;
         double lastF0 = 0.0;
         numVoiced = 0;
@@ -504,7 +510,7 @@ public class HTSParameterGeneration {
                         f0Vector[n] = valF0;
                 } // while(if0.hasNext())
             } // numF0s == numVoiced
-        } 
+        }
 
         // for(i=0; i<numVoiced; i++) // then just some values will be filled,
         // so the other must be 0
@@ -548,7 +554,7 @@ public class HTSParameterGeneration {
         int t = 0;
         int vt = 0;
         for (int i = 0; i < um.getNumUttModel(); i++) {
-            HTSModel m = um.getUttModel(i);
+            HMMModel m = um.getUttModel(i);
             int numVoicedInModel = m.getNumVoiced();
             String formattedF0 = "";
             int k = 1;

@@ -100,8 +100,7 @@ public class HTSPStream {
          * and MAG
          */
         /*
-         * The initialisation of the dynamic window is done with the
-         * constructor.
+         * The init of the dynamic window is done with the constructor.
          */
         // dw = new HTSDWin();
         feaType = fea_type;
@@ -229,33 +228,28 @@ public class HTSPStream {
                                              * decomposition
                                              */
 
-            /* Global variance optimisation for MCP and LF0 */
+            /* Global variance optimization for MCP and LF0 */
             if (useGV && gvLength > 0) {
-                if (htsData.getGvMethodGradient())
-                    gvParmGenGradient(m, false); // this is the previous method
-                                                 // we have, using the
-                                                 // Gradient as in the
-                                                 // Paper of Toda et. al. IEICE
-                                                 // 2007
-                                                 // if using this method the
-                                                 // variances have to be inverse
-                                                 // (see note in GVModel
-                                                 // set: case NEWTON in gv
-                                                 // optimization)
-                                                 // this method seems to give a
-                                                 // better result
-                else
-                    gvParmGenDerivative(m, false); // this is the method in the
-                                                   // hts_engine 1.04 the
-                                                   // variances are not inverse
+                if (htsData.getGvMethodGradient()) {
+                    // this is the previous method we have, using the
+                    // Gradient as in the Paper of Toda et. al. IEICE 2007
+                    // if using this method the variances have to be inverse
+                    // (see note in GVModel set: case NEWTON in gv optimization)
+                    // this method seems to give a better result
+                    gvParmGenGradient(m, false);
+                } else {
+                    // this is the method in the hts_engine 1.04 the variances
+                    // are not inverse
+                    gvParmGenDerivative(m, false);
+                }
 
             }
         }
     } /* method mlpg */
 
-    /*----------------- HTS parameter generation fuctions  -----------------------------*/
+    /*----------------- HTS parameter generation functions  -----------------------------*/
 
-    /*------ HTS parameter generation fuctions                  */
+    /*------ HTS parameter generation functions                  */
     /* Calc_WUW_and_WUM: calculate W'U^{-1}W and W'U^{-1}M */
     /* W is size W[T][width] , width is width of dynamic window */
     /* for the Cholesky decomposition: A'Ax = A'b */
@@ -266,11 +260,11 @@ public class HTSPStream {
     /* So having A and B we can find the parameters C. */
     /* U^{-1} = inverse covariance : inseq[][] */
     private void calcWUWandWUM(int m) {
-        /* initialise */
+        /* init */
         Arrays.fill(wum, 0, nT, 0.0);
         /* for all frames: */
         for (int t = 0; t < nT; t++) {
-            /* initialise */
+            /* init */
             Arrays.fill(wuw[t], 0.0);
             /* calc WUW & WUM, U is already inverse */
             for (int i = 0; i < NUM; i++) {
@@ -281,7 +275,6 @@ public class HTSPStream {
                         double dwCoef_ij = xcoefs[1 + i * NUM - j];
                         if (dwCoef_ij != 0.0) {
                             double WU = dwCoef_ij * ivseq[t + j][iorder];
-
                             wum[t] += WU * mseq[t + j][iorder];
                             for (int k = 0; (k < WIDTH) && (t + k < nT); k++) {
                                 if (k - j <= dwWidth_iright) {
@@ -290,12 +283,12 @@ public class HTSPStream {
                                         wuw[t][k] += WU * dwCoef_ikj;
                                     }
                                 }
-                            } /* for k */
+                            } 
                         }
                     }
-                } /* for j */
-            } /* for i */
-        } /* for t */
+                } 
+            } 
+        } 
         /*
          * if(debug){ for(int t=0; t<nT; t++) {
          * System.out.format("t=%d wum=%f  wuw:", t, wum[t]); for(int k=0;

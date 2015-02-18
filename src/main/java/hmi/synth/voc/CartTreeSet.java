@@ -117,11 +117,11 @@ public class CartTreeSet {
      * @return duration
      * @throws Exception
      */
-    public double searchDurInCartTree(HTSModel m, FeatureVector fv, HMMData htsData, double diffdur) {
+    public double searchDurInCartTree(HMMModel m, FeatureVector fv, HMMData htsData, double diffdur) {
         return searchDurInCartTree(m, fv, htsData, false, false, diffdur);
     }
 
-    public double searchDurInCartTree(HTSModel m, FeatureVector fv, HMMData htsData, boolean firstPh, boolean lastPh,
+    public double searchDurInCartTree(HMMModel m, FeatureVector fv, HMMData htsData, boolean firstPh, boolean lastPh,
             double diffdur) {
         double data, dd;
         double rho = htsData.getRho();
@@ -172,7 +172,7 @@ public class CartTreeSet {
      *            Feature definition
      * @throws Exception
      */
-    public void searchLf0InCartTree(HTSModel m, FeatureVector fv, FeatureDefinition featureDef, double uvthresh) {
+    public void searchLf0InCartTree(HMMModel m, FeatureVector fv, FeatureDefinition featureDef, double uvthresh) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) lf0Tree[s].interpretToNode(fv, 1);
             m.setLf0Mean(s, node.getMean());
@@ -198,7 +198,7 @@ public class CartTreeSet {
      *            Feature definition
      * @throws Exception
      */
-    public void searchMgcInCartTree(HTSModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchMgcInCartTree(HMMModel m, FeatureVector fv, FeatureDefinition featureDef) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) mgcTree[s].interpretToNode(fv, 1);
             m.setMcepMean(s, node.getMean());
@@ -218,7 +218,7 @@ public class CartTreeSet {
      *            Feature definition
      * @throws Exception
      */
-    public void searchStrInCartTree(HTSModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchStrInCartTree(HMMModel m, FeatureVector fv, FeatureDefinition featureDef) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) strTree[s].interpretToNode(fv, 1);
             m.setStrMean(s, node.getMean());
@@ -238,7 +238,7 @@ public class CartTreeSet {
      *            Feature definition
      * @throws Exception
      */
-    public void searchMagInCartTree(HTSModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchMagInCartTree(HMMModel m, FeatureVector fv, FeatureDefinition featureDef) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) magTree[s].interpretToNode(fv, 1);
             m.setMagMean(s, node.getMean());
@@ -250,8 +250,8 @@ public class CartTreeSet {
      * creates a HTSModel (pre-HMM optimization vector data for all parameter
      * streams of a given phoneme) given a feature vector compare with original
      */
-    public HTSModel generateHTSModel(HMMData htsData, FeatureDefinition feaDef, FeatureVector fv, double oldErr) {
-        HTSModel m = new HTSModel(getNumStates());
+    public HMMModel generateHTSModel(HMMData htsData, FeatureDefinition feaDef, FeatureVector fv, double oldErr) {
+        HMMModel m = new HMMModel(getNumStates());
         String phoneFeature = fv.getFeatureAsString(feaDef.getFeatureIndex("phone"), feaDef);
         m.setPhoneName(phoneFeature);
         try {
