@@ -7,7 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class LEDataInputStream implements DataInput {
+public class LDataInputStream implements DataInput {
 
     protected final DataInputStream dis;
 
@@ -19,13 +19,13 @@ public class LEDataInputStream implements DataInput {
         return DataInputStream.readUTF(in);
     }
 
-    public LEDataInputStream(InputStream in) {
+    public LDataInputStream(InputStream in) {
         this.is = in;
         this.dis = new DataInputStream(in);
         work = new byte[8];
     }
 
-    public LEDataInputStream(String filename) throws FileNotFoundException {
+    public LDataInputStream(String filename) throws FileNotFoundException {
         this(new FileInputStream(filename));
     }
 

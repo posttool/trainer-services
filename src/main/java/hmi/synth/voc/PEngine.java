@@ -27,13 +27,13 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
 
-public class HMMEngine {
+public class PEngine {
 
     private String realisedDurations; // HMM realised duration to be save in a
                                       // file
     private boolean phoneAlignmentForDurations;
     private boolean stateAlignmentForDurations = false;
-    private Vector<PhonemeDuration> alignDur = null; // list of external
+    private Vector<PhoneDuration> alignDur = null; // list of external
                                                      // duration per phone for
                                                      // alignment
                                                      // this are durations
@@ -61,7 +61,7 @@ public class HMMEngine {
         return stateAlignmentForDurations;
     }
 
-    public Vector<PhonemeDuration> getAlignDurations() {
+    public Vector<PhoneDuration> getAlignDurations() {
         return alignDur;
     }
 
@@ -81,7 +81,7 @@ public class HMMEngine {
         phoneAlignmentForDurations = bval;
     }
 
-    public void setAlignDurations(Vector<PhonemeDuration> val) {
+    public void setAlignDurations(Vector<PhoneDuration> val) {
         alignDur = val;
     }
 
@@ -89,7 +89,7 @@ public class HMMEngine {
         newStateDurationFactor = dval;
     }
 
-    public HMMEngine() {
+    public PEngine() {
         super();
         phoneAlignmentForDurations = false;
         stateAlignmentForDurations = false;
@@ -161,7 +161,7 @@ public class HMMEngine {
         String line, str[];
         float totalDur = 0f; // total duration, in seconds
         double f0[];
-        HMMModel m;
+        PModel m;
 
         int numModel = 0;
 
@@ -207,14 +207,14 @@ public class HMMEngine {
         }
     }
 
-    public UttModel processUttFromFile(String feaFile, HMMData htsData) throws Exception {
+    public UttModel processUttFromFile(String feaFile, PData htsData) throws Exception {
 
         List<Target> targetFeaturesList = getTargetsFromFile(feaFile, htsData);
         return processTargetList(targetFeaturesList, null, htsData);
 
     }
 
-    public static List<Target> getTargetsFromFile(String LabFile, HMMData htsData) throws Exception {
+    public static List<Target> getTargetsFromFile(String LabFile, PData htsData) throws Exception {
         List<Target> targets = null;
         Scanner s = null;
         try {
@@ -231,7 +231,7 @@ public class HMMEngine {
         return targets;
     }
 
-    public List<Target> getTargetsFromText(String LabText, HMMData htsData) throws Exception {
+    public List<Target> getTargetsFromText(String LabText, PData htsData) throws Exception {
         List<Target> targets;
         Scanner s = null;
         try {
@@ -244,7 +244,7 @@ public class HMMEngine {
         return targets;
     }
 
-    public static List<Target> getTargets(Scanner s, HMMData htsData) {
+    public static List<Target> getTargets(Scanner s, PData htsData) {
         int i;
         // Scanner s = null;
         String nextLine;
@@ -295,9 +295,9 @@ public class HMMEngine {
      * @throws Exception
      */
     protected UttModel processTargetList(List<Target> targetFeaturesList, List<Segment> segmentsAndBoundaries,
-            HMMData htsData) throws Exception {
+            PData htsData) throws Exception {
         UttModel um = new UttModel();
-        CartTreeSet cart = htsData.getCartTreeSet();
+        CARTSet cart = htsData.getCartTreeSet();
         realisedDurations = "#\n";
         int numLab = 0;
         double diffdurOld = 0.0;
@@ -323,7 +323,7 @@ public class HMMEngine {
 
             FeatureVector fv = target.getFeatureVector(); // feaDef.toFeatureVector(0,
                                                           // nextLine);
-            HMMModel m = new HMMModel(cart.getNumStates());
+            PModel m = new PModel(cart.getNumStates());
             um.addUttModel(m);
             m.setPhoneName(fv.getFeatureAsString(featureIndex, feaDef));
 
@@ -499,7 +499,7 @@ public class HMMEngine {
                         + ") is greater than the number of feature vectors (" + um.getNumUttModel() + ").");
 
         for (i = 0; i < um.getNumUttModel(); i++) {
-            HMMModel m = um.getUttModel(i);
+            PModel m = um.getUttModel(i);
             for (int mstate = 0; mstate < cart.getNumStates(); mstate++)
                 if (m.getVoiced(mstate))
                     for (int frame = 0; frame < m.getDur(mstate); frame++)
@@ -527,7 +527,7 @@ public class HMMEngine {
 
         int j;
 
-        HMMEngine hmm_tts = new HMMEngine();
+        PEngine hmm_tts = new PEngine();
 
         /*
          * htsData contains: Data in the configuration file, .pdf, tree-xxx.inf
@@ -537,7 +537,7 @@ public class HMMEngine {
          * voice TreeSet: Contains the tree-xxx.inf, xxx: dur, lf0, Mgc, str and
          * mag these are all the trees trained for a particular voice.
          */
-        HMMData htsData = new HMMData();
+        PData htsData = new PData();
 
         /* stand alone with cmu-slt-hsmm voice */
         String BP = "/user/xxx/";

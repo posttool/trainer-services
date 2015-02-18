@@ -36,7 +36,7 @@ public class Vocoder {
 
     private double rate;
     int pt2; /* used in mlsadf2 */
-    private final int pt3[] = new int[CepUtils.PADEORDER + 1]; /* used in mlsadf2 */
+    private final int pt3[] = new int[CUtils.PADEORDER + 1]; /* used in mlsadf2 */
 
     /* mixed excitation variables */
     private int numM; /* Number of bandpass filters for mixed excitation */
@@ -52,7 +52,7 @@ public class Vocoder {
      * information about the number of feature vectors to be processed, size of
      * the mcep vector file, etc.
      */
-    private void initVocoder(int mcep_order, int mcep_vsize, HMMData htsData) {
+    private void initVocoder(int mcep_order, int mcep_vsize, PData htsData) {
 
         stage = htsData.getStage();
         gamma = htsData.getGamma();
@@ -67,7 +67,7 @@ public class Vocoder {
         CC = new double[mcep_order];
         CINC = new double[mcep_order];
 
-        int PADEORDER = CepUtils.PADEORDER;
+        int PADEORDER = CUtils.PADEORDER;
         if (stage == 0) { /* for MGC */
 
             /* mcep_order=74 and pd=PADEORDER=5 (if no HTS_EMBEDDED is used) */
@@ -97,7 +97,7 @@ public class Vocoder {
      * stregths for mixed excitation PStream magpst : Fourier magnitudes PStream
      * lf0pst : Log F0
      */
-    public AudioInputStream htsMLSAVocoder(ParameterGeneration pdf2par, HMMData htsData) throws Exception {
+    public AudioInputStream htsMLSAVocoder(ParameterGeneration pdf2par, PData htsData) throws Exception {
 
         int audioSize = computeAudioSize(pdf2par.getMcepPst(), htsData);
         HTSVocoderDataProducer producer = new HTSVocoderDataProducer(audioSize, pdf2par, htsData);
@@ -126,7 +126,7 @@ public class Vocoder {
          */
     }
 
-    public static AudioFormat getHTSAudioFormat(HMMData htsData) {
+    public static AudioFormat getHTSAudioFormat(PData htsData) {
         float sampleRate = htsData.getRate(); // 8000,11025,16000,22050,44100,48000
         int sampleSizeInBits = 16; // 8,16
         int channels = 1; // 1,2
@@ -137,7 +137,7 @@ public class Vocoder {
     }
 
     public double[] htsMLSAVocoder(PStream lf0Pst, PStream mcepPst, PStream strPst, PStream magPst,
-            boolean[] voiced, HMMData htsData, HTSVocoderDataProducer audioProducer) throws Exception {
+            boolean[] voiced, PData htsData, HTSVocoderDataProducer audioProducer) throws Exception {
 
         double inc, x, MaxSample;
         double xp = 0.0, xn = 0.0, fxp, fxn, mix; /*
@@ -314,8 +314,8 @@ public class Vocoder {
                         C[i] = i * PI_m;
                     /* LSP -> MGC */
                     lsp2mgc(C, C, (m - 1), alpha);
-                    CepUtils.mc2b(C, C, (m - 1), alpha);
-                    CepUtils.gnorm(C, C, (m - 1), gamma);
+                    CUtils.mc2b(C, C, (m - 1), alpha);
+                    CUtils.gnorm(C, C, (m - 1), gamma);
                     for (int i = 1; i < m; i++)
                         C[i] *= gamma;
                 }
@@ -323,21 +323,21 @@ public class Vocoder {
 
             if (stage == 0) {
                 /* postfiltering, this is done if beta>0.0 */
-                CepUtils.postfilter_mgc(mc, (m - 1), alpha, beta);
+                CUtils.postfilter_mgc(mc, (m - 1), alpha, beta);
                 /*
                  * mc2b: transform mel-cepstrum to MLSA digital filter
                  * coefficients
                  */
-                CepUtils.mc2b(mc, CC, (m - 1), alpha);
+                CUtils.mc2b(mc, CC, (m - 1), alpha);
                 for (int i = 0; i < m; i++)
                     CINC[i] = (CC[i] - C[i]) * IPERIOD / fprd;
             } else {
 
                 lsp2mgc(mc, CC, (m - 1), alpha);
 
-                CepUtils.mc2b(CC, CC, (m - 1), alpha);
+                CUtils.mc2b(CC, CC, (m - 1), alpha);
 
-                CepUtils.gnorm(CC, CC, (m - 1), gamma);
+                CUtils.gnorm(CC, CC, (m - 1), gamma);
 
                 for (int i = 1; i < m; i++)
                     CC[i] *= gamma;
@@ -386,7 +386,7 @@ public class Vocoder {
                 } else {
                     if ((pc += 1.0) >= p1) {
                         if (fourierMagnitudes) {
-                            magPulse = CepUtils.genPulseFromFourierMag(magPst, mcepframe, p1);
+                            magPulse = CUtils.genPulseFromFourierMag(magPst, mcepframe, p1);
                             magSample = 0;
                             magPulseSize = magPulse.length;
                             x = magPulse[magSample];
@@ -447,11 +447,11 @@ public class Vocoder {
                 if (stage == 0) {
                     if (x != 0.0)
                         x *= Math.exp(C[0]);
-                    x = CepUtils.mlsadf(x, C, m, alpha, D1, pt2, pt3);
+                    x = CUtils.mlsadf(x, C, m, alpha, D1, pt2, pt3);
 
                 } else {
                     x *= C[0];
-                    x = CepUtils.mglsadf(x, C, (m - 1), alpha, stage, D1);
+                    x = CUtils.mglsadf(x, C, (m - 1), alpha, stage, D1);
                 }
 
                 // System.out.format("%f ", x);
@@ -499,7 +499,7 @@ public class Vocoder {
      * @param htsData
      * @return
      */
-    private int computeAudioSize(PStream mcepPst, HMMData htsData) {
+    private int computeAudioSize(PStream mcepPst, PData htsData) {
         return mcepPst.getT() * htsData.getFperiod();
     }
 
@@ -520,17 +520,17 @@ public class Vocoder {
     /** lsp2mgc: transform LSP to MGC. lsp=C[0..m] mgc=C[0..m] */
     public void lsp2mgc(double lsp[], double mgc[], int m, double alpha) {
         /* lsp2lpc */
-        CepUtils.lsp2lpc(lsp, mgc, m); /* lsp starts in 1! lsp[1..m] --> mgc[0..m] */
+        CUtils.lsp2lpc(lsp, mgc, m); /* lsp starts in 1! lsp[1..m] --> mgc[0..m] */
         if (use_log_gain)
             mgc[0] = Math.exp(lsp[0]);
         else
             mgc[0] = lsp[0];
 
         /* mgc2mgc */
-        CepUtils.ignorm(mgc, mgc, m, gamma);
+        CUtils.ignorm(mgc, mgc, m, gamma);
         for (int i = m; i >= 1; i--)
             mgc[i] *= -stage;
-        CepUtils.mgc2mgc(mgc, m, alpha, gamma, mgc, m, alpha, gamma); /*
+        CUtils.mgc2mgc(mgc, m, alpha, gamma, mgc, m, alpha, gamma); /*
                                                               * input and output
                                                               * is in mgc=C
                                                               */
@@ -564,9 +564,9 @@ public class Vocoder {
         private PStream strPst;
         private PStream magPst;
         private boolean[] voiced;
-        private HMMData htsData;
+        private PData htsData;
 
-        public HTSVocoderDataProducer(int audioSize, ParameterGeneration pdf2par, HMMData htsData) {
+        public HTSVocoderDataProducer(int audioSize, ParameterGeneration pdf2par, PData htsData) {
             super(audioSize, new AmplitudeNormalizer(INITIAL_MAX_AMPLITUDE));
             lf0Pst = pdf2par.getlf0Pst();
             mcepPst = pdf2par.getMcepPst();

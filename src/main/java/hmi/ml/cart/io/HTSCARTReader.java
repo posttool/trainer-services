@@ -8,7 +8,7 @@ import hmi.ml.cart.LeafNode.PdfLeafNode;
 import hmi.ml.cart.Node;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureIO;
-import hmi.synth.voc.HMMData.PdfFileFormat;
+import hmi.synth.voc.PData.PdfFileFormat;
 import hmi.synth.voc.PhoneTranslator;
 
 import java.io.BufferedInputStream;

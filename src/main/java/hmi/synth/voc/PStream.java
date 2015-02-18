@@ -13,7 +13,7 @@ public class PStream {
     private static final int WIDTH = 3;
 
     /** type of features it contains */
-    public final HMMData.FeatureType feaType;
+    public final PData.FeatureType feaType;
     /** vector size of observation vector (include static and dynamic features) */
     private final int vSize;
     /** vector size of static features */
@@ -85,7 +85,7 @@ public class PStream {
     private int gvLength;
 
     /* Constructor */
-    public PStream(int vector_size, int utt_length, HMMData.FeatureType fea_type, int maxIterationsGV)
+    public PStream(int vector_size, int utt_length, PData.FeatureType fea_type, int maxIterationsGV)
             throws Exception {
         /*
          * In the c code for each PStream there is an InitDwin() and an
@@ -196,7 +196,7 @@ public class PStream {
         System.out.println("");
     }
 
-    public void mlpg(HMMData htsData) {
+    public void mlpg(PData htsData) {
         mlpg(htsData, htsData.getUseGV());
     }
 
@@ -204,7 +204,7 @@ public class PStream {
      * mlpg: generate sequence of speech parameter vector maximizing its output
      * probability for given pdf sequence
      */
-    public void mlpg(HMMData htsData, boolean useGV) {
+    public void mlpg(PData htsData, boolean useGV) {
 
         if (htsData.getUseContextDependentGV())
             System.out.println("Context-dependent global variance optimization: gvLength = " + gvLength);

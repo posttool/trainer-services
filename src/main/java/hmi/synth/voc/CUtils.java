@@ -4,7 +4,7 @@ import hmi.sig.FFT;
 
 import java.util.Arrays;
 
-public class CepUtils {
+public class CUtils {
 
     /*
      * ppade is a copy of pade in mlsadf() function : ppade =

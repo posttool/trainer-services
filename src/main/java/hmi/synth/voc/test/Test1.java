@@ -2,15 +2,15 @@ package hmi.synth.voc.test;
 
 import hmi.sig.AudioPlayer;
 import hmi.sig.Mfccs;
-import hmi.synth.voc.HMMData;
-import hmi.synth.voc.HMMEngine;
+import hmi.synth.voc.PData;
+import hmi.synth.voc.PEngine;
 import hmi.synth.voc.PStream;
 import hmi.synth.voc.ParameterGeneration;
 import hmi.synth.voc.UttModel;
 import hmi.synth.voc.Vocoder;
-import hmi.synth.voc.LEDataInputStream;
-import hmi.synth.voc.PhonemeDuration;
-import hmi.synth.voc.HMMData.FeatureType;
+import hmi.synth.voc.LDataInputStream;
+import hmi.synth.voc.PhoneDuration;
+import hmi.synth.voc.PData.FeatureType;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -61,8 +61,8 @@ public class Test1 {
 		// String feaFile = "/f0-hsmm-experiment/arctic_a0003.pfeats";
 		// String feaFile = "/f0-hsmm-experiment/author.pfeats";
 
-		HMMEngine hmm_tts = new HMMEngine();
-		HMMData htsData = new HMMData();
+		PEngine hmm_tts = new PEngine();
+		PData htsData = new PData();
 
 		/* For initialize provide the name of the hmm voice and the name of its configuration file, */
 		String BP = "//"; /* base directory. */
@@ -132,8 +132,8 @@ public class Test1 {
 		// context features file
 		String feaFile = "voices/cmu-slt-hsmm/cmu_us_arctic_slt_a0001.pfeats";
 
-		HMMEngine hmm_tts = new HMMEngine();
-		HMMData htsData = new HMMData();
+		PEngine hmm_tts = new PEngine();
+		PData htsData = new PData();
 
 		/* For initialise provide the name of the hmm voice and the name of its configuration file, */
 		String BP = "//"; /* base directory. */
@@ -172,7 +172,7 @@ public class Test1 {
 		int totalDurationFrames;
 		float fperiodsec = ((float) htsData.getFperiod() / (float) htsData.getRate());
 		hmm_tts.setPhonemeAlignmentForDurations(true);
-		Vector<PhonemeDuration> durations = new Vector<PhonemeDuration>();
+		Vector<PhoneDuration> durations = new Vector<PhoneDuration>();
 		totalDuration = loadDurationsForAlignment(labFile, durations);
 		// set the external durations
 		hmm_tts.setAlignDurations(durations);
@@ -220,7 +220,7 @@ public class Test1 {
 	 *            the format is the same as for phonelab.
 	 * @return
 	 */
-	public float loadDurationsForAlignment(String fileName, Vector<PhonemeDuration> alignDur) {
+	public float loadDurationsForAlignment(String fileName, Vector<PhoneDuration> alignDur) {
 
 		Scanner s = null;
 		String line;
@@ -235,11 +235,11 @@ public class Test1 {
 				if (!line.startsWith("#") && !line.startsWith("format")) {
 					String val[] = line.split(" ");
 					current = Float.parseFloat(val[0]);
-					PhonemeDuration var;
+					PhoneDuration var;
 					if (previous == 0)
-						alignDur.add(new PhonemeDuration(val[2], current));
+						alignDur.add(new PhoneDuration(val[2], current));
 					else
-						alignDur.add(new PhonemeDuration(val[2], (current - previous)));
+						alignDur.add(new PhoneDuration(val[2], (current - previous)));
 
 					totalDuration += alignDur.get(i).getDuration();
 					System.out.println("phone = " + alignDur.get(i).getPhoneme() + " dur(" + i + ")="
@@ -275,13 +275,13 @@ public class Test1 {
 	public void loadF0contour(String lf0File, int totalDurationFrames, ParameterGeneration pdf2par) throws Exception {
 		PStream lf0Pst = null;
 		boolean[] voiced = null;
-		LEDataInputStream lf0Data;
+		LDataInputStream lf0Data;
 
 		int lf0Vsize = 3;
 		int totalFrame = 0;
 		int lf0VoicedFrame = 0;
 		float fval;
-		lf0Data = new LEDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
+		lf0Data = new LDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
 		/* First i need to know the size of the vectors */
 		try {
 			while (true) {
@@ -304,12 +304,12 @@ public class Test1 {
 			System.out.println("totalDurationFrames = " + totalDurationFrames + "  totalF0Frames = " + totalFrame);
 
 		voiced = new boolean[totalFrame];
-		lf0Pst = new PStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
+		lf0Pst = new PStream(lf0Vsize, totalFrame, PData.FeatureType.LF0, 0);
 
 		/* load lf0 data */
 		/* for lf0 i just need to load the voiced values */
 		lf0VoicedFrame = 0;
-		lf0Data = new LEDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
+		lf0Data = new LDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
 		for (int i = 0; i < totalFrame; i++) {
 			fval = lf0Data.readFloat();
 			if (fval < 0) {
@@ -358,10 +358,10 @@ public class Test1 {
 		String filesList = "/quality-control-experiment/slt/phonefeatures-list.txt";
 
 		// Create a htsengine object
-		HMMEngine hmm_tts = new HMMEngine();
+		PEngine hmm_tts = new PEngine();
 
 		// Create and set HMMData
-		HMMData htsData = new HMMData();
+		PData htsData = new PData();
 		htsData.initHMMData(voice, BP, configFile);
 		float fperiodmillisec = ((float) htsData.getFperiod() / (float) htsData.getRate()) * 1000;
 		float fperiodsec = ((float) htsData.getFperiod() / (float) htsData.getRate());

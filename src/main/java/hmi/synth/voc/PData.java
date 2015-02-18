@@ -16,7 +16,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.Vector;
 
-public class HMMData {
+public class PData {
 
     public static final int HTS_NUMMTYPE = 5;
 
@@ -131,7 +131,7 @@ public class HMMData {
      * these are all the trees trained for a particular voice. the Cart tree
      * also contains the corresponding pdfs.
      */
-    private CartTreeSet cart = new CartTreeSet();
+    private CARTSet cart = new CARTSet();
 
     /** HMM pdf model files and ModelSet object */
     private InputStream pdfDurStream; /* durations Pdf file */
@@ -429,7 +429,7 @@ public class HMMData {
 
     }
 
-    public CartTreeSet getCartTreeSet() {
+    public CARTSet getCartTreeSet() {
         return cart;
     }
 

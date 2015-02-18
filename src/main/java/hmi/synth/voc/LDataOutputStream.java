@@ -7,18 +7,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class LEDataOutputStream implements DataOutput {
+public class LDataOutputStream implements DataOutput {
 
     protected final DataOutputStream dis;
 
     protected final byte[] work;
 
-    public LEDataOutputStream(OutputStream out) {
+    public LDataOutputStream(OutputStream out) {
         this.dis = new DataOutputStream(out);
         work = new byte[8];// work array for composing output
     }
 
-    public LEDataOutputStream(String filename) throws FileNotFoundException {
+    public LDataOutputStream(String filename) throws FileNotFoundException {
         this(new FileOutputStream(filename));
     }
 

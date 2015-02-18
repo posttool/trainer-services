@@ -4,10 +4,10 @@ import hmi.sig.AudioPlayer;
 import hmi.sig.BufferedDoubleDataSource;
 import hmi.sig.DDSAudioInputStream;
 import hmi.sig.MathUtils;
-import hmi.synth.voc.HMMData;
+import hmi.synth.voc.PData;
 import hmi.synth.voc.PStream;
 import hmi.synth.voc.Vocoder;
-import hmi.synth.voc.LEDataInputStream;
+import hmi.synth.voc.LDataInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -29,10 +29,10 @@ public class VocoderTest extends Vocoder {
      */
     public static void main(String[] args) throws IOException, InterruptedException, Exception {
 
-        HMMData htsData = new HMMData();
+        PData htsData = new PData();
         PStream lf0Pst, mcepPst, strPst, magPst;
         boolean[] voiced = null;
-        LEDataInputStream lf0Data, mcepData, strData, magData;
+        LDataInputStream lf0Data, mcepData, strData, magData;
 
         String lf0File, mcepFile, strFile, outFile, magFile, residualFile;
 
@@ -96,7 +96,7 @@ public class VocoderTest extends Vocoder {
         int lf0VoicedFrame = 0;
         float fval;
         int i, j;
-        lf0Data = new LEDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
+        lf0Data = new LDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
 
         /* First i need to know the size of the vectors */
         try {
@@ -119,15 +119,15 @@ public class VocoderTest extends Vocoder {
         voiced = new boolean[totalFrame];
 
         /* Initialise HTSPStream-s */
-        lf0Pst = new PStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
-        mcepPst = new PStream(mcepVsize, totalFrame, HMMData.FeatureType.MGC, 0);
-        strPst = new PStream(strVsize, totalFrame, HMMData.FeatureType.STR, 0);
-        magPst = new PStream(magVsize, totalFrame, HMMData.FeatureType.MAG, 0);
+        lf0Pst = new PStream(lf0Vsize, totalFrame, PData.FeatureType.LF0, 0);
+        mcepPst = new PStream(mcepVsize, totalFrame, PData.FeatureType.MGC, 0);
+        strPst = new PStream(strVsize, totalFrame, PData.FeatureType.STR, 0);
+        magPst = new PStream(magVsize, totalFrame, PData.FeatureType.MAG, 0);
 
         /* load lf0 data */
         /* for lf0 i just need to load the voiced values */
         lf0VoicedFrame = 0;
-        lf0Data = new LEDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
+        lf0Data = new LDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
         for (i = 0; i < totalFrame; i++) {
             fval = lf0Data.readFloat();
 
@@ -143,7 +143,7 @@ public class VocoderTest extends Vocoder {
         lf0Data.close();
 
         /* load mgc data */
-        mcepData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(mcepFile)));
+        mcepData = new LDataInputStream(new BufferedInputStream(new FileInputStream(mcepFile)));
         for (i = 0; i < totalFrame; i++) {
             for (j = 0; j < mcepPst.getOrder(); j++)
                 mcepPst.setPar(i, j, mcepData.readFloat());
@@ -151,7 +151,7 @@ public class VocoderTest extends Vocoder {
         mcepData.close();
 
         /* load str data */
-        strData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(strFile)));
+        strData = new LDataInputStream(new BufferedInputStream(new FileInputStream(strFile)));
         for (i = 0; i < totalFrame; i++) {
             for (j = 0; j < strPst.getOrder(); j++)
                 strPst.setPar(i, j, strData.readFloat());
@@ -296,10 +296,10 @@ public class VocoderTest extends Vocoder {
      * */
     public static void htsMLSAVocoderCommand(String[] args) throws IOException, InterruptedException, Exception {
 
-        HMMData htsData = new HMMData();
+        PData htsData = new PData();
         PStream lf0Pst, mcepPst, strPst = null, magPst = null;
         boolean[] voiced = null;
-        LEDataInputStream lf0Data, mcepData, strData, magData;
+        LDataInputStream lf0Data, mcepData, strData, magData;
 
         String lf0File, mcepFile, strFile = "", magFile = "", outDir, outFile;
         int mcepVsize, lf0Vsize, strVsize = 0, magVsize = 0;
@@ -431,7 +431,7 @@ public class VocoderTest extends Vocoder {
         int lf0VoicedFrame = 0;
         float fval;
         int i, j;
-        lf0Data = new LEDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
+        lf0Data = new LDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
 
         /* First i need to know the size of the vectors */
         File lf0 = new File(lf0File);
@@ -477,13 +477,13 @@ public class VocoderTest extends Vocoder {
         voiced = new boolean[totalFrame];
 
         /* Initialise HTSPStream-s */
-        lf0Pst = new PStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
-        mcepPst = new PStream(mcepVsize, totalFrame, HMMData.FeatureType.MGC, 0);
+        lf0Pst = new PStream(lf0Vsize, totalFrame, PData.FeatureType.LF0, 0);
+        mcepPst = new PStream(mcepVsize, totalFrame, PData.FeatureType.MGC, 0);
 
         /* load lf0 data */
         /* for lf0 i just need to load the voiced values */
         lf0VoicedFrame = 0;
-        lf0Data = new LEDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
+        lf0Data = new LDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
         for (i = 0; i < totalFrame; i++) {
             fval = lf0Data.readFloat();
             // lf0Pst.setPar(i, 0, fval);
@@ -505,7 +505,7 @@ public class VocoderTest extends Vocoder {
         lf0Data.close();
 
         /* load mgc data */
-        mcepData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(mcepFile)));
+        mcepData = new LDataInputStream(new BufferedInputStream(new FileInputStream(mcepFile)));
         for (i = 0; i < totalFrame; i++) {
             for (j = 0; j < mcepPst.getOrder(); j++) {
                 // apply here the change to loud
@@ -519,8 +519,8 @@ public class VocoderTest extends Vocoder {
 
         /* load str data */
         if (htsData.getUseMixExc()) {
-            strPst = new PStream(strVsize, totalFrame, HMMData.FeatureType.STR, 0);
-            strData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(strFile)));
+            strPst = new PStream(strVsize, totalFrame, PData.FeatureType.STR, 0);
+            strData = new LDataInputStream(new BufferedInputStream(new FileInputStream(strFile)));
             for (i = 0; i < totalFrame; i++) {
                 for (j = 0; j < strPst.getOrder(); j++) {
                     // apply here the change to loud/soft
@@ -536,8 +536,8 @@ public class VocoderTest extends Vocoder {
         /* load mag data */
         n = 0;
         if (htsData.getUseFourierMag()) {
-            magPst = new PStream(magVsize, totalFrame, HMMData.FeatureType.MAG, 0);
-            magData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(magFile)));
+            magPst = new PStream(magVsize, totalFrame, PData.FeatureType.MAG, 0);
+            magData = new LDataInputStream(new BufferedInputStream(new FileInputStream(magFile)));
             for (i = 0; i < totalFrame; i++) {
                 // System.out.print(n + " : ");
                 for (j = 0; j < magPst.getOrder(); j++) {

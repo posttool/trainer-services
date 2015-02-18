@@ -5,11 +5,11 @@ import hmi.ml.cart.LeafNode.PdfLeafNode;
 import hmi.ml.cart.io.HTSCARTReader;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
-import hmi.synth.voc.HMMData.PdfFileFormat;
+import hmi.synth.voc.PData.PdfFileFormat;
 
 import java.io.IOException;
 
-public class CartTreeSet {
+public class CARTSet {
 
     private CART[] durTree; // CART trees for duration
     private CART[] lf0Tree; // CART trees for log F0
@@ -43,7 +43,7 @@ public class CartTreeSet {
         return magVsize;
     }
 
-    public int getVsize(HMMData.FeatureType type) {
+    public int getVsize(PData.FeatureType type) {
         switch (type) {
         case MGC:
             return mcepVsize;
@@ -57,7 +57,7 @@ public class CartTreeSet {
     }
 
     /** Loads all the CART trees */
-    public void loadTreeSet(HMMData htsData, FeatureDefinition featureDef, PhoneTranslator trickyPhones)
+    public void loadTreeSet(PData htsData, FeatureDefinition featureDef, PhoneTranslator trickyPhones)
             throws IOException, Exception {
         // Check if there are tricky phones, and create a PhoneTranslator object
         PhoneTranslator phTranslator = trickyPhones;
@@ -117,11 +117,11 @@ public class CartTreeSet {
      * @return duration
      * @throws Exception
      */
-    public double searchDurInCartTree(HMMModel m, FeatureVector fv, HMMData htsData, double diffdur) {
+    public double searchDurInCartTree(PModel m, FeatureVector fv, PData htsData, double diffdur) {
         return searchDurInCartTree(m, fv, htsData, false, false, diffdur);
     }
 
-    public double searchDurInCartTree(HMMModel m, FeatureVector fv, HMMData htsData, boolean firstPh, boolean lastPh,
+    public double searchDurInCartTree(PModel m, FeatureVector fv, PData htsData, boolean firstPh, boolean lastPh,
             double diffdur) {
         double data, dd;
         double rho = htsData.getRho();
@@ -172,7 +172,7 @@ public class CartTreeSet {
      *            Feature definition
      * @throws Exception
      */
-    public void searchLf0InCartTree(HMMModel m, FeatureVector fv, FeatureDefinition featureDef, double uvthresh) {
+    public void searchLf0InCartTree(PModel m, FeatureVector fv, FeatureDefinition featureDef, double uvthresh) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) lf0Tree[s].interpretToNode(fv, 1);
             m.setLf0Mean(s, node.getMean());
@@ -198,7 +198,7 @@ public class CartTreeSet {
      *            Feature definition
      * @throws Exception
      */
-    public void searchMgcInCartTree(HMMModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchMgcInCartTree(PModel m, FeatureVector fv, FeatureDefinition featureDef) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) mgcTree[s].interpretToNode(fv, 1);
             m.setMcepMean(s, node.getMean());
@@ -218,7 +218,7 @@ public class CartTreeSet {
      *            Feature definition
      * @throws Exception
      */
-    public void searchStrInCartTree(HMMModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchStrInCartTree(PModel m, FeatureVector fv, FeatureDefinition featureDef) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) strTree[s].interpretToNode(fv, 1);
             m.setStrMean(s, node.getMean());
@@ -238,7 +238,7 @@ public class CartTreeSet {
      *            Feature definition
      * @throws Exception
      */
-    public void searchMagInCartTree(HMMModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchMagInCartTree(PModel m, FeatureVector fv, FeatureDefinition featureDef) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) magTree[s].interpretToNode(fv, 1);
             m.setMagMean(s, node.getMean());
@@ -250,8 +250,8 @@ public class CartTreeSet {
      * creates a HTSModel (pre-HMM optimization vector data for all parameter
      * streams of a given phoneme) given a feature vector compare with original
      */
-    public HMMModel generateHTSModel(HMMData htsData, FeatureDefinition feaDef, FeatureVector fv, double oldErr) {
-        HMMModel m = new HMMModel(getNumStates());
+    public PModel generateHTSModel(PData htsData, FeatureDefinition feaDef, FeatureVector fv, double oldErr) {
+        PModel m = new PModel(getNumStates());
         String phoneFeature = fv.getFeatureAsString(feaDef.getFeatureIndex("phone"), feaDef);
         m.setPhoneName(phoneFeature);
         try {

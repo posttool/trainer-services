@@ -8,7 +8,7 @@ public class UttModel {
     private int numState; /* # of HMM states for current utterance */
     private int totalFrame; /* # of frames for current utterance */
     private int lf0Frame; /* # of frames that are voiced or non-zero */
-    private Vector<HMMModel> modelList; /*
+    private Vector<PModel> modelList; /*
                                          * This will be a list of Model objects
                                          * for current utterance
                                          */
@@ -22,7 +22,7 @@ public class UttModel {
         numState = 0;
         totalFrame = 0;
         lf0Frame = 0;
-        modelList = new Vector<HMMModel>();
+        modelList = new Vector<PModel>();
         realisedAcoustParams = "";
     }
 
@@ -58,12 +58,12 @@ public class UttModel {
         return lf0Frame;
     }
 
-    public void addUttModel(HMMModel newModel) {
+    public void addUttModel(PModel newModel) {
         modelList.addElement(newModel);
     }
 
-    public HMMModel getUttModel(int i) {
-        return (HMMModel) modelList.elementAt(i);
+    public PModel getUttModel(int i) {
+        return (PModel) modelList.elementAt(i);
     }
 
     public int getNumUttModel() {

@@ -1,6 +1,6 @@
 package hmi.synth.voc;
 
-import hmi.synth.voc.HMMData.FeatureType;
+import hmi.synth.voc.PData.FeatureType;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -83,8 +83,8 @@ public class ParameterGeneration {
         return 1.0 / x;
     }
 
-    public void htsMaximumLikelihoodParameterGeneration(UttModel um, final HMMData htsData) throws Exception {
-        CartTreeSet ms = htsData.getCartTreeSet();
+    public void htsMaximumLikelihoodParameterGeneration(UttModel um, final PData htsData) throws Exception {
+        CARTSet ms = htsData.getCartTreeSet();
 
         /* Initialisation of PStream objects */
         /* init Parameter generation using UttModel um and Modelset ms */
@@ -98,22 +98,22 @@ public class ParameterGeneration {
          * moment the dw are all the same and hard-coded
          */
         if (htsData.getPdfMgcStream() != null)
-            mcepPst = new PStream(ms.getMcepVsize(), um.getTotalFrame(), HMMData.FeatureType.MGC,
+            mcepPst = new PStream(ms.getMcepVsize(), um.getTotalFrame(), PData.FeatureType.MGC,
                     htsData.getMaxMgcGvIter());
         /*
          * for lf0 count just the number of lf0frames that are voiced or
          * non-zero
          */
         if (htsData.getPdfLf0Stream() != null)
-            lf0Pst = new PStream(ms.getLf0Stream(), um.getLf0Frame(), HMMData.FeatureType.LF0,
+            lf0Pst = new PStream(ms.getLf0Stream(), um.getLf0Frame(), PData.FeatureType.LF0,
                     htsData.getMaxLf0GvIter());
 
         /* The following are optional in case of generating mixed excitation */
         if (htsData.getPdfStrStream() != null)
-            strPst = new PStream(ms.getStrVsize(), um.getTotalFrame(), HMMData.FeatureType.STR,
+            strPst = new PStream(ms.getStrVsize(), um.getTotalFrame(), PData.FeatureType.STR,
                     htsData.getMaxStrGvIter());
         if (htsData.getPdfMagStream() != null)
-            magPst = new PStream(ms.getMagVsize(), um.getTotalFrame(), HMMData.FeatureType.MAG,
+            magPst = new PStream(ms.getMagVsize(), um.getTotalFrame(), PData.FeatureType.MAG,
                     htsData.getMaxMagGvIter());
 
         int lf0Frame = 0; // counts voiced frames
@@ -124,7 +124,7 @@ public class ParameterGeneration {
         int msNumStates = ms.getNumStates();
         int totalFrames = um.getTotalFrame();
         for (int i = 0; i < um.getNumUttModel(); i++) {
-            HMMModel m = um.getUttModel(i);
+            PModel m = um.getUttModel(i);
             int numVoicedInModel = 0;
             for (int state = 0; state < msNumStates; state++) {
                 Arrays.fill(voiced, uttFrame, uttFrame += m.getDur(state), m.getVoiced(state));
@@ -145,7 +145,7 @@ public class ParameterGeneration {
 
         /* copy pdfs */
         for (int i = 0; i < um.getNumUttModel(); i++) {
-            HMMModel m = um.getUttModel(i);
+            PModel m = um.getUttModel(i);
             boolean gvSwitch = m.getGvSwitch();
             for (int state = 0; state < msNumStates; state++) {
 
@@ -420,10 +420,10 @@ public class ParameterGeneration {
 //        }
 //    }
 
-    private void loadXmlF0(UttModel um, HMMData htsData) throws Exception {
+    private void loadXmlF0(UttModel um, PData htsData) throws Exception {
         System.out.println("Using f0 from XML acoustparams");
         int i, n, numVoiced;
-        HMMModel m;
+        PModel m;
         double[] dval;
         double lastF0 = 0.0;
         numVoiced = 0;
@@ -445,7 +445,7 @@ public class ParameterGeneration {
         interpolateSegments(f0Vector);
 
         // create a new Lf0Pst with the values from xML
-        PStream newLf0Pst = new PStream(3, f0Vector.size(), HMMData.FeatureType.LF0, htsData.getMaxLf0GvIter());
+        PStream newLf0Pst = new PStream(3, f0Vector.size(), PData.FeatureType.LF0, htsData.getMaxLf0GvIter());
         for (n = 0; n < f0Vector.size(); n++)
             newLf0Pst.setPar(n, 0, Math.log(f0Vector.get(n)));
 
@@ -550,7 +550,7 @@ public class ParameterGeneration {
         int t = 0;
         int vt = 0;
         for (int i = 0; i < um.getNumUttModel(); i++) {
-            HMMModel m = um.getUttModel(i);
+            PModel m = um.getUttModel(i);
             int numVoicedInModel = m.getNumVoiced();
             String formattedF0 = "";
             int k = 1;

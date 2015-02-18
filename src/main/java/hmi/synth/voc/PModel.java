@@ -1,10 +1,10 @@
 package hmi.synth.voc;
 
-import hmi.synth.voc.HMMData.FeatureType;
+import hmi.synth.voc.PData.FeatureType;
 
 import java.util.Arrays;
 
-public class HMMModel {
+public class PModel {
 
     /* the name of the phone corresponding to this model ph(0) */
     private String phoneName;
@@ -56,7 +56,7 @@ public class HMMModel {
 
     private boolean gvSwitch;
 
-    public HMMModel(int nstate) {
+    public PModel(int nstate) {
         totalDur = 0;
         dur = new int[nstate];
         lf0Mean = new double[nstate][];

@@ -1,10 +1,10 @@
 package hmi.synth.voc;
 
-public class PhonemeDuration {
+public class PhoneDuration {
     private String phone;
     private float duration;
 
-    public PhonemeDuration(String ph, float dur) {
+    public PhoneDuration(String ph, float dur) {
         phone = ph;
         duration = dur;
     }

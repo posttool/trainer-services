@@ -62,7 +62,7 @@ public class GVModelSet {
         return gvcovInvMag;
     }
 
-    public void loadGVModelSet(HMMData htsData, FeatureDefinition featureDef) throws IOException {
+    public void loadGVModelSet(PData htsData, FeatureDefinition featureDef) throws IOException {
 
 //        int numMSDFlag, numStream, vectorSize, numDurPdf;
 //        double gvcov;
