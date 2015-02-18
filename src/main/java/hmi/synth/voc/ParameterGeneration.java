@@ -16,17 +16,17 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HTSParameterGeneration {
+public class ParameterGeneration {
 
     public static final double INFTY = ((double) 1.0e+38);
     public static final double INFTY2 = ((double) 1.0e+19);
     public static final double INVINF = ((double) 1.0e-38);
     public static final double INVINF2 = ((double) 1.0e-19);
 
-    private HTSPStream mcepPst = null;
-    private HTSPStream strPst = null;
-    private HTSPStream magPst = null;
-    private HTSPStream lf0Pst = null;
+    private PStream mcepPst = null;
+    private PStream strPst = null;
+    private PStream magPst = null;
+    private PStream lf0Pst = null;
     private boolean voiced[];
 
     // private int totalUttFrame; // total number of frames in a mcep, str or
@@ -34,35 +34,35 @@ public class HTSParameterGeneration {
     // private int totalLf0Frame; // total number of f0 voiced frames in a lf0
     // Pst
 
-    public HTSPStream getMcepPst() {
+    public PStream getMcepPst() {
         return mcepPst;
     }
 
-    public void setMcepPst(HTSPStream var) {
+    public void setMcepPst(PStream var) {
         mcepPst = var;
     };
 
-    public HTSPStream getStrPst() {
+    public PStream getStrPst() {
         return strPst;
     }
 
-    public void setStrPst(HTSPStream var) {
+    public void setStrPst(PStream var) {
         strPst = var;
     };
 
-    public HTSPStream getMagPst() {
+    public PStream getMagPst() {
         return magPst;
     }
 
-    public void setMagPst(HTSPStream var) {
+    public void setMagPst(PStream var) {
         magPst = var;
     };
 
-    public HTSPStream getlf0Pst() {
+    public PStream getlf0Pst() {
         return lf0Pst;
     }
 
-    public void setlf0Pst(HTSPStream var) {
+    public void setlf0Pst(PStream var) {
         lf0Pst = var;
     };
 
@@ -102,22 +102,22 @@ public class HTSParameterGeneration {
          * moment the dw are all the same and hard-coded
          */
         if (htsData.getPdfMgcStream() != null)
-            mcepPst = new HTSPStream(ms.getMcepVsize(), um.getTotalFrame(), HMMData.FeatureType.MGC,
+            mcepPst = new PStream(ms.getMcepVsize(), um.getTotalFrame(), HMMData.FeatureType.MGC,
                     htsData.getMaxMgcGvIter());
         /*
          * for lf0 count just the number of lf0frames that are voiced or
          * non-zero
          */
         if (htsData.getPdfLf0Stream() != null)
-            lf0Pst = new HTSPStream(ms.getLf0Stream(), um.getLf0Frame(), HMMData.FeatureType.LF0,
+            lf0Pst = new PStream(ms.getLf0Stream(), um.getLf0Frame(), HMMData.FeatureType.LF0,
                     htsData.getMaxLf0GvIter());
 
         /* The following are optional in case of generating mixed excitation */
         if (htsData.getPdfStrStream() != null)
-            strPst = new HTSPStream(ms.getStrVsize(), um.getTotalFrame(), HMMData.FeatureType.STR,
+            strPst = new PStream(ms.getStrVsize(), um.getTotalFrame(), HMMData.FeatureType.STR,
                     htsData.getMaxStrGvIter());
         if (htsData.getPdfMagStream() != null)
-            magPst = new HTSPStream(ms.getMagVsize(), um.getTotalFrame(), HMMData.FeatureType.MAG,
+            magPst = new PStream(ms.getMagVsize(), um.getTotalFrame(), HMMData.FeatureType.MAG,
                     htsData.getMaxMagGvIter());
 
         int lf0Frame = 0; // counts voiced frames
@@ -275,7 +275,7 @@ public class HTSParameterGeneration {
     } /* method htsMaximumLikelihoodParameterGeneration */
 
     /* Save generated parameters in a binary file */
-    public void saveParams(String fileName, HTSPStream par, HMMData.FeatureType type) {
+    public void saveParams(String fileName, PStream par, HMMData.FeatureType type) {
         int t, m, i;
         double ws = 0.025; /* window size in seconds */
         double ss = 0.005; /* skip size in seconds */
@@ -388,7 +388,7 @@ public class HTSParameterGeneration {
     }
 
     /* Save generated parameters in a binary file */
-    public void saveParam(String fileName, HTSPStream par, HMMData.FeatureType type) {
+    public void saveParam(String fileName, PStream par, HMMData.FeatureType type) {
         int t, m, i;
         try {
 
@@ -449,7 +449,7 @@ public class HTSParameterGeneration {
         interpolateSegments(f0Vector);
 
         // create a new Lf0Pst with the values from xML
-        HTSPStream newLf0Pst = new HTSPStream(3, f0Vector.size(), HMMData.FeatureType.LF0, htsData.getMaxLf0GvIter());
+        PStream newLf0Pst = new PStream(3, f0Vector.size(), HMMData.FeatureType.LF0, htsData.getMaxLf0GvIter());
         for (n = 0; n < f0Vector.size(); n++)
             newLf0Pst.setPar(n, 0, Math.log(f0Vector.get(n)));
 
@@ -550,7 +550,7 @@ public class HTSParameterGeneration {
         }
     }
 
-    private void setRealisedF0(HTSPStream lf0Pst, HTSUttModel um, int numStates) {
+    private void setRealisedF0(PStream lf0Pst, HTSUttModel um, int numStates) {
         int t = 0;
         int vt = 0;
         for (int i = 0; i < um.getNumUttModel(); i++) {

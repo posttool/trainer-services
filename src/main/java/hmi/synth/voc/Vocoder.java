@@ -11,7 +11,7 @@ import java.util.Random;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
-public class HTSVocoder {
+public class Vocoder {
 
     public static final int IPERIOD = 1; /* interpolation period */
     public static final int SEED = 1;
@@ -97,7 +97,7 @@ public class HTSVocoder {
      * stregths for mixed excitation PStream magpst : Fourier magnitudes PStream
      * lf0pst : Log F0
      */
-    public AudioInputStream htsMLSAVocoder(HTSParameterGeneration pdf2par, HMMData htsData) throws Exception {
+    public AudioInputStream htsMLSAVocoder(ParameterGeneration pdf2par, HMMData htsData) throws Exception {
 
         int audioSize = computeAudioSize(pdf2par.getMcepPst(), htsData);
         HTSVocoderDataProducer producer = new HTSVocoderDataProducer(audioSize, pdf2par, htsData);
@@ -136,7 +136,7 @@ public class HTSVocoder {
         return af;
     }
 
-    public double[] htsMLSAVocoder(HTSPStream lf0Pst, HTSPStream mcepPst, HTSPStream strPst, HTSPStream magPst,
+    public double[] htsMLSAVocoder(PStream lf0Pst, PStream mcepPst, PStream strPst, PStream magPst,
             boolean[] voiced, HMMData htsData, HTSVocoderDataProducer audioProducer) throws Exception {
 
         double inc, x, MaxSample;
@@ -499,7 +499,7 @@ public class HTSVocoder {
      * @param htsData
      * @return
      */
-    private int computeAudioSize(HTSPStream mcepPst, HMMData htsData) {
+    private int computeAudioSize(PStream mcepPst, HMMData htsData) {
         return mcepPst.getT() * htsData.getFperiod();
     }
 
@@ -559,14 +559,14 @@ public class HTSVocoder {
     protected class HTSVocoderDataProducer extends ProducingDoubleDataSource {
         private static final double INITIAL_MAX_AMPLITUDE = 17000.;
 
-        private HTSPStream lf0Pst;
-        private HTSPStream mcepPst;
-        private HTSPStream strPst;
-        private HTSPStream magPst;
+        private PStream lf0Pst;
+        private PStream mcepPst;
+        private PStream strPst;
+        private PStream magPst;
         private boolean[] voiced;
         private HMMData htsData;
 
-        public HTSVocoderDataProducer(int audioSize, HTSParameterGeneration pdf2par, HMMData htsData) {
+        public HTSVocoderDataProducer(int audioSize, ParameterGeneration pdf2par, HMMData htsData) {
             super(audioSize, new AmplitudeNormalizer(INITIAL_MAX_AMPLITUDE));
             lf0Pst = pdf2par.getlf0Pst();
             mcepPst = pdf2par.getMcepPst();

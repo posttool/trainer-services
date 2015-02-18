@@ -27,7 +27,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
 
-public class HTSEngine {
+public class HMMEngine {
 
     private String realisedDurations; // HMM realised duration to be save in a
                                       // file
@@ -89,7 +89,7 @@ public class HTSEngine {
         newStateDurationFactor = dval;
     }
 
-    public HTSEngine() {
+    public HMMEngine() {
         super();
         phoneAlignmentForDurations = false;
         stateAlignmentForDurations = false;
@@ -110,7 +110,7 @@ public class HTSEngine {
         HTSUttModel um = processTargetList(targetFeaturesList, d.getSentences().get(0).getSegments(), hmmv.getHMMData());
 
         /* Process UttModel */
-        HTSParameterGeneration pdf2par = new HTSParameterGeneration();
+        ParameterGeneration pdf2par = new ParameterGeneration();
         /*
          * Generate sequence of speech parameter vectors, generate parameters
          * out of sequence of pdf's
@@ -124,7 +124,7 @@ public class HTSEngine {
         /* These values are fixed in HMMVoice */
 
         /* Process generated parameters */
-        HTSVocoder par2speech = new HTSVocoder();
+        Vocoder par2speech = new Vocoder();
         /*
          * Synthesize speech waveform, generate speech out of sequence of
          * parameters
@@ -527,7 +527,7 @@ public class HTSEngine {
 
         int j;
 
-        HTSEngine hmm_tts = new HTSEngine();
+        HMMEngine hmm_tts = new HMMEngine();
 
         /*
          * htsData contains: Data in the configuration file, .pdf, tree-xxx.inf
@@ -571,8 +571,8 @@ public class HTSEngine {
          * objects. It will contain the list of models for current label file.
          */
         HTSUttModel um;
-        HTSParameterGeneration pdf2par = new HTSParameterGeneration();
-        HTSVocoder par2speech = new HTSVocoder();
+        ParameterGeneration pdf2par = new ParameterGeneration();
+        Vocoder par2speech = new Vocoder();
         AudioInputStream ais;
 
         /** Example of context features file */

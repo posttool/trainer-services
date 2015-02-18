@@ -376,7 +376,7 @@ public class CepUtils {
         }
     }
 
-    public static double[] genPulseFromFourierMag(HTSPStream mag, int n, double f0) {
+    public static double[] genPulseFromFourierMag(PStream mag, int n, double f0) {
         return genPulseFromFourierMag(mag.getParVec(n), f0);
     }
 

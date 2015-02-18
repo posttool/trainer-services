@@ -2,7 +2,7 @@ package hmi.synth.voc;
 
 import java.util.Arrays;
 
-public class HTSPStream {
+public class PStream {
 
     public static final int WLEFT = 0;
     public static final int WRIGHT = 1;
@@ -85,7 +85,7 @@ public class HTSPStream {
     private int gvLength;
 
     /* Constructor */
-    public HTSPStream(int vector_size, int utt_length, HMMData.FeatureType fea_type, int maxIterationsGV)
+    public PStream(int vector_size, int utt_length, HMMData.FeatureType fea_type, int maxIterationsGV)
             throws Exception {
         /*
          * In the c code for each PStream there is an InitDwin() and an
@@ -160,7 +160,7 @@ public class HTSPStream {
     public void setVseq(int i, double[] vec) {
         assert vec.length == ivseq[i].length;
         for (int j = 0; j < ivseq[i].length; j++) {
-            ivseq[i][j] = HTSParameterGeneration.finv(vec[j]);
+            ivseq[i][j] = ParameterGeneration.finv(vec[j]);
         }
     }
 

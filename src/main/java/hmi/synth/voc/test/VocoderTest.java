@@ -1,9 +1,13 @@
-package hmi.synth.voc;
+package hmi.synth.voc.test;
 
 import hmi.sig.AudioPlayer;
 import hmi.sig.BufferedDoubleDataSource;
 import hmi.sig.DDSAudioInputStream;
 import hmi.sig.MathUtils;
+import hmi.synth.voc.HMMData;
+import hmi.synth.voc.PStream;
+import hmi.synth.voc.Vocoder;
+import hmi.synth.voc.LEDataInputStream;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -18,7 +22,7 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 
-public class HTSVocoderTest extends HTSVocoder {
+public class VocoderTest extends Vocoder {
 
     /**
      * Stand alone testing reading parameters from files in SPTK format
@@ -26,64 +30,57 @@ public class HTSVocoderTest extends HTSVocoder {
     public static void main(String[] args) throws IOException, InterruptedException, Exception {
 
         HMMData htsData = new HMMData();
-        HTSPStream lf0Pst, mcepPst, strPst, magPst;
+        PStream lf0Pst, mcepPst, strPst, magPst;
         boolean[] voiced = null;
         LEDataInputStream lf0Data, mcepData, strData, magData;
 
-        String lf0File, mcepFile, strFile, magFile, outFile, residualFile;
-        String voiceName, voiceConfig, outDir, voiceExample, hmmTrainDir;
+        String lf0File, mcepFile, strFile, outFile, magFile, residualFile;
 
         outFile = "/Users/posttool/Documents/tmp.wav";
 
-        // Voice
-        /*
-         * voiceName = "hsmm-slt"; voiceConfig = "en_US-hsmm-slt.config";
-         * voiceExample = "cmu_us_arctic_slt_a0001"; hmmTrainDir =
-         * "/HMM-voices/HTS-demo_CMU-ARCTIC-SLT/"; // The directory where the
-         * voice was trained
-         */
-        
-//        Properties p = new Properties();
-//        p.setProperty("base", "/Users/posttool/Documents/github/voice-enst-catherine-hsmm/src/main/resources/marytts/voice/EnstCatherineHsmm/");
-//        p.setProperty("gender", "female");
-//        p.setProperty("rate", "16000");
-//        p.setProperty("alpha", "0.42");
-//        p.setProperty("logGain", "false");
-//        p.setProperty("useGV", "true");
-//        p.setProperty("maxMgcGvIter", "200");
-//        p.setProperty("maxLf0GvIter", "200");
-//        p.setProperty("featuresFile", "utt_2513.pfeats");
+        String hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/hts/";
+        String voiceExample = "snum1149"; // sstr0007 sdsg0596 slis0208 snum1142
+        // sbas0150
+
+        // Properties p = new Properties();
+        // p.setProperty("base",
+        // "/Users/posttool/Documents/github/voice-enst-catherine-hsmm/src/main/resources/marytts/voice/EnstCatherineHsmm/");
+        // p.setProperty("gender", "female");
+        // p.setProperty("rate", "16000");
+        // p.setProperty("alpha", "0.42");
+        // p.setProperty("beta", "0.3");
+        // p.setProperty("logGain", "false");
+        // p.setProperty("useGV", "false");
+        // p.setProperty("maxMgcGvIter", "200");
+        // p.setProperty("maxLf0GvIter", "200");
+        // p.setProperty("featuresFile", "utt_2513.pfeats");
 
         Properties p = new Properties();
-        p.setProperty("base", "/Users/posttool/Documents/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
+        p.setProperty("base",
+                "/Users/posttool/Documents/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
         p.setProperty("gender", "female");
         p.setProperty("rate", "16000");
-        p.setProperty("alpha", "0.45");
-        p.setProperty("beta", "0.3");
-        p.setProperty("logGain", "false");
+        p.setProperty("alpha", "0.42");
+        p.setProperty("beta", "0.0");
+        p.setProperty("logGain", "true");
         p.setProperty("useGV", "true");
+        p.setProperty("maxMgcGvIter", "200");
+        p.setProperty("maxLf0GvIter", "200");
         p.setProperty("featuresFile", "cmu_us_arctic_slt_b0487.pfeats");
 
-
-//        # acoustic models to use (HMM models or carts from other voices can be specified)
-//        acousticModels = duration F0
-//
-//        duration.model = hmm
-//        duration.attribute = d
-//
-//        F0.model = hmm
-//        F0.attribute = f0
+        // # acoustic models to use (HMM models or carts from other voices can
+        // be specified)
+        // acousticModels = duration F0
+        // duration.model = hmm
+        // duration.attribute = d
+        // F0.model = hmm
+        // F0.attribute = f0
 
         htsData.initHMMData(p);
         htsData.setUseMixExc(true);
         /* use Fourier magnitudes for pulse generation */
         htsData.setUseFourierMag(false);
 
-        hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/hts/";
-//        voiceName = "hsmm-ot";
-//        voiceConfig = "tr-hsmm-ot.config";
-        voiceExample = "slis0208";// sstr0007 sdsg0596 slis0208 snum1142
-                                  // sbas0150
         /* parameters extracted from real data with SPTK and snack */
         lf0File = hmmTrainDir + "data/lf0/" + voiceExample + ".lf0";
         mcepFile = hmmTrainDir + "data/mgc/" + voiceExample + ".mgc";
@@ -122,10 +119,10 @@ public class HTSVocoderTest extends HTSVocoder {
         voiced = new boolean[totalFrame];
 
         /* Initialise HTSPStream-s */
-        lf0Pst = new HTSPStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
-        mcepPst = new HTSPStream(mcepVsize, totalFrame, HMMData.FeatureType.MGC, 0);
-        strPst = new HTSPStream(strVsize, totalFrame, HMMData.FeatureType.STR, 0);
-        magPst = new HTSPStream(magVsize, totalFrame, HMMData.FeatureType.MAG, 0);
+        lf0Pst = new PStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
+        mcepPst = new PStream(mcepVsize, totalFrame, HMMData.FeatureType.MGC, 0);
+        strPst = new PStream(strVsize, totalFrame, HMMData.FeatureType.STR, 0);
+        magPst = new PStream(magVsize, totalFrame, HMMData.FeatureType.MAG, 0);
 
         /* load lf0 data */
         /* for lf0 i just need to load the voiced values */
@@ -162,20 +159,21 @@ public class HTSVocoderTest extends HTSVocoder {
         strData.close();
 
         /* load mag data */
-//        magData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(magFile)));
-//        for (i = 0; i < totalFrame; i++) {
-//            for (j = 0; j < magPst.getOrder(); j++)
-//                magPst.setPar(i, j, magData.readFloat());
-//            // System.out.println("i:" + i + "  f0=" + Math.exp(lf0Pst.getPar(i,
-//            // 0)) + "  mag(1)=" + magPst.getPar(i, 0) +
-//            // "  str(1)=" + strPst.getPar(i, 0) );
-//        }
-//        magData.close();
+        // magData = new LEDataInputStream(new BufferedInputStream(new
+        // FileInputStream(magFile)));
+        // for (i = 0; i < totalFrame; i++) {
+        // for (j = 0; j < magPst.getOrder(); j++)
+        // magPst.setPar(i, j, magData.readFloat());
+        // // System.out.println("i:" + i + "  f0=" + Math.exp(lf0Pst.getPar(i,
+        // // 0)) + "  mag(1)=" + magPst.getPar(i, 0) +
+        // // "  str(1)=" + strPst.getPar(i, 0) );
+        // }
+        // magData.close();
 
         AudioFormat af = getHTSAudioFormat(htsData);
         double[] audio_double = null;
 
-        HTSVocoderTest par2speech = new HTSVocoderTest();
+        VocoderTest par2speech = new VocoderTest();
 
         // par2speech.setUseLpcVocoder(true);
 
@@ -299,7 +297,7 @@ public class HTSVocoderTest extends HTSVocoder {
     public static void htsMLSAVocoderCommand(String[] args) throws IOException, InterruptedException, Exception {
 
         HMMData htsData = new HMMData();
-        HTSPStream lf0Pst, mcepPst, strPst = null, magPst = null;
+        PStream lf0Pst, mcepPst, strPst = null, magPst = null;
         boolean[] voiced = null;
         LEDataInputStream lf0Data, mcepData, strData, magData;
 
@@ -406,11 +404,11 @@ public class HTSVocoderTest extends HTSVocoder {
 
         boolean trans = true;
         // if (args[ind].contentEquals("loud")) {
-         f0Trans = f0LoudFemale;
-         strTrans = strLoudFemale;
-         magTrans = magLoudFemale;
-         mcepTrans = mcepLoudFemale;
-         System.out.println("Generating loud voice");
+        f0Trans = f0LoudFemale;
+        strTrans = strLoudFemale;
+        magTrans = magLoudFemale;
+        mcepTrans = mcepLoudFemale;
+        System.out.println("Generating loud voice");
         // } else if (args[ind].contentEquals("soft")) {
         // f0Trans = f0SoftFemale;
         // strTrans = strSoftFemale;
@@ -418,8 +416,8 @@ public class HTSVocoderTest extends HTSVocoder {
         // mcepTrans = mcepSoftFemale;
         // System.out.println("Generating soft voice");
         // } else {
-//        trans = false;
-//        System.out.println("Generating modal voice");
+        // trans = false;
+        // System.out.println("Generating modal voice");
         // }
 
         // Change these for voice effects:
@@ -479,8 +477,8 @@ public class HTSVocoderTest extends HTSVocoder {
         voiced = new boolean[totalFrame];
 
         /* Initialise HTSPStream-s */
-        lf0Pst = new HTSPStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
-        mcepPst = new HTSPStream(mcepVsize, totalFrame, HMMData.FeatureType.MGC, 0);
+        lf0Pst = new PStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
+        mcepPst = new PStream(mcepVsize, totalFrame, HMMData.FeatureType.MGC, 0);
 
         /* load lf0 data */
         /* for lf0 i just need to load the voiced values */
@@ -521,7 +519,7 @@ public class HTSVocoderTest extends HTSVocoder {
 
         /* load str data */
         if (htsData.getUseMixExc()) {
-            strPst = new HTSPStream(strVsize, totalFrame, HMMData.FeatureType.STR, 0);
+            strPst = new PStream(strVsize, totalFrame, HMMData.FeatureType.STR, 0);
             strData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(strFile)));
             for (i = 0; i < totalFrame; i++) {
                 for (j = 0; j < strPst.getOrder(); j++) {
@@ -538,7 +536,7 @@ public class HTSVocoderTest extends HTSVocoder {
         /* load mag data */
         n = 0;
         if (htsData.getUseFourierMag()) {
-            magPst = new HTSPStream(magVsize, totalFrame, HMMData.FeatureType.MAG, 0);
+            magPst = new PStream(magVsize, totalFrame, HMMData.FeatureType.MAG, 0);
             magData = new LEDataInputStream(new BufferedInputStream(new FileInputStream(magFile)));
             for (i = 0; i < totalFrame; i++) {
                 // System.out.print(n + " : ");
@@ -559,7 +557,7 @@ public class HTSVocoderTest extends HTSVocoder {
         AudioFormat af = getHTSAudioFormat(htsData);
         double[] audio_double = null;
 
-        HTSVocoderTest par2speech = new HTSVocoderTest();
+        VocoderTest par2speech = new VocoderTest();
 
         // par2speech.setUseLpcVocoder(true);
         // audio_double = par2speech.htsMLSAVocoder_residual(htsData, mcepPst,

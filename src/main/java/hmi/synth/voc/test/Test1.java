@@ -1,7 +1,16 @@
-package hmi.synth.voc;
+package hmi.synth.voc.test;
 
 import hmi.sig.AudioPlayer;
 import hmi.sig.Mfccs;
+import hmi.synth.voc.HMMData;
+import hmi.synth.voc.HMMEngine;
+import hmi.synth.voc.PStream;
+import hmi.synth.voc.ParameterGeneration;
+import hmi.synth.voc.HTSUttModel;
+import hmi.synth.voc.Vocoder;
+import hmi.synth.voc.LEDataInputStream;
+import hmi.synth.voc.PhonemeDuration;
+import hmi.synth.voc.HMMData.FeatureType;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -23,9 +32,7 @@ import javax.sound.sampled.AudioSystem;
 
 
 
-public class HTSEngineTest {
-
-	
+public class Test1 {
 
 	/**
 	 * Generation of speech using external specification of duration: using ContinuousFeatureProcessors of TARGETFEATURES Input: a
@@ -54,7 +61,7 @@ public class HTSEngineTest {
 		// String feaFile = "/f0-hsmm-experiment/arctic_a0003.pfeats";
 		// String feaFile = "/f0-hsmm-experiment/author.pfeats";
 
-		HTSEngine hmm_tts = new HTSEngine();
+		HMMEngine hmm_tts = new HMMEngine();
 		HMMData htsData = new HMMData();
 
 		/* For initialize provide the name of the hmm voice and the name of its configuration file, */
@@ -78,8 +85,8 @@ public class HTSEngineTest {
 		 * label file.
 		 */
 		HTSUttModel um = new HTSUttModel();
-		HTSParameterGeneration pdf2par = new HTSParameterGeneration();
-		HTSVocoder par2speech = new HTSVocoder();
+		ParameterGeneration pdf2par = new ParameterGeneration();
+		Vocoder par2speech = new Vocoder();
 		AudioInputStream ais;
 
 		try {
@@ -125,7 +132,7 @@ public class HTSEngineTest {
 		// context features file
 		String feaFile = "voices/cmu-slt-hsmm/cmu_us_arctic_slt_a0001.pfeats";
 
-		HTSEngine hmm_tts = new HTSEngine();
+		HMMEngine hmm_tts = new HMMEngine();
 		HMMData htsData = new HMMData();
 
 		/* For initialise provide the name of the hmm voice and the name of its configuration file, */
@@ -146,8 +153,8 @@ public class HTSEngineTest {
 		 * label file.
 		 */
 		HTSUttModel um = new HTSUttModel();
-		HTSParameterGeneration pdf2par = new HTSParameterGeneration();
-		HTSVocoder par2speech = new HTSVocoder();
+		ParameterGeneration pdf2par = new ParameterGeneration();
+		Vocoder par2speech = new Vocoder();
 		AudioInputStream ais;
 
 		// Specify external files:
@@ -265,8 +272,8 @@ public class HTSEngineTest {
 	 * @throws Exception
 	 *             If the number of frames in the lf0 file is not the same as represented in the total duration (in frames).
 	 */
-	public void loadF0contour(String lf0File, int totalDurationFrames, HTSParameterGeneration pdf2par) throws Exception {
-		HTSPStream lf0Pst = null;
+	public void loadF0contour(String lf0File, int totalDurationFrames, ParameterGeneration pdf2par) throws Exception {
+		PStream lf0Pst = null;
 		boolean[] voiced = null;
 		LEDataInputStream lf0Data;
 
@@ -297,7 +304,7 @@ public class HTSEngineTest {
 			System.out.println("totalDurationFrames = " + totalDurationFrames + "  totalF0Frames = " + totalFrame);
 
 		voiced = new boolean[totalFrame];
-		lf0Pst = new HTSPStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
+		lf0Pst = new PStream(lf0Vsize, totalFrame, HMMData.FeatureType.LF0, 0);
 
 		/* load lf0 data */
 		/* for lf0 i just need to load the voiced values */
@@ -351,7 +358,7 @@ public class HTSEngineTest {
 		String filesList = "/quality-control-experiment/slt/phonefeatures-list.txt";
 
 		// Create a htsengine object
-		HTSEngine hmm_tts = new HTSEngine();
+		HMMEngine hmm_tts = new HMMEngine();
 
 		// Create and set HMMData
 		HMMData htsData = new HMMData();
@@ -382,8 +389,8 @@ public class HTSEngineTest {
 				 * the current label file.
 				 */
 				HTSUttModel um = new HTSUttModel();
-				HTSParameterGeneration pdf2par = new HTSParameterGeneration();
-				HTSVocoder par2speech = new HTSVocoder();
+				ParameterGeneration pdf2par = new ParameterGeneration();
+				Vocoder par2speech = new Vocoder();
 				AudioInputStream ais;
 
 				/* Process label file of context features and creates UttModel um. */
@@ -707,7 +714,7 @@ public class HTSEngineTest {
 
 	public static void main(String[] args) throws Exception {
 
-		HTSEngineTest test = new HTSEngineTest();
+		Test1 test = new Test1();
 
 		// generate parameters out of a hsmm voice
 		 test.generateParameters();
