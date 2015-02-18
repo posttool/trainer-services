@@ -1,4 +1,4 @@
-package hmi.synth.voc.target;
+package hmi.synth.target;
 
 import hmi.data.Boundary;
 import hmi.data.Phone;

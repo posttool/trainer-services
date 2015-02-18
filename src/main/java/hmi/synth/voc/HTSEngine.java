@@ -4,7 +4,7 @@ import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
-import hmi.synth.voc.target.Target;
+import hmi.synth.target.Target;
 
 import java.io.BufferedReader;
 import java.io.File;

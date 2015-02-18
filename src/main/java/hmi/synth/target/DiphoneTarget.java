@@ -1,4 +1,4 @@
-package hmi.synth.voc.target;
+package hmi.synth.target;
 
 import hmi.ml.feature.FeatureVector;
 import hmi.phone.Allophone;
