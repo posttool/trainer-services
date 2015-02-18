@@ -43,7 +43,7 @@ public class HMMEngine {
                                                  // extends or shrinks the
                                                  // duration of a state
                                                  // it can be used to try to
-                                                 // syncronise the duration
+                                                 // syncronize the duration
                                                  // specified in a external
                                                  // file
                                                  // and the number of frames in
