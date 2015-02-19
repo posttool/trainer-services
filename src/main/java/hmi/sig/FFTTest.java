@@ -1,5 +1,7 @@
 package hmi.sig;
 
+import hmi.util.MathUtils;
+
 import java.io.File;
 
 import javax.sound.sampled.AudioInputStream;

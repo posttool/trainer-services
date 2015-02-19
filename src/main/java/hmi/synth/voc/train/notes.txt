@@ -1,0 +1,3 @@
+to build htk, install xquartz and link
+http://xquartz.macosforge.org/landing/
+http://stackoverflow.com/questions/11465258/xlib-h-not-found-when-building-graphviz-on-mac-os-x-10-8-mountain-lion

@@ -27,18 +27,18 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
 
-public class PEngine {
+public class PVoice {
 
     private String realisedDurations; // HMM realised duration to be save in a
                                       // file
     private boolean phoneAlignmentForDurations;
     private boolean stateAlignmentForDurations = false;
     private Vector<PhoneDuration> alignDur = null; // list of external
-                                                     // duration per phone for
-                                                     // alignment
-                                                     // this are durations
-                                                     // loaded from a external
-                                                     // file
+                                                   // duration per phone for
+                                                   // alignment
+                                                   // this are durations
+                                                   // loaded from a external
+                                                   // file
     private double newStateDurationFactor = 0.5; // this is a factor that
                                                  // extends or shrinks the
                                                  // duration of a state
@@ -89,61 +89,26 @@ public class PEngine {
         newStateDurationFactor = dval;
     }
 
-    public PEngine() {
+    public PVoice() {
         super();
         phoneAlignmentForDurations = false;
         stateAlignmentForDurations = false;
         alignDur = null;
     }
 
-    public Audio process(SpeechMarkup d, List<Target> targetFeaturesList) throws Exception {
+    public Audio process(SpeechMarkup d, PData pdata, List<Target> targetFeaturesList) throws Exception {
 
-        Voice v = d.getVoice();
-        assert v instanceof HMMVoice;
-        HMMVoice hmmv = (HMMVoice) v;
+        PUttModel um = processTargetList(targetFeaturesList, d.getSentences().get(0).getSegments(), pdata);
 
-        /**
-         * The utterance model, um, is a Vector (or linked list) of Model
-         * objects. It will contain the list of models for current label file.
-         */
-        /* Process label file of context features and creates UttModel um */
-        UttModel um = processTargetList(targetFeaturesList, d.getSentences().get(0).getSegments(), hmmv.getHMMData());
+        ParameterGenerator pdf2par = new ParameterGenerator();
+       
+        pdf2par.htsMaximumLikelihoodParameterGeneration(um, pdata);
 
-        /* Process UttModel */
-        ParameterGeneration pdf2par = new ParameterGeneration();
-        /*
-         * Generate sequence of speech parameter vectors, generate parameters
-         * out of sequence of pdf's
-         */
-        pdf2par.htsMaximumLikelihoodParameterGeneration(um, hmmv.getHMMData());
-
-        /*
-         * set parameters for generation: f0Std, f0Mean and length, default
-         * values 1.0, 0.0 and 0.0
-         */
-        /* These values are fixed in HMMVoice */
-
-        /* Process generated parameters */
         Vocoder par2speech = new Vocoder();
-        /*
-         * Synthesize speech waveform, generate speech out of sequence of
-         * parameters
-         */
-        AudioInputStream ais = par2speech.htsMLSAVocoder(pdf2par, hmmv.getHMMData());
+        
+        AudioInputStream ais = par2speech.htsMLSAVoPcoder(pdf2par, pdata);
 
-        Audio output = new Audio(outputType(), d.getLocale());
-        if (d.getAudioFileFormat() != null) {
-            output.setAudioFileFormat(d.getAudioFileFormat());
-            if (d.getAudio() != null) {
-                // This (empty) AppendableSequenceAudioInputStream object allows
-                // a
-                // thread reading the audio data on the other "end" to get to
-                // our data as we are producing it.
-                assert d.getAudio() instanceof AppendableSequenceAudioInputStream;
-                output.setAudio(d.getAudio());
-            }
-        }
-        output.appendAudio(ais);
+        
 
         // set the actualDurations in tokensAndBoundaries
         if (tokensAndBoundaries != null)
@@ -153,7 +118,7 @@ public class PEngine {
 
     }
 
-    public static void setRealisedProsody(List<Segment> tokensAndBoundaries, UttModel um) {
+    public static void setRealisedProsody(List<Segment> tokensAndBoundaries, PUttModel um) {
         int i, j, index;
         NodeList no1, no2;
         NamedNodeMap att;
@@ -207,7 +172,7 @@ public class PEngine {
         }
     }
 
-    public UttModel processUttFromFile(String feaFile, PData htsData) throws Exception {
+    public PUttModel processUttFromFile(String feaFile, PData htsData) throws Exception {
 
         List<Target> targetFeaturesList = getTargetsFromFile(feaFile, htsData);
         return processTargetList(targetFeaturesList, null, htsData);
@@ -244,11 +209,11 @@ public class PEngine {
         return targets;
     }
 
-    public static List<Target> getTargets(Scanner s, PData htsData) {
+    public static List<Target> getTargets(Scanner s, PData pdata) {
         int i;
         // Scanner s = null;
         String nextLine;
-        FeatureDefinition feaDef = htsData.getFeatureDefinition();
+        FeatureDefinition feaDef = pdata.getFeatureDefinition();
         List<Target> targets = new ArrayList<Target>();
         FeatureVector fv;
         Target t;
@@ -290,26 +255,26 @@ public class PEngine {
      * @param um
      *            : as a result of this process a utterance model list is
      *            created for generation and then realisation
-     * @param htsData
+     * @param pdata
      *            : parameters and configuration of the voice
      * @throws Exception
      */
-    protected UttModel processTargetList(List<Target> targetFeaturesList, List<Segment> segmentsAndBoundaries,
-            PData htsData) throws Exception {
-        UttModel um = new UttModel();
-        CARTSet cart = htsData.getCartTreeSet();
+    protected PUttModel processTargetList(List<Target> targetFeaturesList, List<Segment> segmentsAndBoundaries,
+            PData pdata) throws Exception {
+        PUttModel um = new PUttModel();
+        CARTSet cart = pdata.getCartTreeSet();
         realisedDurations = "#\n";
         int numLab = 0;
         double diffdurOld = 0.0;
         int alignDurSize = 0;
-        final float fperiodmillisec = ((float) htsData.getFperiod() / (float) htsData.getRate()) * 1000;
-        final float fperiodsec = ((float) htsData.getFperiod() / (float) htsData.getRate());
+        final float fperiodmillisec = ((float) pdata.getFperiod() / (float) pdata.getRate()) * 1000;
+        final float fperiodsec = ((float) pdata.getFperiod() / (float) pdata.getRate());
         boolean firstPh = true;
         float durVal = 0.0f;
-        FeatureDefinition feaDef = htsData.getFeatureDefinition();
+        FeatureDefinition feaDef = pdata.getFeatureDefinition();
 
         int featureIndex = feaDef.getFeatureIndex("phone");
-        if (htsData.getUseAcousticModels()) {
+        if (pdata.getUseAcousticModels()) {
             phoneAlignmentForDurations = true;
             System.out.println("Using prosody from acoustparams.");
         } else {
@@ -328,7 +293,7 @@ public class PEngine {
             m.setPhoneName(fv.getFeatureAsString(featureIndex, feaDef));
 
             // Check if context-dependent gv (gv without sil)
-            if (htsData.getUseContextDependentGV()) {
+            if (pdata.getUseContextDependentGV()) {
                 if (m.getPhoneName().contentEquals("_"))
                     m.setGvSwitch(false);
             }
@@ -338,108 +303,98 @@ public class PEngine {
 
             // get the duration and f0 values from the acoustparams =
             // segmentsAndBoundaries
-            if (phoneAlignmentForDurations && segmentsAndBoundaries != null) {
-                Element e = segmentsAndBoundaries.get(i);
-                // System.out.print("HTSEngine: phone=" + m.getPhoneName() +
-                // "  TagName=" + e.getTagName());
-                // get the durations of the Gaussians, because we need to know
-                // how long each estate should be
-                // knowing the duration of each state we can modified it so the
-                // 5 states reflect the external duration
-                // Here the duration for phones and sil (_) are calcualted
-                diffdurNew = cart.searchDurInCartTree(m, fv, htsData, firstPh, false, diffdurOld);
+//            if (phoneAlignmentForDurations && segmentsAndBoundaries != null) {
+//                Element e = segmentsAndBoundaries.get(i);
+//                // System.out.print("HTSEngine: phone=" + m.getPhoneName() +
+//                // "  TagName=" + e.getTagName());
+//                // get the durations of the Gaussians, because we need to know
+//                // how long each estate should be
+//                // knowing the duration of each state we can modified it so the
+//                // 5 states reflect the external duration
+//                // Here the duration for phones and sil (_) are calcualted
+//                diffdurNew = cart.searchDurInCartTree(m, fv, pdata, firstPh, false, diffdurOld);
+//
+//                if (e.getTagName().contentEquals("ph")) {
+//                    m.setXmlDur(e.getAttribute("d"));
+//                    durVal = Float.parseFloat(m.getXmlDur());
+//                    // System.out.println("  durVal=" + durVal +
+//                    // " totalDurGauss=" + (fperiodmillisec * m.getTotalDur()) +
+//                    // "(" +
+//                    // m.getTotalDur() + " frames)" );
+//                    // get proportion of this duration for each state;
+//                    // m.getTotalDur() contains total duration of the 5 states
+//                    // in
+//                    // frames
+//                    double durationsFraction = durVal / (fperiodmillisec * m.getTotalDur());
+//                    m.setTotalDur(0);
+//                    for (int k = 0; k < cart.getNumStates(); k++) {
+//                        // System.out.print("   state: " + k +
+//                        // " durFromGaussians=" + m.getDur(k));
+//                        int newStateDuration = (int) (durationsFraction * m.getDur(k) + newStateDurationFactor);
+//                        newStateDuration = Math.max(1, newStateDuration);
+//                        m.setDur(k, newStateDuration);
+//                        m.incrTotalDur(newStateDuration);
+//                        // System.out.println("   durNew=" + m.getDur(k));
+//                    }
+//
+//                } else if (e.getTagName().contentEquals("boundary")) {
+//                    durVal = 0;
+//                    if (!e.getAttribute("duration").isEmpty())
+//                        durVal = Float.parseFloat(e.getAttribute("duration"));
+//
+//                    // TODO: here we need to differentiate a duration coming
+//                    // from outside and one fixed by the BoundaryModel
+//                    // theBoundaryModel fix always
+//                    // duration="400" for breakindex
+//                    // durations different from 400 milisec. are used here
+//                    // otherwise it is ignored and use the
+//                    // the duration calculated from the gaussians instead.
+//                    if (durVal != 400) {
+//                        // if duration comes from a specified duration in
+//                        // miliseconds, i use that
+//                        int durValFrames = Math.round(durVal / fperiodmillisec);
+//                        int totalDurGaussians = m.getTotalDur();
+//                        m.setTotalDur(durValFrames);
+//                        // System.out.println("  boundary attribute:duration=" +
+//                        // durVal + "  in frames=" + durValFrames);
+//
+//                        // the specified duration has to be split among the five
+//                        // states
+//                        float durationsFraction = durVal / (fperiodmillisec * m.getTotalDur());
+//                        m.setTotalDur(0);
+//                        for (int k = 0; k < cart.getNumStates(); k++) {
+//                            // System.out.print("   state: " + k +
+//                            // " durFromGaussians=" + m.getDur(k));
+//                            int newStateDuration = Math.round(((float) m.getDur(k) / (float) totalDurGaussians)
+//                                    * durValFrames);
+//                            newStateDuration = Math.max(newStateDuration, 1);
+//                            m.setDur(k, newStateDuration);
+//                            m.setTotalDur(m.getTotalDur() + m.getDur(k));
+//                            // System.out.println("   durNew=" + m.getDur(k));
+//                        }
+//
+//                    } else {
+//                        if (!e.getAttribute("breakindex").isEmpty()) {
+//                            durVal = Float.parseFloat(e.getAttribute("breakindex"));
+//                            // System.out.print("   boundary attribute:breakindex="
+//                            // + durVal);
+//                        }
+//                        durVal = (m.getTotalDur() * fperiodmillisec);
+//                    }
+//                    // System.out.println("  setXml(durVal)=" + durVal);
+//                    m.setXmlDur(Float.toString(durVal));
+//                }
+//
+//                // set F0 values
+//                if (e.hasAttribute("f0")) {
+//                    m.setXmlF0(e.getAttribute("f0"));
+//                    // System.out.println("   f0=" + e.getAttribute("f0"));
+//                }
 
-                if (e.getTagName().contentEquals("ph")) {
-                    m.setXmlDur(e.getAttribute("d"));
-                    durVal = Float.parseFloat(m.getXmlDur());
-                    // System.out.println("  durVal=" + durVal +
-                    // " totalDurGauss=" + (fperiodmillisec * m.getTotalDur()) +
-                    // "(" +
-                    // m.getTotalDur() + " frames)" );
-                    // get proportion of this duration for each state;
-                    // m.getTotalDur() contains total duration of the 5 states
-                    // in
-                    // frames
-                    double durationsFraction = durVal / (fperiodmillisec * m.getTotalDur());
-                    m.setTotalDur(0);
-                    for (int k = 0; k < cart.getNumStates(); k++) {
-                        // System.out.print("   state: " + k +
-                        // " durFromGaussians=" + m.getDur(k));
-                        int newStateDuration = (int) (durationsFraction * m.getDur(k) + newStateDurationFactor);
-                        newStateDuration = Math.max(1, newStateDuration);
-                        m.setDur(k, newStateDuration);
-                        m.incrTotalDur(newStateDuration);
-                        // System.out.println("   durNew=" + m.getDur(k));
-                    }
-
-                } else if (e.getTagName().contentEquals("boundary")) { // the
-                                                                       // duration
-                                                                       // for
-                                                                       // boundaries
-                                                                       // predicted
-                                                                       // in the
-                                                                       // AcousticModeller
-                                                                       // is not
-                                                                       // calculated
-                                                                       // with
-                                                                       // HMMs
-                    durVal = 0;
-                    if (!e.getAttribute("duration").isEmpty())
-                        durVal = Float.parseFloat(e.getAttribute("duration"));
-
-                    // TODO: here we need to differentiate a duration coming
-                    // from outside and one fixed by the BoundaryModel
-                    // theBoundaryModel fix always
-                    // duration="400" for breakindex
-                    // durations different from 400 milisec. are used here
-                    // otherwise it is ignored and use the
-                    // the duration calculated from the gaussians instead.
-                    if (durVal != 400) {
-                        // if duration comes from a specified duration in
-                        // miliseconds, i use that
-                        int durValFrames = Math.round(durVal / fperiodmillisec);
-                        int totalDurGaussians = m.getTotalDur();
-                        m.setTotalDur(durValFrames);
-                        // System.out.println("  boundary attribute:duration=" +
-                        // durVal + "  in frames=" + durValFrames);
-
-                        // the specified duration has to be split among the five
-                        // states
-                        float durationsFraction = durVal / (fperiodmillisec * m.getTotalDur());
-                        m.setTotalDur(0);
-                        for (int k = 0; k < cart.getNumStates(); k++) {
-                            // System.out.print("   state: " + k +
-                            // " durFromGaussians=" + m.getDur(k));
-                            int newStateDuration = Math.round(((float) m.getDur(k) / (float) totalDurGaussians)
-                                    * durValFrames);
-                            newStateDuration = Math.max(newStateDuration, 1);
-                            m.setDur(k, newStateDuration);
-                            m.setTotalDur(m.getTotalDur() + m.getDur(k));
-                            // System.out.println("   durNew=" + m.getDur(k));
-                        }
-
-                    } else {
-                        if (!e.getAttribute("breakindex").isEmpty()) {
-                            durVal = Float.parseFloat(e.getAttribute("breakindex"));
-                            // System.out.print("   boundary attribute:breakindex="
-                            // + durVal);
-                        }
-                        durVal = (m.getTotalDur() * fperiodmillisec);
-                    }
-                    // System.out.println("  setXml(durVal)=" + durVal);
-                    m.setXmlDur(Float.toString(durVal));
-                }
-
-                // set F0 values
-                if (e.hasAttribute("f0")) {
-                    m.setXmlF0(e.getAttribute("f0"));
-                    // System.out.println("   f0=" + e.getAttribute("f0"));
-                }
-
-            } else { // Estimate state duration from state duration model
+//            } else { // Estimate state duration from state duration model
                      // (Gaussian)
-                diffdurNew = cart.searchDurInCartTree(m, fv, htsData, firstPh, false, diffdurOld);
-            }
+                diffdurNew = cart.searchDurInCartTree(m, fv, pdata, firstPh, false, diffdurOld);
+//            }
 
             um.setTotalFrame(um.getTotalFrame() + m.getTotalDur());
             // System.out.println("   model=" + m.getPhoneName() +
@@ -465,7 +420,7 @@ public class PEngine {
             // of this model are voiced or unvoiced
             // even if f0 is taken from Xml here we need to set the
             // voived/unvoiced values per model and state
-            cart.searchLf0InCartTree(m, fv, feaDef, htsData.getUV());
+            cart.searchLf0InCartTree(m, fv, feaDef, pdata.getUV());
 
             /* Find pdf for Mgc, this function sets the pdf for each state. */
             cart.searchMgcInCartTree(m, fv, feaDef);
@@ -474,14 +429,14 @@ public class PEngine {
              * Find pdf for strengths, this function sets the pdf for each
              * state.
              */
-            if (htsData.getTreeStrStream() != null)
+            if (pdata.getTreeStrStream() != null)
                 cart.searchStrInCartTree(m, fv, feaDef);
 
             /*
              * Find pdf for Fourier magnitudes, this function sets the pdf for
              * each state.
              */
-            if (htsData.getTreeMagStream() != null)
+            if (pdata.getTreeMagStream() != null)
                 cart.searchMagInCartTree(m, fv, feaDef);
 
             /* increment number of models in utterance model */
@@ -527,7 +482,7 @@ public class PEngine {
 
         int j;
 
-        PEngine hmm_tts = new PEngine();
+        PVoice hmm_tts = new PVoice();
 
         /*
          * htsData contains: Data in the configuration file, .pdf, tree-xxx.inf
@@ -570,8 +525,8 @@ public class PEngine {
          * The utterance model, um, is a Vector (or linked list) of Model
          * objects. It will contain the list of models for current label file.
          */
-        UttModel um;
-        ParameterGeneration pdf2par = new ParameterGeneration();
+        PUttModel um;
+        ParameterGenerator pdf2par = new ParameterGenerator();
         Vocoder par2speech = new Vocoder();
         AudioInputStream ais;
 
@@ -612,7 +567,7 @@ public class PEngine {
              * Synthesize speech waveform, generate speech out of sequence of
              * parameters
              */
-            ais = par2speech.htsMLSAVocoder(pdf2par, htsData);
+            ais = par2speech.htsMLSAVoPcoder(pdf2par, htsData);
 
             System.out.println("Saving to file: " + outWavFile);
             System.out.println("Realised durations saved to file: " + durFile);

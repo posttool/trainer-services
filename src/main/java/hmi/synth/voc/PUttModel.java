@@ -2,22 +2,16 @@ package hmi.synth.voc;
 
 import java.util.Vector;
 
-public class UttModel {
+public class PUttModel {
 
     private int numModel; /* # of models for current utterance */
     private int numState; /* # of HMM states for current utterance */
     private int totalFrame; /* # of frames for current utterance */
     private int lf0Frame; /* # of frames that are voiced or non-zero */
-    private Vector<PModel> modelList; /*
-                                         * This will be a list of Model objects
-                                         * for current utterance
-                                         */
-    private String realisedAcoustParams; /*
-                                          * list of phones and actual realised
-                                          * durations for each one
-                                          */
+    private Vector<PModel> modelList;
+    private String realisedAcoustParams;
 
-    public UttModel() {
+    public PUttModel() {
         numModel = 0;
         numState = 0;
         totalFrame = 0;

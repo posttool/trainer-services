@@ -97,7 +97,7 @@ public class Vocoder {
      * stregths for mixed excitation PStream magpst : Fourier magnitudes PStream
      * lf0pst : Log F0
      */
-    public AudioInputStream htsMLSAVocoder(ParameterGeneration pdf2par, PData htsData) throws Exception {
+    public AudioInputStream htsMLSAVocoder(ParameterGenerator pdf2par, PData htsData) throws Exception {
 
         int audioSize = computeAudioSize(pdf2par.getMcepPst(), htsData);
         HTSVocoderDataProducer producer = new HTSVocoderDataProducer(audioSize, pdf2par, htsData);
@@ -566,7 +566,7 @@ public class Vocoder {
         private boolean[] voiced;
         private PData htsData;
 
-        public HTSVocoderDataProducer(int audioSize, ParameterGeneration pdf2par, PData htsData) {
+        public HTSVocoderDataProducer(int audioSize, ParameterGenerator pdf2par, PData htsData) {
             super(audioSize, new AmplitudeNormalizer(INITIAL_MAX_AMPLITUDE));
             lf0Pst = pdf2par.getlf0Pst();
             mcepPst = pdf2par.getMcepPst();

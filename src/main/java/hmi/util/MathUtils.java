@@ -1,4 +1,6 @@
-package hmi.sig;
+package hmi.util;
+
+import hmi.sig.ComplexNumber;
 
 import java.util.Arrays;
 import java.util.Collections;

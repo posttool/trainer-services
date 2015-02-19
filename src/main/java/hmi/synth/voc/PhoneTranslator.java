@@ -33,22 +33,6 @@ public class PhoneTranslator {
         contextFeatureFile = str;
     }
 
-    /**
-     * Convert the feature vector into a context model name to be used by
-     * HTS/HTK.
-     * 
-     * @param def
-     *            a feature definition
-     * @param featureVector
-     *            a feature vector which must be consistent with the Feature
-     *            definition
-     * @param featureList
-     *            a list of features to use in constructing the context model
-     *            name. If missing, all features in the feature definition are
-     *            used.
-     * @return the string representation of one context name. NOTE: is this
-     *         function used somewhere? CHECK!
-     */
     public String features2context(FeatureDefinition def, FeatureVector featureVector, Vector<String> featureList) {
 
         int feaAsInt;
@@ -122,21 +106,6 @@ public class PhoneTranslator {
         return contextName.toString();
     } /* method features2context */
 
-    /**
-     * Convert the feature vector into a context model name to be used by
-     * HTS/HTK.
-     * 
-     * @param def
-     *            a feature definition
-     * @param featureVector
-     *            a feature vector which must be consistent with the Feature
-     *            definition
-     * @param featureList
-     *            a list of features to use in constructing the context model
-     *            name. If missing, all features in the feature definition are
-     *            used.
-     * @return the string representation of one context name.
-     */
     public String features2LongContext(FeatureDefinition def, FeatureVector featureVector, Vector<String> featureList) {
         if (featureList == null) {
             featureList = new Vector<String>(Arrays.asList(def.getFeatureNames().split("\\s+")));
@@ -184,13 +153,6 @@ public class PhoneTranslator {
         }
     }
 
-    /**
-     * Translation table for labels which are incompatible with HTK or shell
-     * filenames See common_routines.pl in HTS training.
-     * 
-     * @param lab
-     * @return String
-     */
     public String replaceTrickyPhones(String lab) {
 
         String s = lab;
@@ -201,16 +163,6 @@ public class PhoneTranslator {
         return s;
     }
 
-    /**
-     * Translation table for labels which are incompatible with HTK or shell
-     * filenames See common_routines.pl in HTS training. In this function the
-     * phones as used internally in HTSEngine are changed back to the allophone
-     * set, this function is necessary when correcting the actual durations of
-     * AcousticPhonemes.
-     * 
-     * @param lab
-     * @return String
-     */
     public String replaceBackTrickyPhones(String lab) {
 
         String s = lab;
@@ -221,10 +173,6 @@ public class PhoneTranslator {
         return s;
     }
 
-    /**
-     * Shorten the key name (to make the full context names shorter) See
-     * common_routines.pl in HTS training. not needed CHECK
-     */
     public String shortenPfeat(String fea) {
 
         // First time: need to do the shortening:

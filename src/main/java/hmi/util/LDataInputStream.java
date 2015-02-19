@@ -1,4 +1,4 @@
-package hmi.synth.voc;
+package hmi.util;
 
 import java.io.DataInput;
 import java.io.DataInputStream;

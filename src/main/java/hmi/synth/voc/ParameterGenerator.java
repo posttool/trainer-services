@@ -12,7 +12,7 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ParameterGeneration {
+public class ParameterGenerator {
 
     public static final double INFTY = ((double) 1.0e+38);
     public static final double INFTY2 = ((double) 1.0e+19);
@@ -83,7 +83,7 @@ public class ParameterGeneration {
         return 1.0 / x;
     }
 
-    public void htsMaximumLikelihoodParameterGeneration(UttModel um, final PData htsData) throws Exception {
+    public void htsMaximumLikelihoodParameterGeneration(PUttModel um, final PData htsData) throws Exception {
         CARTSet ms = htsData.getCartTreeSet();
 
         /* Initialisation of PStream objects */
@@ -420,7 +420,7 @@ public class ParameterGeneration {
 //        }
 //    }
 
-    private void loadXmlF0(UttModel um, PData htsData) throws Exception {
+    private void loadXmlF0(PUttModel um, PData htsData) throws Exception {
         System.out.println("Using f0 from XML acoustparams");
         int i, n, numVoiced;
         PModel m;
@@ -546,7 +546,7 @@ public class ParameterGeneration {
         }
     }
 
-    private void setRealisedF0(PStream lf0Pst, UttModel um, int numStates) {
+    private void setRealisedF0(PStream lf0Pst, PUttModel um, int numStates) {
         int t = 0;
         int vt = 0;
         for (int i = 0; i < um.getNumUttModel(); i++) {

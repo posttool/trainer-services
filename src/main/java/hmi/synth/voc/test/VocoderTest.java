@@ -3,11 +3,11 @@ package hmi.synth.voc.test;
 import hmi.sig.AudioPlayer;
 import hmi.sig.BufferedDoubleDataSource;
 import hmi.sig.DDSAudioInputStream;
-import hmi.sig.MathUtils;
 import hmi.synth.voc.PData;
 import hmi.synth.voc.PStream;
 import hmi.synth.voc.Vocoder;
-import hmi.synth.voc.LDataInputStream;
+import hmi.util.LDataInputStream;
+import hmi.util.MathUtils;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
@@ -29,7 +29,7 @@ public class VocoderTest extends Vocoder {
      */
     public static void main(String[] args) throws IOException, InterruptedException, Exception {
 
-        PData htsData = new PData();
+        PData pdata = new PData();
         PStream lf0Pst, mcepPst, strPst, magPst;
         boolean[] voiced = null;
         LDataInputStream lf0Data, mcepData, strData, magData;
@@ -39,7 +39,7 @@ public class VocoderTest extends Vocoder {
         outFile = "/Users/posttool/Documents/tmp.wav";
 
         String hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/hts/";
-        String voiceExample = "snum1143"; // sstr0007 sdsg0596 slis0208 snum1142
+        String voiceExample = "sdsg0596"; // sstr0007 sdsg0596 slis0208 snum1142
         // sbas0150
 
         // Properties p = new Properties();
@@ -55,9 +55,23 @@ public class VocoderTest extends Vocoder {
         // p.setProperty("maxLf0GvIter", "200");
         // p.setProperty("featuresFile", "utt_2513.pfeats");
 
+//        Properties p = new Properties();
+//        p.setProperty("base",
+//                "/Users/posttool/Documents/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
+//        p.setProperty("gender", "female");
+//        p.setProperty("rate", "16000");
+//        p.setProperty("alpha", "0.42");
+//        p.setProperty("beta", "0.0");
+//        p.setProperty("logGain", "true");
+//        p.setProperty("useGV", "true");
+//        p.setProperty("maxMgcGvIter", "200");
+//        p.setProperty("maxLf0GvIter", "200");
+//        p.setProperty("featuresFile", "cmu_us_arctic_slt_b0487.pfeats");
+        
+        
         Properties p = new Properties();
         p.setProperty("base",
-                "/Users/posttool/Documents/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
+                "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/mary/voice-my_hmmmm_voice-hsmm/src/main/resources/marytts/voice/My_hmmmm_voiceHsmm/");
         p.setProperty("gender", "female");
         p.setProperty("rate", "16000");
         p.setProperty("alpha", "0.42");
@@ -66,8 +80,10 @@ public class VocoderTest extends Vocoder {
         p.setProperty("useGV", "true");
         p.setProperty("maxMgcGvIter", "200");
         p.setProperty("maxLf0GvIter", "200");
-        p.setProperty("featuresFile", "cmu_us_arctic_slt_b0487.pfeats");
-
+        p.setProperty("featuresFile", "features_example.pfeats");
+        p.setProperty("excitationFilters", "mix_excitation_5filters_99taps_16Kz.txt");
+       
+        
         // # acoustic models to use (HMM models or carts from other voices can
         // be specified)
         // acousticModels = duration F0
@@ -76,10 +92,10 @@ public class VocoderTest extends Vocoder {
         // F0.model = hmm
         // F0.attribute = f0
 
-        htsData.initHMMData(p);
-        htsData.setUseMixExc(true);
+        pdata.initHMMData(p);
+        pdata.setUseMixExc(true);
         /* use Fourier magnitudes for pulse generation */
-        htsData.setUseFourierMag(false);
+        pdata.setUseFourierMag(false);
 
         /* parameters extracted from real data with SPTK and snack */
         lf0File = hmmTrainDir + "data/lf0/" + voiceExample + ".lf0";
@@ -87,10 +103,10 @@ public class VocoderTest extends Vocoder {
         strFile = hmmTrainDir + "data/str/" + voiceExample + ".str";
         magFile = hmmTrainDir + "data/mag/" + voiceExample + ".mag";
 
-        int mcepVsize = htsData.getCartTreeSet().getMcepVsize();
-        int strVsize = htsData.getCartTreeSet().getStrVsize();
-        int lf0Vsize = htsData.getCartTreeSet().getLf0Stream();
-        int magVsize = htsData.getCartTreeSet().getMagVsize();
+        int mcepVsize = pdata.getCartTreeSet().getMcepVsize();
+        int strVsize = pdata.getCartTreeSet().getStrVsize();
+        int lf0Vsize = pdata.getCartTreeSet().getLf0Stream();
+        int magVsize = pdata.getCartTreeSet().getMagVsize();
 
         int totalFrame = 0;
         int lf0VoicedFrame = 0;
@@ -170,14 +186,14 @@ public class VocoderTest extends Vocoder {
         // }
         // magData.close();
 
-        AudioFormat af = getHTSAudioFormat(htsData);
+        AudioFormat af = getHTSAudioFormat(pdata);
         double[] audio_double = null;
 
         VocoderTest par2speech = new VocoderTest();
 
         // par2speech.setUseLpcVocoder(true);
 
-        audio_double = par2speech.htsMLSAVocoder(lf0Pst, mcepPst, strPst, magPst, voiced, htsData, null);
+        audio_double = par2speech.htsMLSAVocoder(lf0Pst, mcepPst, strPst, magPst, voiced, pdata, null);
         // audio_double = par2speech.htsMLSAVocoder_residual(htsData, mcepPst,
         // resFile);
 
@@ -296,7 +312,7 @@ public class VocoderTest extends Vocoder {
      * */
     public static void htsMLSAVocoderCommand(String[] args) throws IOException, InterruptedException, Exception {
 
-        PData htsData = new PData();
+        PData pdata = new PData();
         PStream lf0Pst, mcepPst, strPst = null, magPst = null;
         boolean[] voiced = null;
         LDataInputStream lf0Data, mcepData, strData, magData;
@@ -353,16 +369,16 @@ public class VocoderTest extends Vocoder {
         // set values that the vocoder needs
         // Type of features:
         int ind = 0;
-        htsData.setStage(Integer.parseInt(args[ind++])); // sets gamma
-        htsData.setAlpha(Float.parseFloat(args[ind++])); // set alpha
+        pdata.setStage(Integer.parseInt(args[ind++])); // sets gamma
+        pdata.setAlpha(Float.parseFloat(args[ind++])); // set alpha
         if (args[ind++].contentEquals("1"))
-            htsData.setUseLogGain(true); // use log gain
+            pdata.setUseLogGain(true); // use log gain
         else
-            htsData.setUseLogGain(false);
-        htsData.setBeta(Float.parseFloat(args[ind++])); // set beta: for
+            pdata.setUseLogGain(false);
+        pdata.setBeta(Float.parseFloat(args[ind++])); // set beta: for
                                                         // postfiltering
-        htsData.setRate(Integer.parseInt(args[ind++])); // rate
-        htsData.setFperiod(Integer.parseInt(args[ind++])); // period
+        pdata.setRate(Integer.parseInt(args[ind++])); // rate
+        pdata.setFperiod(Integer.parseInt(args[ind++])); // period
 
         /* parameters extracted from real data with SPTK and snack */
         mcepFile = args[ind++];
@@ -377,26 +393,26 @@ public class VocoderTest extends Vocoder {
         // Optional:
         // if using mixed excitation
         if (args.length > (ind + 1)) {
-            htsData.setUseMixExc(true);
+            pdata.setUseMixExc(true);
             strFile = args[ind++];
             strVsize = Integer.parseInt(args[ind++]);
             FileInputStream mixedFiltersStream = new FileInputStream(args[ind++]);
-            htsData.setNumFilters(Integer.parseInt(args[ind++]));
-            htsData.readMixedExcitationFilters(mixedFiltersStream);
-            htsData.setPdfStrStream(null);
+            pdata.setNumFilters(Integer.parseInt(args[ind++]));
+            pdata.readMixedExcitationFilters(mixedFiltersStream);
+            pdata.setPdfStrStream(null);
         } else {
-            htsData.setUseMixExc(false);
+            pdata.setUseMixExc(false);
         }
 
         // Optional:
         // if using Fourier magnitudes in mixed excitation
         if (args.length > (ind + 1)) {
-            htsData.setUseFourierMag(true);
+            pdata.setUseFourierMag(true);
             magFile = args[ind++];
             magVsize = Integer.parseInt(args[ind++]);
-            htsData.setPdfMagStream(null);
+            pdata.setPdfMagStream(null);
         } else {
-            htsData.setUseFourierMag(false);
+            pdata.setUseFourierMag(false);
         }
 
         // last argument true or false to play the file
@@ -422,9 +438,9 @@ public class VocoderTest extends Vocoder {
 
         // Change these for voice effects:
         // [min][max]
-        htsData.setF0Std(1.0); // variable for f0 control, multiply f0
+        pdata.setF0Std(1.0); // variable for f0 control, multiply f0
                                // [1.0][0.0--5.0]
-        htsData.setF0Mean(0.0); // variable for f0 control, add f0
+        pdata.setF0Mean(0.0); // variable for f0 control, add f0
                                 // [0.0][0.0--100.0]
 
         int totalFrame = 0;
@@ -443,7 +459,7 @@ public class VocoderTest extends Vocoder {
         lengthMcep = lengthMcep / ((mcepVsize / 3) * 4);
         int numSize = 2;
         long lengthStr;
-        if (htsData.getUseMixExc()) {
+        if (pdata.getUseMixExc()) {
             File str = new File(strFile);
             lengthStr = str.length();
             lengthStr = lengthStr / ((strVsize / 3) * 4);
@@ -452,7 +468,7 @@ public class VocoderTest extends Vocoder {
             lengthStr = 0;
 
         long lengthMag;
-        if (htsData.getUseFourierMag()) {
+        if (pdata.getUseFourierMag()) {
             File mag = new File(magFile);
             lengthMag = mag.length();
             lengthMag = lengthMag / ((magVsize / 3) * 4);
@@ -518,7 +534,7 @@ public class VocoderTest extends Vocoder {
         mcepData.close();
 
         /* load str data */
-        if (htsData.getUseMixExc()) {
+        if (pdata.getUseMixExc()) {
             strPst = new PStream(strVsize, totalFrame, PData.FeatureType.STR, 0);
             strData = new LDataInputStream(new BufferedInputStream(new FileInputStream(strFile)));
             for (i = 0; i < totalFrame; i++) {
@@ -535,7 +551,7 @@ public class VocoderTest extends Vocoder {
 
         /* load mag data */
         n = 0;
-        if (htsData.getUseFourierMag()) {
+        if (pdata.getUseFourierMag()) {
             magPst = new PStream(magVsize, totalFrame, PData.FeatureType.MAG, 0);
             magData = new LDataInputStream(new BufferedInputStream(new FileInputStream(magFile)));
             for (i = 0; i < totalFrame; i++) {
@@ -554,7 +570,7 @@ public class VocoderTest extends Vocoder {
             magData.close();
         }
 
-        AudioFormat af = getHTSAudioFormat(htsData);
+        AudioFormat af = getHTSAudioFormat(pdata);
         double[] audio_double = null;
 
         VocoderTest par2speech = new VocoderTest();
@@ -563,7 +579,7 @@ public class VocoderTest extends Vocoder {
         // audio_double = par2speech.htsMLSAVocoder_residual(htsData, mcepPst,
         // resFile);
 
-        audio_double = par2speech.htsMLSAVocoder(lf0Pst, mcepPst, strPst, magPst, voiced, htsData, null);
+        audio_double = par2speech.htsMLSAVocoder(lf0Pst, mcepPst, strPst, magPst, voiced, pdata, null);
 
         long lengthInSamples = (audio_double.length * 2) / (af.getSampleSizeInBits() / 8);
         System.out.println("length in samples=" + lengthInSamples);

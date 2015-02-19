@@ -1,5 +1,7 @@
 package hmi.sig;
 
+import hmi.util.MathUtils;
+
 public class AmplitudeNormalizer implements InlineDataProcessor {
 
     private double max;

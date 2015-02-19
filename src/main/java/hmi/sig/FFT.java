@@ -1,5 +1,7 @@
 package hmi.sig;
 
+import hmi.util.MathUtils;
+
 public class FFT {
     static double[] cosDelta;
     static double[] sinDelta;

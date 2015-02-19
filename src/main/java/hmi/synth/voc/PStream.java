@@ -160,7 +160,7 @@ public class PStream {
     public void setVseq(int i, double[] vec) {
         assert vec.length == ivseq[i].length;
         for (int j = 0; j < ivseq[i].length; j++) {
-            ivseq[i][j] = ParameterGeneration.finv(vec[j]);
+            ivseq[i][j] = ParameterGenerator.finv(vec[j]);
         }
     }
 
