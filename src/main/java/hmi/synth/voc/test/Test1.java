@@ -32,23 +32,39 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
 public class Test1 {
+    static String BP = "/Users/posttool/Documents";
 
-    /**
-     * Generation of speech using external specification of duration: using
-     * ContinuousFeatureProcessors of TARGETFEATURES Input: a TARGETFEATURES
-     * (.pfeats) file, this file should contain ContinuousFeatureProcessors:
-     * unit_duration float unit_logf0 float unit_logf0delta float The features
-     * unit_duration and unit_logf0 are used as external prosody,
-     * unit_logf0Delta is not used. The TARGETFEATURES (.pfeats) file including
-     * ContinuousFeatureProcessors values can be generated with a unitselection
-     * voice or a mbrola voice, it can NOT be generated with HMM voices.
-     * 
-     * @param args
-     * @throws IOException
-     */
+    public static Properties getVoiceProps0() {
+        Properties p = new Properties();
+        p.setProperty("base", BP + "/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
+        p.setProperty("gender", "male");
+        p.setProperty("rate", "16000");
+        p.setProperty("alpha", "0.1");
+        p.setProperty("beta", "0.1");
+        p.setProperty("logGain", "true");
+        p.setProperty("useGV", "true");
+        p.setProperty("maxMgcGvIter", "200");
+        p.setProperty("maxLf0GvIter", "200");
+        p.setProperty("featuresFile", "cmu_us_arctic_slt_b0487.pfeats");
+        return p;
+    }
+    public static Properties getVoiceProps1() {
+        Properties p = new Properties();
+        p.setProperty("base", BP + "/github/hmi-www/app/build/data/dv-2-voc/mary/voice-my_voice-hsmm/src/main/resources/marytts/voice/My_voiceHsmm/");
+        p.setProperty("gender", "male");
+        p.setProperty("rate", "16000");
+        p.setProperty("alpha", "0.3");
+        p.setProperty("beta", "0.1");
+        p.setProperty("logGain", "true");
+        p.setProperty("useGV", "true");
+        p.setProperty("maxMgcGvIter", "200");
+        p.setProperty("maxLf0GvIter", "200");
+        p.setProperty("featuresFile", "features_example.pfeats");
+        p.setProperty("excitationFilters", "mix_excitation_5filters_99taps_16Kz.txt");
+        return p;
+    }
+
     public void synthesisWithContinuousFeatureProcessors() throws Exception {
-
-        String BP = "/Users/posttool/Documents";
 
         PVoice hmm_tts = new PVoice();
         PData htsData = new PData();
@@ -59,20 +75,7 @@ public class Test1 {
          */
         String outWavFile = BP + "/tmp.wav";
 
-      Properties p = new Properties();
-      p.setProperty("base",
-              "/Users/posttool/Documents/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
-      p.setProperty("gender", "male");
-      p.setProperty("rate", "16000");
-      p.setProperty("alpha", "0.57");
-      p.setProperty("beta", "0.1");
-      p.setProperty("logGain", "true");
-      p.setProperty("useGV", "true");
-      p.setProperty("maxMgcGvIter", "200");
-      p.setProperty("maxLf0GvIter", "200");
-      p.setProperty("featuresFile", "cmu_us_arctic_slt_b0487.pfeats");
-
-        htsData.initHMMData(p);
+        htsData.initHMMData(getVoiceProps1());
 
         // Set these variables so the htsEngine use the
         // ContinuousFeatureProcessors features
@@ -95,29 +98,12 @@ public class Test1 {
         AudioInputStream ais;
 
         try {
-            // String feaFile = VP + "/features_example.pfeats";
-            String feaFile = "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/phonefeatures/sstr0299.pfeats";
-            /* Process context features file and creates UttModel um. */
+            String feaFile = BP + "/github/hmi-www/app/build/data/dv-2-voc/phonefeatures/X_0002.pfeats";
+
             um = hmm_tts.processUttFromFile(feaFile, htsData);
 
-            /*
-             * Generate sequence of speech parameter vectors, generate
-             * parameters out of sequence of pdf's
-             */
-            /*
-             * the generated parameters will be saved in tmp.mfc and tmp.f0,
-             * including header.
-             */
-            boolean debug = false; /*
-                                    * so it DOES NOT save the generated
-                                    * parameters in parFile
-                                    */
             pdf2par.htsMaximumLikelihoodParameterGeneration(um, htsData);
 
-            /*
-             * Synthesize speech waveform, generate speech out of sequence of
-             * parameters
-             */
             ais = par2speech.htsMLSAVocoder(pdf2par, htsData);
 
             System.out.println("saving to file: " + outWavFile);
@@ -136,19 +122,10 @@ public class Test1 {
         } catch (Exception e) {
             System.err.println("Exception: " + e.getMessage());
         }
-    } /* main method */
+    }
 
-    /**
-     * Generation of speech using external specification of duration: duration
-     * and logf0 in external files Input: a TARGETFEATURES (.pfeats) file
-     * 
-     * @param args
-     * @throws IOException
-     */
     public void synthesisWithProsodySpecificationInExternalFiles() throws Exception {
 
-        int i, j, n, t;
-        // context features file
         String feaFile = "voices/cmu-slt-hsmm/cmu_us_arctic_slt_a0001.pfeats";
 
         PVoice hmm_tts = new PVoice();
@@ -159,14 +136,10 @@ public class Test1 {
          * configuration file,
          */
         String BP = "//"; /* base directory. */
-        String voiceName = "cmu-slt-hsmm"; /* voice name */
-        String voiceConfig = "en_US-cmu-slt-hsmm.config"; /*
-                                                           * voice configuration
-                                                           * file name.
-                                                           */
+
         String outWavFile = BP + "tmp/tmp.wav"; /* to save generated audio file */
 
-        htsData.initHMMData(voiceName, BP, voiceConfig);
+        htsData.initHMMData(getVoiceProps1());
 
         // The settings for using GV and MixExc can be changed in this way:
         htsData.setUseGV(true);
@@ -197,18 +170,17 @@ public class Test1 {
         // Load and set external durations
         // ---htsData.setUseDurationFromExternalFile(true);
         float totalDuration;
-        int totalDurationFrames;
+
         float fperiodsec = ((float) htsData.getFperiod() / (float) htsData.getRate());
         hmm_tts.setPhonemeAlignmentForDurations(true);
         Vector<PhoneDuration> durations = new Vector<PhoneDuration>();
         totalDuration = loadDurationsForAlignment(labFile, durations);
         // set the external durations
         hmm_tts.setAlignDurations(durations);
-        totalDurationFrames = (int) ((totalDuration / fperiodsec));
+        int totalDurationFrames = (int) ((totalDuration / fperiodsec));
         // Depending on how well aligned the durations and the lfo file are
         // this factor can be used to extend or shrink the durations per phoneme
-        // so
-        // it syncronize with the number of frames in the lf0 file
+        // so it syncronize with the number of frames in the lf0 file
         hmm_tts.setNewStateDurationFactor(0.37);
 
         // set external logf0
@@ -217,24 +189,8 @@ public class Test1 {
         try {
             um = hmm_tts.processUttFromFile(feaFile, htsData);
 
-            /*
-             * Generate sequence of speech parameter vectors, generate
-             * parameters out of sequence of pdf's
-             */
-            /*
-             * the generated parameters will be saved in tmp.mfc and tmp.f0,
-             * including header.
-             */
-            boolean debug = false; /*
-                                    * so it DOES NOT save the generated
-                                    * parameters in parFile
-                                    */
             pdf2par.htsMaximumLikelihoodParameterGeneration(um, htsData);
 
-            /*
-             * Synthesize speech waveform, generate speech out of sequence of
-             * parameters
-             */
             ais = par2speech.htsMLSAVocoder(pdf2par, htsData);
 
             System.out.println("saving to file: " + outWavFile);
@@ -255,14 +211,6 @@ public class Test1 {
         }
     } /* main method */
 
-    /***
-     * Load durations for phone alignment when the durations have been generated
-     * by EHMMs.
-     * 
-     * @param fileName
-     *            the format is the same as for phonelab.
-     * @return
-     */
     public float loadDurationsForAlignment(String fileName, Vector<PhoneDuration> alignDur) {
 
         Scanner s = null;
@@ -301,23 +249,6 @@ public class Test1 {
         return totalDuration;
     }
 
-    /***
-     * Load logf0, in HTS format, create a voiced array and set this values in
-     * pdf2par This contour should be aligned with the durations, so the total
-     * duration in frames should be the same as in the lf0 file
-     * 
-     * @param lf0File
-     *            : in HTS formant
-     * @param totalDurationFrames
-     *            : the total duration in frames can be calculated as:
-     *            totalDurationFrames = totalDurationInSeconds /
-     *            (framePeriodInSamples / SamplingFrequencyInHz)
-     * @param pdf2par
-     *            : HTSParameterGeneration object
-     * @throws Exception
-     *             If the number of frames in the lf0 file is not the same as
-     *             represented in the total duration (in frames).
-     */
     public void loadF0contour(String lf0File, int totalDurationFrames, ParameterGenerator pdf2par) throws Exception {
         PStream lf0Pst = null;
         boolean[] voiced = null;
@@ -378,40 +309,20 @@ public class Test1 {
 
     }
 
-    /**
-     * Stand alone testing using a TARGETFEATURES file as input. Generates
-     * duration: file.lab, duration state level: file.slab, f0: file.f0, mfcc:
-     * file.mfcc and sound file: file.wav out of HMM models
-     * 
-     * @param args
-     *            file.pfeats and hmm voice
-     * @throws IOException
-     */
     public void generateParameters() throws IOException, InterruptedException, Exception {
 
         int i, j;
-        /*
-         * For initialise provide the name of the hmm voice and the name of its
-         * configuration file, also indicate the name of your base directory.
-         */
 
-        // directory where the context features of each file are
         String contextFeaDir = "/quality-control-experiment/slt/phonefeatures/";
-        // the output dir has to be created already
         String outputDir = "/quality-control-experiment/slt/hmmGenerated/";
-        // list of contex features files, the file names contain the basename
-        // without path and ext
         String filesList = "/quality-control-experiment/slt/phonefeatures-list.txt";
 
-        // Create a htsengine object
         PVoice hmm_tts = new PVoice();
 
-        // Create and set HMMData
         PData htsData = new PData();
         Properties p = new Properties();
-        p.setProperty(
-                "base",
-                "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/mary/voice-my_hmmmm_voice-hsmm/src/main/resources/marytts/voice/My_hmmmm_voiceHsmm/");
+        p.setProperty("base", BP + "/github/hmi-www/app/build/data/test-2/mary/voice-my_hmmmm_voice-hsmm"
+                + "/src/main/resources/marytts/voice/My_hmmmm_voiceHsmm/");
         p.setProperty("gender", "female");
         p.setProperty("rate", "16000");
         p.setProperty("alpha", "0.42");
@@ -441,17 +352,9 @@ public class Test1 {
                 feaFile = contextFeaDir + file + ".pfeats";
                 parFile = outputDir + file; /* generated parameters mfcc and f0 */
                 durFile = outputDir + file + ".lab"; /* realized durations */
-                durStateFile = outputDir + file + ".slab"; /*
-                                                            * state level
-                                                            * realized durations
-                                                            */
-                outWavFile = outputDir + file + ".wav"; /* generated wav file */
+                durStateFile = outputDir + file + ".slab";
+                outWavFile = outputDir + file + ".wav";
 
-                /*
-                 * The utterance model, um, is a Vector (or linked list) of
-                 * Model objects. It will contain the list of models for the
-                 * current label file.
-                 */
                 PUttModel um = new PUttModel();
                 ParameterGenerator pdf2par = new ParameterGenerator();
                 Vocoder par2speech = new Vocoder();
@@ -524,13 +427,6 @@ public class Test1 {
 
     } /* main method */
 
-    /***
-     * Calculate mfcc using SPTK, uses sox to convert wav-->raw
-     * 
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws Exception
-     */
     public void getSptkMfcc() throws IOException, InterruptedException, Exception {
 
         String inFile = "/quality-control-experiment/slt/cmu_us_arctic_slt_a0001.wav";
@@ -603,13 +499,6 @@ public class Test1 {
         mgc.writeMfccFile(outFile);
     }
 
-    /***
-     * Calculate mfcc using SPTK, uses sox to convert wav-->raw
-     * 
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws Exception
-     */
     // public void getSptkSnackLf0() throws IOException, InterruptedException,
     // Exception {
     //
@@ -709,17 +598,6 @@ public class Test1 {
     //
     // }
 
-    /**
-     * A general process launcher for the various tasks (copied from
-     * ESTCaller.java)
-     * 
-     * @param cmdLine
-     *            the command line to be launched.
-     * @param task
-     *            a task tag for error messages, such as "Pitchmarks" or "LPC".
-     * @param the
-     *            basename of the file currently processed, for error messages.
-     */
     private void launchProc(String cmdLine, String task, String baseName) {
 
         Process proc = null;

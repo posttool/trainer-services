@@ -38,8 +38,8 @@ public class VocoderTest extends Vocoder {
 
         outFile = "/Users/posttool/Documents/tmp.wav";
 
-        String hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/hts/";
-        String voiceExample = "sdsg0596"; // sstr0007 sdsg0596 slis0208 snum1142
+        String hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/demo-vocoded-1/hts/";
+        String voiceExample = "x_A002"; // sstr0007 sdsg0596 slis0208 snum1142
         // sbas0150
 
         // Properties p = new Properties();
@@ -60,7 +60,7 @@ public class VocoderTest extends Vocoder {
 //                "/Users/posttool/Documents/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
 //        p.setProperty("gender", "female");
 //        p.setProperty("rate", "16000");
-//        p.setProperty("alpha", "0.42");
+//        p.setProperty("alpha", "0.5");
 //        p.setProperty("beta", "0.0");
 //        p.setProperty("logGain", "true");
 //        p.setProperty("useGV", "true");
@@ -71,8 +71,8 @@ public class VocoderTest extends Vocoder {
         
         Properties p = new Properties();
         p.setProperty("base",
-                "/Users/posttool/Documents/github/hmi-www/app/build/data/test-2/mary/voice-my_hmmmm_voice-hsmm/src/main/resources/marytts/voice/My_hmmmm_voiceHsmm/");
-        p.setProperty("gender", "female");
+                "/Users/posttool/Documents/github/hmi-www/app/build/data/dv-2-voc/mary/voice-my_voice-hsmm/src/main/resources/marytts/voice/My_voiceHsmm/");
+        p.setProperty("gender", "male");
         p.setProperty("rate", "16000");
         p.setProperty("alpha", "0.42");
         p.setProperty("beta", "0.0");

@@ -588,5 +588,4 @@ public class Vocoder {
         }
 
     }
-
-} /* class HTSVocoder */
+} 
