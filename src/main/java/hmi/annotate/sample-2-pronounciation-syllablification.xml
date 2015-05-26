@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<maryxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	version="0.5" xml:lang="en-GB" xmlns="http://mary.dfki.de/2002/MaryXML">
-	<p>
-		<voice name="dfki-spike">
+		<voice >
 			<s>
 				<prosody pitch="+5%" range="+20%">
 					<phrase>
@@ -451,5 +447,3 @@
 				</prosody>
 			</s>
 		</voice>
-	</p>
-</maryxml>

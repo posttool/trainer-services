@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<maryxml>
-   <p>
-      <voice name="dfki-spike">
+      <voice>
          <s>
             <prosody pitch="+5%" range="+20%">
                <phrase>
@@ -450,5 +447,3 @@
             </prosody>
          </s>
       </voice>
-   </p>
-</maryxml>
