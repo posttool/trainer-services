@@ -46,10 +46,13 @@ import edu.stanford.nlp.util.CoreMap;
 class KrawlTagger {
     private StanfordCoreNLP pipeline;
     private String basepath;
+    private boolean dollar;
 
     private KrawlTagger(String outfile) throws IOException {
         Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
+        props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner"); // ,
+                                                                              // parse,
+                                                                              // dcoref
         pipeline = new StanfordCoreNLP(props);
         basepath = outfile;
     }
@@ -62,81 +65,43 @@ class KrawlTagger {
         List<CoreMap> sentences = document.get(SentencesAnnotation.class);
 
         for (CoreMap sentence : sentences) {
-            // String st = sentence.get(TextAnnotation.class);
-            // System.out.println(st);
             StringBuilder b = new StringBuilder();
             String nerType = null;
             StringBuilder nerB = null;
-            boolean dollar = false;
+            String lastNer = null;
             for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
                 String word = token.get(TextAnnotation.class);
-                String pos = token.get(PartOfSpeechAnnotation.class);
+                // String pos = token.get(PartOfSpeechAnnotation.class);
                 String ne = token.get(NamedEntityTagAnnotation.class);
-                String lem = token.get(LemmaAnnotation.class);
-                String bf = token.get(BeforeAnnotation.class);
+                // String bf = token.get(BeforeAnnotation.class);
                 String af = token.get(AfterAnnotation.class);
-                Integer ut = token.get(UtteranceAnnotation.class);
-                // String ne = token.get(NamedEntityTagAnnotation.class);
-                // System.out.println(word + " " + pos + " " + ne + " " + lem +
-                // " " + ut + " '" + bf + "' '" + af + "'");
-                if (ne.equals("O")) {
-                    if (nerB != null) {
-                        bw1.write("> " + nerB + " " + nerType);
+
+                if (ne.equals(lastNer)) {
+                    word = processNer(ne, word);
+                    nerB.append(word);
+                    nerB.append(af);
+                } else {
+                    if (nerB != null && !nerType.equals("O")) {
+                        String x = "";
+                        bw1.write("> " + nerType + " " + nerB.toString().trim()+x);
                         bw1.newLine();
                     }
-                    nerType = null;
-                    nerB = null;
-                } else if (ne.equals("PERSON") || ne.equals("LOCATION") || ne.equals("ORGANIZATION")
-                        || ne.equals("MISC")) {
-                    if (nerType == null) {
-                        nerType = ne;
-                        nerB = new StringBuilder();
-                    }
-                    nerB.append(word);
-                    nerB.append(af);
-                } else if (ne.equals("NUMBER") || ne.equals("DURATION") || ne.equals("ORDINAL") || ne.equals("PERCENT")) {
-                    if (nerType == null) {
-                        nerType = ne;
-                        nerB = new StringBuilder();
-                    }
-                    word = getTextForNumber(word);
-                    nerB.append(word);
-                    nerB.append(af);
-                } else if (ne.equals("MONEY")) {
-                    if (nerType == null) {
-                        nerType = ne;
-                        nerB = new StringBuilder();
-                    }
-                    if (word.equals("$")) {
-                        dollar = true;
-                        continue;
-                    } else {
-                        word = getTextForNumber(word);
-                        if (dollar) {
-                            word += " dollars";
-                            dollar = false;
-                        }
-                        nerB.append(word);
-                        nerB.append(af);
-                    }
-                } else if (ne.equals("DATE")) {
-                    if (nerType == null) {
-                        nerType = ne;
-                        nerB = new StringBuilder();
-                    }
-                    word = getTextForYear(word);
-                    nerB.append(word);
-                    nerB.append(af);
-                } else {
-                    bw1.write("? " + word + " " + ne);
-                    bw1.newLine();
+                    nerType = ne;
+                    nerB = new StringBuilder();
                 }
-                if (word.equals("``") || word.equals("''") || word.equals("-LRB-") || word.equals("-RRB-")) {
-                    b.append(af);
-                } else {
-                    b.append(word);
-                    b.append(af);
+
+                if (word.equals("&")) {
+                    word = "and";
+                } else if (word.equals("%")) {
+                    word = "percent";
+                } else if (word.startsWith("#")) {
+                    word = "hashtag " + word.substring(1);
+                } else if (word.equals("``") || word.equals("''") || word.equals("-LRB-") || word.equals("-RRB-")
+                        || word.equals("`")) {
+                    word = "";
                 }
+                b.append(word);
+                b.append(af);
             }
             if (nerB != null) {
                 bw1.write("> " + nerB + " " + nerType);
@@ -166,6 +131,26 @@ class KrawlTagger {
         // System.out.println("!!!" + topics);
 
         // System.out.println(graph);
+    }
+
+    private String processNer(String ne, String word) {
+        if (ne.equals("PERSON") || ne.equals("LOCATION") || ne.equals("ORGANIZATION") || ne.equals("MISC")) {
+            return word;
+        } else if (ne.equals("NUMBER") || ne.equals("DURATION") || ne.equals("ORDINAL") || ne.equals("PERCENT")) {
+            return getTextForNumber(word);
+        } else if (ne.equals("MONEY")) {
+            if (word.equals("$")) {
+                dollar = true;
+                return "";
+            } else {
+                return getTextForNumber(word);
+            }
+        } else if (ne.equals("DATE")) {
+            return getTextForYear(word);
+        } else {
+            System.out.println("?? " + ne);
+            return word;
+        }
     }
 
     private static String getTextForNumber(String word) {
@@ -209,41 +194,41 @@ class KrawlTagger {
             return nword;
     }
 
-    private void processChild(LabeledScoredTreeNode ltree, int d) {
-        List<Tree> c = ltree.getChildrenAsList();
-        StringBuilder b = new StringBuilder();
-        for (int i = 0; i < d; i++) {
-            b.append("  ");
-        }
-        CoreLabel l = (CoreLabel) ltree.label();
-        String w = l.word();
-        if (w != null) {
-            b.append(w);
-        } else {
-            String t = l.value();
-            b.append(t);
-        }
-        for (Tree t : c) {
-            processChild((LabeledScoredTreeNode) t, d + 1);
-        }
-        // System.out.println(b);
-    }
+    // private void processChild(LabeledScoredTreeNode ltree, int d) {
+    // List<Tree> c = ltree.getChildrenAsList();
+    // StringBuilder b = new StringBuilder();
+    // for (int i = 0; i < d; i++) {
+    // b.append("  ");
+    // }
+    // CoreLabel l = (CoreLabel) ltree.label();
+    // String w = l.word();
+    // if (w != null) {
+    // b.append(w);
+    // } else {
+    // String t = l.value();
+    // b.append(t);
+    // }
+    // for (Tree t : c) {
+    // processChild((LabeledScoredTreeNode) t, d + 1);
+    // }
+    // // System.out.println(b);
+    // }
 
-    public List<List<CoreLabel>> pos(String text) {
-        List<List<CoreLabel>> tagged = new ArrayList<List<CoreLabel>>();
-        // creates a StanfordCoreNLP object, with POS tagging, lemmatization,
-        // NER, parsing, and coreference resolution
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, pos");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-        Annotation document = new Annotation(text);
-        pipeline.annotate(document);
-        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-        for (CoreMap sentence : sentences) {
-            tagged.add(sentence.get(TokensAnnotation.class));
-        }
-        return tagged;
-    }
+    // public List<List<CoreLabel>> pos(String text) {
+    // List<List<CoreLabel>> tagged = new ArrayList<List<CoreLabel>>();
+    // // creates a StanfordCoreNLP object, with POS tagging, lemmatization,
+    // // NER, parsing, and coreference resolution
+    // Properties props = new Properties();
+    // props.setProperty("annotators", "tokenize, ssplit, pos");
+    // StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+    // Annotation document = new Annotation(text);
+    // pipeline.annotate(document);
+    // List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+    // for (CoreMap sentence : sentences) {
+    // tagged.add(sentence.get(TokensAnnotation.class));
+    // }
+    // return tagged;
+    // }
 
     public void processData() throws IOException {
         Mongo mongoClient = new MongoClient("192.155.87.239");
@@ -258,7 +243,7 @@ class KrawlTagger {
                 DBObject ch = channelsCursor.next();
                 String name = ((String) ch.get("name")).toLowerCase();
                 System.out.println(c + " " + name);
-                if (!name.equals("technology")) {
+                if (!name.equals("technology") && !name.equals("news")) {
                     DBCursor feedsCursor = feeds.find(new BasicDBObject("channel", ch.get("_id")));
                     BufferedWriter sentencesOut = getWriter("/gen-" + name + "-s.txt");
                     BufferedWriter entitiesOut = getWriter("/gen-" + name + "-e.txt");
