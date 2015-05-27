@@ -1,8 +1,114 @@
 package hmi.nlp;
 
 import java.text.DecimalFormat;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NumberToText {
+
+    public static void main(String[] args) {
+        System.out.println(NumberToText.number("-1"));
+        System.out.println(NumberToText.number("23"));
+        System.out.println(NumberToText.number("3.14"));
+        System.out.println(NumberToText.number("44m"));
+        System.out.println(NumberToText.number("23-27"));
+        System.out.println(NumberToText.number("1400s"));
+    }
+
+    static String numberWithLettersReg = "(\\d+)([a-zA-Z]+)";
+    static Pattern numberWithLetters = Pattern.compile(numberWithLettersReg);
+
+    public static String number(String word) {
+        StringBuilder r = new StringBuilder();
+        word = word.replace(",", "");
+        if (word.matches("-?\\d+")) {
+            // 7 -1 1330222
+            if (word.indexOf("-") == 0) {
+                word = word.substring(1);
+                r.append("negative ");
+            }
+            r.append(NumberToText.convert(word));
+        } else if (word.matches("-?\\d+\\.\\d+")) {
+            // 3.1415
+            if (word.indexOf("-") == 0) {
+                word = word.substring(1);
+                r.append("negative ");
+            }
+            String[] p = word.split("\\.");
+            r.append(NumberToText.convert(p[0]));
+            r.append(" point ");
+            r.append(NumberToText.each(p[1]));
+        } else if (word.matches(numberWithLettersReg)) {
+            // 1990s 44mm 3in
+            Matcher matcher = numberWithLetters.matcher(word);
+            if (matcher.matches()) {
+                String ns = matcher.group(1);
+                String ls = matcher.group(2);
+                String nt = NumberToText.convert(ns);
+                int nn = Integer.parseInt(ns);
+                String s = nn == 1 ? "" : "s";
+                if (ls.equals("s")) {
+                    // get last word of nt and pluralize
+                    r.append(nt);
+                    r.append("s");
+                } else {
+                    r.append(nt);
+                    r.append(" ");
+                    if (ls.equals("mm"))
+                        r.append("milimeter" + s);
+                    else if (ls.equals("m"))
+                        r.append("meter" + s);
+                    else if (ls.equals("in"))
+                        r.append(nn == 1 ? "inch" : "inches");
+                    else if (ls.equals("ft"))
+                        r.append(nn == 1 ? "foot" : "feet");
+                    else
+                        r.append(ls);
+                }
+            }
+        } else if (word.indexOf("-") != -1) {
+            // 1990-1993
+            String[] p = word.split("-");
+            int converted = 0;
+            for (int i = 0; i < p.length; i++) {
+                String a = number(p[i]);
+                if (!a.equals(p[i]))
+                    converted++;
+                p[i] = a;
+            }
+            if (converted == 2) {
+                r.append(p[0]);
+                r.append(" to ");
+                r.append(p[1]);
+            }
+        } else {
+            r.append(word);
+        }
+
+        return r.toString();
+    }
+
+    public static String year(String word) {
+        String nword = null;
+        try {
+            int i = Integer.parseInt(word);
+            int t = i / 100;
+            int w = i - t * 100;
+            if (w == 0)
+                nword = NumberToText.convert(i);
+            else if (t == 0)
+                nword = NumberToText.convert(w);
+            else
+                nword = NumberToText.convert(t) + " " + NumberToText.convert(w);
+        } catch (Exception e) {
+        }
+        if (nword == null)
+            return word;
+        else
+            return nword;
+    }
+
+    // //
 
     private static final String[] tensNames = { "", " ten", " twenty", " thirty", " forty", " fifty", " sixty",
             " seventy", " eighty", " ninety" };
@@ -30,6 +136,25 @@ public class NumberToText {
         if (number == 0)
             return soFar;
         return numNames[number] + " hundred" + soFar;
+    }
+
+    public static String convert(String longString) {
+        try {
+            return convert(Long.parseLong(longString));
+        } catch (Exception e) {
+            return each(longString);
+        }
+    }
+
+    public static String each(String s) {
+        StringBuilder b = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            if (c > 47 && c < 58) {
+                b.append(convert(c - 48));
+                b.append(" ");
+            }
+        }
+        return b.toString();
     }
 
     public static String convert(long number) {
