@@ -64,6 +64,8 @@ class KrawlTagger {
                 // String bf = token.get(BeforeAnnotation.class);
                 String af = token.get(AfterAnnotation.class);
 
+                // TODO add phrase boundary markers
+
                 if (ne.equals(nerType)) {
                     word = processNer(ne, word);
                     nerB.append(word);
@@ -113,7 +115,7 @@ class KrawlTagger {
         } else if (ne.equals("NUMBER") || ne.equals("DURATION") || ne.equals("ORDINAL") || ne.equals("PERCENT")) {
             return NumberToText.number(word);
         } else if (ne.equals("MONEY")) {
-            //TODO
+            // TODO
             if (word.equals("$")) {
                 return "";
             } else {
@@ -132,6 +134,7 @@ class KrawlTagger {
     }
 
     public void processData() throws Exception {
+        init();
         Mongo mongoClient = new MongoClient("192.155.87.239");
         DB db = mongoClient.getDB("hmi");
         DBCollection channels = db.getCollection("channels");
@@ -146,13 +149,18 @@ class KrawlTagger {
                 DBCursor feedsCursor = feeds.find(new BasicDBObject("channel", ch.get("_id")));
                 BufferedWriter sentencesOut = getWriter("/gen-" + name + "-s.txt");
                 BufferedWriter entitiesOut = getWriter("/gen-" + name + "-e.txt");
+                BufferedWriter titlesOut = getWriter("/gen-" + name + "-t.txt");
                 while (feedsCursor.hasNext()) {
                     DBObject fe = feedsCursor.next();
                     System.out.println(".    " + fe.get("name"));
-                    DBCursor contentsCursor = contents.find(new BasicDBObject("feed", new BasicDBObject("$in", fe)));
+                    DBCursor contentsCursor = contents.find(new BasicDBObject("feed", fe.get("_id")));
                     int c = 0;
                     while (contentsCursor.hasNext()) {
                         DBObject co = contentsCursor.next();
+                        String title = name + "\t" + fe.get("name") + "\t" + co.get("title");
+                        System.out.println(title);
+                        titlesOut.write(title);
+                        titlesOut.newLine();
                         processRow(sentencesOut, entitiesOut, (String) co.get("text"));
                         c++;
                         if (c % 10 == 0)
@@ -161,6 +169,7 @@ class KrawlTagger {
                 }
                 sentencesOut.close();
                 entitiesOut.close();
+                titlesOut.close();
             }
         } finally {
             channelsCursor.close();
@@ -173,7 +182,6 @@ class KrawlTagger {
 
     public static void main(String[] args) throws Exception {
         KrawlTagger tagger = new KrawlTagger("/Users/posttool/Documents/github/hmi-www/app/krawl/data/");
-        tagger.init();
         tagger.processData();
     }
 
