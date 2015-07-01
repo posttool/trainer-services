@@ -39,7 +39,7 @@ public class DiphoneTarget extends Target {
         throw new IllegalStateException("This method should not be called for DiphoneTargets.");
     }
 
-    public PhoneEl getAllophone() {
+    public PhoneEl getPhone() {
         throw new IllegalStateException("This method should not be called for DiphoneTargets.");
     }
 

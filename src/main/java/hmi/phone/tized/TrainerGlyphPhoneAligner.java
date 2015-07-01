@@ -244,7 +244,7 @@ public class TrainerGlyphPhoneAligner {
                         stress = false;
                     }
                     separatedPhones.add(currPh);
-                }// ... for each allophone
+                }
             }
 
             for (int i = 0; i < graphStr.length(); i++) {
@@ -259,10 +259,10 @@ public class TrainerGlyphPhoneAligner {
         System.out.println("readLexicon complete " + aligner.size());
     }
 
-    public static String predictPronunciation(PhoneSet allophoneSet, CART tree, int context, String graphemes) {
+    public static String predictPronunciation(PhoneSet phset, CART tree, int context, String graphemes) {
         boolean convertToLowercase = true;
         if (convertToLowercase)
-            graphemes = graphemes.toLowerCase(allophoneSet.getLocale());
+            graphemes = graphemes.toLowerCase(phset.getLocale());
         FeatureDefinition featureDefinition = tree.getFeatureDefinition();
         int indexPredictedFeature = featureDefinition.getFeatureIndex(TrainedPhonetizer.PREDICTED_STRING_FEATURENAME);
 
@@ -316,7 +316,7 @@ public class TrainerGlyphPhoneAligner {
         predictPronunciation(as, st, ctx, "speakers");
         predictPronunciation(as, st, ctx, "Native speakers of a given language usually perceive one phoneme in "
                 + "that language as a single distinctive sound, and are both unaware of and even shocked "
-                + "by the allophone variations used to pronounce single phonemes.");
+                + "by the phone variations used to pronounce single phonemes.");
     }
 
 }

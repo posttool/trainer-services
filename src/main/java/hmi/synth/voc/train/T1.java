@@ -9,10 +9,10 @@ public class T1 {
         Properties p = new Properties();
         p.setProperty(HTKLabeler.LOCALE, "en_US");
         p.setProperty(HTKLabeler.HTKDIR, r + "/marytts-pt/lib/external/bin");
-        p.setProperty(HTKLabeler.ALLOPHONES, r + "/la/src/test/resources/en_US/phones.xml");
+        p.setProperty(HTKLabeler.PHONES, r + "/la/src/test/resources/en_US/phones.xml");
         p.setProperty(HTKLabeler.WAVDIR, r + v + "/wav");
         p.setProperty(HTKLabeler.WAVEXT, ".wav");
-        p.setProperty(HTKLabeler.PROMPTALLOPHONESDIR, r + v + "/prompt_allophones");
+        p.setProperty(HTKLabeler.PROMPTPHONESDIR, r + v + "/phones");
         p.setProperty(HTKLabeler.HTDIR, r + v + "/htk");
         p.setProperty(HTKLabeler.OUTLABDIR, r + v + "/htk/lab");
         p.setProperty(HTKLabeler.MAXITER, "150");

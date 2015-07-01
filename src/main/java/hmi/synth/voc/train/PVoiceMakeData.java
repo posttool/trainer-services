@@ -264,23 +264,23 @@ public class PVoiceMakeData {
      * file for the JoinModeller?
      * 
      * @param phoneXML
-     *            allophonesFile for the voice or language (full path).
+     *            phonesFile for the voice or language (full path).
      * @param trickyFile
      *            name of the file where the tricky phone replacements are saved
      *            (full path).
      * @return true if trickyPhones.txt file is created, false otherwise.
      */
-    public static boolean checkTrickyPhones(PhoneSet allophoneSet, String trickyFile) {
+    public static boolean checkTrickyPhones(PhoneSet phoneSet, String trickyFile) {
 
         boolean trickyPhones = false;
         try {
 
-            String lang = allophoneSet.getLocale().getLanguage();
+            String lang = phoneSet.getLocale().getLanguage();
 
             System.out.println("Checking if there are tricky phones (problematic phone names):");
             FileWriter outputStream = null;
             String phonOri;
-            Set<String> phonesList = allophoneSet.getPhoneNames();
+            Set<String> phonesList = phoneSet.getPhoneNames();
             // Left-righ phone ID context questions
             Iterator<String> it = phonesList.iterator();
             int numReplacements = 0;
@@ -342,7 +342,7 @@ public class PVoiceMakeData {
 
         // Check if there are tricky phones
         PhoneTranslator phTranslator;
-        if (checkTrickyPhones(db.getAllophoneSet(), voiceDir + getProp(trickyPhonesFile)))
+        if (checkTrickyPhones(db.getPhoneSet(), voiceDir + getProp(trickyPhonesFile)))
             phTranslator = new PhoneTranslator(new FileInputStream(voiceDir + getProp(trickyPhonesFile)));
         else
             phTranslator = new PhoneTranslator(null);
@@ -495,10 +495,10 @@ public class PVoiceMakeData {
                 mary_cvox.put(val_cvox[i], new HashSet<String>());
         }
 
-        PhoneSet allophoneSet = db.getAllophoneSet();
+        PhoneSet phoneSet = db.getPhoneSet();
 
         String phoneSeq, phonOri;
-        Set<String> phonesList = allophoneSet.getPhoneNames();
+        Set<String> phonesList = phoneSet.getPhoneNames();
         // Left-righ phone ID context questions
         Iterator<String> it = phonesList.iterator();
         while (it.hasNext()) {
@@ -516,44 +516,44 @@ public class PVoiceMakeData {
             // corresponding
             // set of phones that have that value.
             // System.out.println(phon + " vc = " +
-            // allophoneSet.getPhoneFeature(phonOri, "vc"));
-            if (allophoneSet.getPhoneFeature(phonOri, "vc") != null)
-                mary_vc.get(allophoneSet.getPhoneFeature(phonOri, "vc")).add(phon);
+            // phoneSet.getPhoneFeature(phonOri, "vc"));
+            if (phoneSet.getPhoneFeature(phonOri, "vc") != null)
+                mary_vc.get(phoneSet.getPhoneFeature(phonOri, "vc")).add(phon);
 
             // System.out.println(phon + " vlng = " +
-            // allophoneSet.getPhoneFeature(phonOri, "vlng"));
-            if (allophoneSet.getPhoneFeature(phonOri, "vlng") != null)
-                mary_vlng.get(allophoneSet.getPhoneFeature(phonOri, "vlng")).add(phon);
+            // phoneSet.getPhoneFeature(phonOri, "vlng"));
+            if (phoneSet.getPhoneFeature(phonOri, "vlng") != null)
+                mary_vlng.get(phoneSet.getPhoneFeature(phonOri, "vlng")).add(phon);
 
             // System.out.println(phon + " vheight = " +
-            // allophoneSet.getPhoneFeature(phonOri, "vheight"));
-            if (allophoneSet.getPhoneFeature(phonOri, "vheight") != null)
-                mary_vheight.get(allophoneSet.getPhoneFeature(phonOri, "vheight")).add(phon);
+            // phoneSet.getPhoneFeature(phonOri, "vheight"));
+            if (phoneSet.getPhoneFeature(phonOri, "vheight") != null)
+                mary_vheight.get(phoneSet.getPhoneFeature(phonOri, "vheight")).add(phon);
 
             // System.out.println(phon + " vfront = " +
-            // allophoneSet.getPhoneFeature(phonOri, "vfront"));
-            if (allophoneSet.getPhoneFeature(phonOri, "vfront") != null)
-                mary_vfront.get(allophoneSet.getPhoneFeature(phonOri, "vfront")).add(phon);
+            // phoneSet.getPhoneFeature(phonOri, "vfront"));
+            if (phoneSet.getPhoneFeature(phonOri, "vfront") != null)
+                mary_vfront.get(phoneSet.getPhoneFeature(phonOri, "vfront")).add(phon);
 
             // System.out.println(phon + " vrnd = " +
-            // allophoneSet.getPhoneFeature(phonOri, "vrnd"));
-            if (allophoneSet.getPhoneFeature(phonOri, "vrnd") != null)
-                mary_vrnd.get(allophoneSet.getPhoneFeature(phonOri, "vrnd")).add(phon);
+            // phoneSet.getPhoneFeature(phonOri, "vrnd"));
+            if (phoneSet.getPhoneFeature(phonOri, "vrnd") != null)
+                mary_vrnd.get(phoneSet.getPhoneFeature(phonOri, "vrnd")).add(phon);
 
             // System.out.println(phon + " ctype = " +
-            // allophoneSet.getPhoneFeature(phonOri, "ctype"));
-            if (allophoneSet.getPhoneFeature(phonOri, "ctype") != null)
-                mary_ctype.get(allophoneSet.getPhoneFeature(phonOri, "ctype")).add(phon);
+            // phoneSet.getPhoneFeature(phonOri, "ctype"));
+            if (phoneSet.getPhoneFeature(phonOri, "ctype") != null)
+                mary_ctype.get(phoneSet.getPhoneFeature(phonOri, "ctype")).add(phon);
 
             // System.out.println(phon + " cplace = " +
-            // allophoneSet.getPhoneFeature(phonOri, "cplace"));
-            if (allophoneSet.getPhoneFeature(phonOri, "cplace") != null)
-                mary_cplace.get(allophoneSet.getPhoneFeature(phonOri, "cplace")).add(phon);
+            // phoneSet.getPhoneFeature(phonOri, "cplace"));
+            if (phoneSet.getPhoneFeature(phonOri, "cplace") != null)
+                mary_cplace.get(phoneSet.getPhoneFeature(phonOri, "cplace")).add(phon);
 
             // System.out.println(phon + " cvox = " +
-            // allophoneSet.getPhoneFeature(phonOri, "cvox"));
-            if (allophoneSet.getPhoneFeature(phonOri, "cvox") != null)
-                mary_cvox.get(allophoneSet.getPhoneFeature(phonOri, "cvox")).add(phon);
+            // phoneSet.getPhoneFeature(phonOri, "cvox"));
+            if (phoneSet.getPhoneFeature(phonOri, "cvox") != null)
+                mary_cvox.get(phoneSet.getPhoneFeature(phonOri, "cvox")).add(phon);
 
         }
 
@@ -715,7 +715,7 @@ public class PVoiceMakeData {
 
         // Check if there are tricky phones
         PhoneTranslator phTranslator;
-        if (checkTrickyPhones(db.getAllophoneSet(), voiceDir + getProp(trickyPhonesFile)))
+        if (checkTrickyPhones(db.getPhoneSet(), voiceDir + getProp(trickyPhonesFile)))
             phTranslator = new PhoneTranslator(new FileInputStream(voiceDir + getProp(trickyPhonesFile)));
         else
             phTranslator = new PhoneTranslator(null);
@@ -852,7 +852,7 @@ public class PVoiceMakeData {
 
         // Check if there are tricky phones
         PhoneTranslator phTranslator;
-        if (checkTrickyPhones(db.getAllophoneSet(), voiceDir + getProp(trickyPhonesFile)))
+        if (checkTrickyPhones(db.getPhoneSet(), voiceDir + getProp(trickyPhonesFile)))
             phTranslator = new PhoneTranslator(new FileInputStream(voiceDir + getProp(trickyPhonesFile)));
         else
             phTranslator = new PhoneTranslator(null);

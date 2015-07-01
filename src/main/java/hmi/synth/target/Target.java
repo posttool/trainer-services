@@ -103,35 +103,8 @@ public class Target {
         return isSilence == 1;
     }
 
-    public PhoneEl getAllophone() {
+    public PhoneEl getPhone() {
         return null;
-//        if (sm != null) {
-//            AllophoneSet allophoneSet = null;
-//            Element voiceElement = (Element) getAncestor(sm, VOICE);
-//            if (voiceElement != null) {
-//                Voice v = Voice.getVoice(voiceElement);
-//                if (v != null) {
-//                    allophoneSet = v.getAllophoneSet();
-//                }
-//            }
-//            if (allophoneSet == null) {
-//                try {
-//                    allophoneSet = determineAllophoneSet(sm);
-//                } catch (Exception e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                }
-//            }
-//            String sampa;
-//            if (sm.getNodeName().equals(PHONE)) {
-//                sampa = sm.getAttribute("p");
-//            } else {
-//                assert sm.getNodeName().equals(BOUNDARY);
-//                sampa = "_";
-//            }
-//            return allophoneSet.getAllophone(sampa);
-//        }
-//        return null;
     }
 
     public String toString() {

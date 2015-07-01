@@ -10,7 +10,7 @@ import java.util.ListIterator;
 public class Syllabifier {
 
     /**
-     * Syllabify a string of allophones. If stress markers are provided, they
+     * Syllabify a string of phones. If stress markers are provided, they
      * are preserved; otherwise, primary stress will be assigned to the initial
      * syllable.
      * <p>
@@ -22,7 +22,7 @@ public class Syllabifier {
      * , Ch. 17, pp. 283-333, Cambridge University Press.</blockquote>
      */
     public static List<Object> syllabify(PhoneSet phoneSet, String phoneString) {
-        // First, split phoneString into a List of allophone Strings...
+        // First, split phoneString into a List of phone Strings...
         List<String> phones = phoneSet.splitIntoPhoneList(phoneString, true);
         // ...and create from it a List of generic Objects
         List<Object> phonesAndSyllables = new ArrayList<Object>(phones);
@@ -36,7 +36,7 @@ public class Syllabifier {
         while (iterator.hasNext()) {
             String phone = (String) iterator.next();
             try {
-                // either it's an Allophone
+                // either it's an phone
                 PhoneEl ph = phoneSet.getPhone(phone);
                 if (ph.isSyllabic()) {
                     // if /6/ immediately follows a non-diphthong vowel, it
@@ -76,12 +76,12 @@ public class Syllabifier {
             } else {
                 String phone = (String) phoneOrSyllable;
                 try {
-                    // it's an Allophone -- prepend to the Syllable
-                    PhoneEl allophone = phoneSet.getPhone(phone);
+                    // it's an phone -- prepend to the Syllable
+                    PhoneEl phonel = phoneSet.getPhone(phone);
                     PhoneEl firstph = (PhoneEl) currentSyllable.getFirstPhone();
-                    if (allophone.sonority() < firstph.sonority()) {
+                    if (phonel.sonority() < firstph.sonority()) {
                         iterator.remove();
-                        currentSyllable.prependPhone(allophone);
+                        currentSyllable.prependPhone(phonel);
                     }
                 } catch (IllegalArgumentException e) {
                     // it's a provided stress marker -- assign it to the
@@ -121,16 +121,16 @@ public class Syllabifier {
             } else {
                 String phone = (String) phoneOrSyllable;
                 try {
-                    // it's an Allophone -- append to the Syllable
-                    PhoneEl allophone = phoneSet.getPhone(phone);
+                    // it's an phone -- append to the Syllable
+                    PhoneEl phonel = phoneSet.getPhone(phone);
                     if (currentSyllable == null) {
                         // haven't seen a Syllable yet in this iteration
                         iterator.remove();
-                        initialSyllable.prependPhone(allophone);
+                        initialSyllable.prependPhone(phonel);
                     } else {
                         // append it to the last seen Syllable
                         iterator.remove();
-                        currentSyllable.addPhone(allophone);
+                        currentSyllable.addPhone(phonel);
                     }
                 } catch (IllegalArgumentException e) {
                     throw e;

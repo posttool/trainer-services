@@ -87,7 +87,7 @@ public class PhoneSet {
         try {
             document = parseDocument(inputStream);
         } catch (Exception e) {
-            throw new Exception("Cannot parse allophone file", e);
+            throw new Exception("Cannot parse phone file", e);
         } finally {
             try {
                 inputStream.close();
@@ -110,7 +110,7 @@ public class PhoneSet {
         while ((a = (Element) ni.nextNode()) != null) {
             PhoneEl ap = new PhoneEl(a, featureNames);
             if (_phones.containsKey(ap.name()))
-                throw new Exception("File contains duplicate definition of allophone '" + ap.name() + "'!");
+                throw new Exception("File contains duplicate definition of phone '" + ap.name() + "'!");
             _phones.put(ap.name(), ap);
             if (ap.isPause()) {
                 if (silence != null)
