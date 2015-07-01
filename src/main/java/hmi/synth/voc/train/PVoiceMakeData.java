@@ -66,7 +66,7 @@ package hmi.synth.voc.train;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureIO;
 import hmi.ml.feature.FeatureVector;
-import hmi.phone.AllophoneSet;
+import hmi.phone.PhoneSet;
 import hmi.synth.voc.PhoneTranslator;
 import hmi.util.FileUtils;
 import hmi.util.StringUtils;
@@ -270,7 +270,7 @@ public class PVoiceMakeData {
      *            (full path).
      * @return true if trickyPhones.txt file is created, false otherwise.
      */
-    public static boolean checkTrickyPhones(AllophoneSet allophoneSet, String trickyFile) {
+    public static boolean checkTrickyPhones(PhoneSet allophoneSet, String trickyFile) {
 
         boolean trickyPhones = false;
         try {
@@ -280,7 +280,7 @@ public class PVoiceMakeData {
             System.out.println("Checking if there are tricky phones (problematic phone names):");
             FileWriter outputStream = null;
             String phonOri;
-            Set<String> phonesList = allophoneSet.getAllophoneNames();
+            Set<String> phonesList = allophoneSet.getPhoneNames();
             // Left-righ phone ID context questions
             Iterator<String> it = phonesList.iterator();
             int numReplacements = 0;
@@ -495,10 +495,10 @@ public class PVoiceMakeData {
                 mary_cvox.put(val_cvox[i], new HashSet<String>());
         }
 
-        AllophoneSet allophoneSet = db.getAllophoneSet();
+        PhoneSet allophoneSet = db.getAllophoneSet();
 
         String phoneSeq, phonOri;
-        Set<String> phonesList = allophoneSet.getAllophoneNames();
+        Set<String> phonesList = allophoneSet.getPhoneNames();
         // Left-righ phone ID context questions
         Iterator<String> it = phonesList.iterator();
         while (it.hasNext()) {

@@ -8,11 +8,11 @@ import org.w3c.dom.Element;
 
 import hmi.data.Phone;
 
-public class Allophone extends Phone {
+public class PhoneEl extends Phone {
 
     Map<String, String> features;
 
-    public Allophone(Element a, String[] featureNames) {
+    public PhoneEl(Element a, String[] featureNames) {
         String text = a.getAttribute("ph");
         String vc;
         String isTone;

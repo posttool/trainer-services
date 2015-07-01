@@ -5,8 +5,8 @@ import java.util.Vector;
 public class PUttModel {
 
     private int numModel; /* # of models for current utterance */
-    private int numState; /* # of HMM states for current utterance */
-    private int totalFrame; /* # of frames for current utterance */
+    private int numState; /* # of HMM states  */
+    private int totalFrame; /* # of frames */
     private int lf0Frame; /* # of frames that are voiced or non-zero */
     private Vector<PModel> modelList;
     private String realisedAcoustParams;

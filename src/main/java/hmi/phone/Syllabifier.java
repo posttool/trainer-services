@@ -21,11 +21,11 @@ public class Syllabifier {
      * <em>Papers in Laboratory Phonology I: Between the Grammar and Physics of Speech</em>
      * , Ch. 17, pp. 283-333, Cambridge University Press.</blockquote>
      */
-    public static List<Object> syllabify(AllophoneSet alloSet, String phoneString) {
+    public static List<Object> syllabify(PhoneSet phoneSet, String phoneString) {
         // First, split phoneString into a List of allophone Strings...
-        List<String> allophoneStrings = alloSet.splitIntoAllophoneList(phoneString, true);
+        List<String> phones = phoneSet.splitIntoPhoneList(phoneString, true);
         // ...and create from it a List of generic Objects
-        List<Object> phonesAndSyllables = new ArrayList<Object>(allophoneStrings);
+        List<Object> phonesAndSyllables = new ArrayList<Object>(phones);
 
         // Create an iterator
         ListIterator<Object> iterator = phonesAndSyllables.listIterator();
@@ -37,23 +37,23 @@ public class Syllabifier {
             String phone = (String) iterator.next();
             try {
                 // either it's an Allophone
-                Allophone allophone = alloSet.getAllophone(phone);
-                if (allophone.isSyllabic()) {
+                PhoneEl ph = phoneSet.getPhone(phone);
+                if (ph.isSyllabic()) {
                     // if /6/ immediately follows a non-diphthong vowel, it
                     // should be appended instead of forming its own syllable
-                    Allophone lastph = (Allophone) currentSyllable.getLastPhone();
-                    if (allophone.getFeature("ctype").equals("r") && currentSyllable != null && !lastph.isDiphthong()) {
+                    PhoneEl lastph = (PhoneEl) currentSyllable.getLastPhone();
+                    if (ph.getFeature("ctype").equals("r") && currentSyllable != null && !lastph.isDiphthong()) {
                         iterator.remove();
-                        currentSyllable.addPhone(allophone);
+                        currentSyllable.addPhone(ph);
                     } else {
                         currentSyllable = new Syllable();
-                        currentSyllable.addPhone(allophone);
+                        currentSyllable.addPhone(ph);
                         iterator.set(currentSyllable);
                     }
                 }
             } catch (IllegalArgumentException e) {
                 // or a stress or boundary marker
-                if (!alloSet.getIgnoreChars().contains(phone)) {
+                if (!phoneSet.getIgnoreChars().contains(phone)) {
                     throw e;
                 }
             }
@@ -77,8 +77,8 @@ public class Syllabifier {
                 String phone = (String) phoneOrSyllable;
                 try {
                     // it's an Allophone -- prepend to the Syllable
-                    Allophone allophone = alloSet.getAllophone(phone);
-                    Allophone firstph = (Allophone) currentSyllable.getFirstPhone();
+                    PhoneEl allophone = phoneSet.getPhone(phone);
+                    PhoneEl firstph = (PhoneEl) currentSyllable.getFirstPhone();
                     if (allophone.sonority() < firstph.sonority()) {
                         iterator.remove();
                         currentSyllable.prependPhone(allophone);
@@ -87,12 +87,12 @@ public class Syllabifier {
                     // it's a provided stress marker -- assign it to the
                     // Syllable
                     switch (phone) {
-                    case Stress.PRIMARY:
+                    case "1":
                         iterator.remove();
                         currentSyllable.setStress(Stress.PRIMARY);
                         foundPrimaryStress = true;
                         break;
-                    case Stress.SECONDARY:
+                    case "2":
                         iterator.remove();
                         currentSyllable.setStress(Stress.SECONDARY);
                         break;
@@ -122,7 +122,7 @@ public class Syllabifier {
                 String phone = (String) phoneOrSyllable;
                 try {
                     // it's an Allophone -- append to the Syllable
-                    Allophone allophone = alloSet.getAllophone(phone);
+                    PhoneEl allophone = phoneSet.getPhone(phone);
                     if (currentSyllable == null) {
                         // haven't seen a Syllable yet in this iteration
                         iterator.remove();

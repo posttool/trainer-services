@@ -5,7 +5,7 @@ import hmi.ml.cart.LeafNode.StringAndFloatLeafNode;
 import hmi.ml.cart.io.CARTReader;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
-import hmi.phone.AllophoneSet;
+import hmi.phone.PhoneSet;
 import hmi.phone.Syllabifier;
 
 import java.io.BufferedReader;
@@ -22,23 +22,23 @@ public class TrainedPhonetizer {
     private FeatureDefinition featureDefinition;
     private int indexPredictedFeature;
     private int context;
-    private AllophoneSet allophoneSet;
+    private PhoneSet phoneSet;
     private boolean convertToLowercase;
     protected boolean removeTrailingOneFromPhones = true;
 
-    public TrainedPhonetizer(AllophoneSet aPhonSet, InputStream treeStream, boolean removeTrailingOneFromPhones)
+    public TrainedPhonetizer(PhoneSet aPhonSet, InputStream treeStream, boolean removeTrailingOneFromPhones)
             throws Exception {
-        this.allophoneSet = aPhonSet;
+        this.phoneSet = aPhonSet;
         this.loadTree(treeStream);
         this.removeTrailingOneFromPhones = removeTrailingOneFromPhones;
     }
 
-    public TrainedPhonetizer(AllophoneSet aPhonSet, InputStream treeStream) throws Exception {
+    public TrainedPhonetizer(PhoneSet aPhonSet, InputStream treeStream) throws Exception {
         this(aPhonSet, treeStream, true);
     }
 
-    public TrainedPhonetizer(AllophoneSet aPhonSet, CART predictionTree) {
-        this.allophoneSet = aPhonSet;
+    public TrainedPhonetizer(PhoneSet aPhonSet, CART predictionTree) {
+        this.phoneSet = aPhonSet;
         this.tree = predictionTree;
         this.featureDefinition = tree.getFeatureDefinition();
         this.indexPredictedFeature = featureDefinition.getFeatureIndex(PREDICTED_STRING_FEATURENAME);
@@ -64,7 +64,7 @@ public class TrainedPhonetizer {
 
     public String predictPronunciation(String graphemes) {
         if (convertToLowercase)
-            graphemes = graphemes.toLowerCase(allophoneSet.getLocale());
+            graphemes = graphemes.toLowerCase(phoneSet.getLocale());
 
         String returnStr = "";
 
@@ -96,7 +96,7 @@ public class TrainedPhonetizer {
     }
 
     public String syllabify(String phones) {
-        List<?> a = Syllabifier.syllabify(allophoneSet, phones);
+        List<?> a = Syllabifier.syllabify(phoneSet, phones);
         for (Object o : a) {
             System.out.println("silly " + o);
         }
@@ -107,17 +107,17 @@ public class TrainedPhonetizer {
 
         if (args.length < 2) {
             System.out.println("Usage:");
-            System.out.println("java GlyphToPhone allophones.xml lts-model.lts [removeTrailingOneFromPhones]");
+            System.out.println("java GlyphToPhone phones.xml lts-model.lts [removeTrailingOneFromPhones]");
             System.exit(0);
         }
-        String allophoneFile = args[0];
+        String phoneFile = args[0];
         String ltsFile = args[1];
         boolean myRemoveTrailingOneFromPhones = true;
         if (args.length > 2) {
             myRemoveTrailingOneFromPhones = Boolean.getBoolean(args[2]);
         }
 
-        TrainedPhonetizer lts = new TrainedPhonetizer(AllophoneSet.getAllophoneSet(allophoneFile), new FileInputStream(ltsFile),
+        TrainedPhonetizer lts = new TrainedPhonetizer(PhoneSet.getPhoneSet(phoneFile), new FileInputStream(ltsFile),
                 myRemoveTrailingOneFromPhones);
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

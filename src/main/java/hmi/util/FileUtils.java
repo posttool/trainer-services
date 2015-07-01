@@ -98,7 +98,6 @@ public class FileUtils {
             }
         });
 
-        /* Sort the file names alphabetically */
         Arrays.sort(filenames);
 
         for (int i = 0; i < filenames.length; i++) {
@@ -133,10 +132,8 @@ public class FileUtils {
                 return null;
             }
 
-            // Create the byte array to hold the data
             byte[] bytes = new byte[(int) length];
 
-            // Read in the bytes
             int offset = 0;
             int numRead = 0;
             while ((offset < bytes.length) && ((numRead = is.read(bytes, offset, bytes.length - offset)) >= 0)) {
@@ -255,7 +252,6 @@ public class FileUtils {
         return bRet;
     }
 
-    // Checks for the existence of file and deletes if existing
     public static void delete(String file, boolean bDisplayInfo) {
         boolean bRet = false;
         File f = new File(file);
@@ -272,7 +268,6 @@ public class FileUtils {
         }
     }
 
-    // Silent version
     public static void delete(String file) {
         if (exists(file)) {
             delete(file, false);
@@ -285,7 +280,6 @@ public class FileUtils {
         }
     }
 
-    // Silnet version
     public static void delete(String[] files) {
         delete(files, false);
     }
@@ -358,7 +352,7 @@ public class FileUtils {
                     + " : " + e.getMessage());
             throw new IOException();
         } finally {
-            FileUtils.close(in, out);
+            close(in, out);
         }
     }
 
@@ -390,10 +384,8 @@ public class FileUtils {
 
     }
 
-    // this function does not copy files that start with .
     public static void copyFolderRecursive(String sourceFolder, String targetFolder, boolean bForceDeleteTarget)
             throws IOException {
-        String fileSeparator = System.getProperty("file.separator");
         if (exists(sourceFolder)) {
             if (exists(targetFolder) && bForceDeleteTarget)
                 delete(targetFolder);
@@ -442,7 +434,6 @@ public class FileUtils {
         }
     }
 
-    // Renames all files
     public static void changeFileExtensions(String folder, String oldExt, String newExt) {
         String[] files = getFileNameList(folder, oldExt);
 
@@ -460,12 +451,6 @@ public class FileUtils {
         }
     }
 
-    /**
-     * Given a file name with path it return the file name
-     * 
-     * @param fileNameWithPath
-     * @return
-     */
     public static String getFileName(String fileNameWithPath) {
         String str;
         int i;
@@ -477,12 +462,10 @@ public class FileUtils {
 
     }
 
-    // Gets filenames only without paths!
     public static String[] getFileNameList(String directory, String extension) {
         return getFileNameList(directory, extension, true);
     }
 
-    // Gets filenames only without paths!
     public static String[] getFileNameList(String directory, String extension, boolean recurse) {
         File[] files = listFilesAsArray(new File(directory), new FileFilter(extension), recurse);
         String[] fileList = null;
@@ -496,12 +479,10 @@ public class FileUtils {
         return fileList;
     }
 
-    // Gets filenames with full path
     public static String[] getFileList(String directory, String extension) {
         return getFileList(directory, extension, true);
     }
 
-    // Gets filenames with full path
     public static String[] getFileList(String directory, String extension, boolean recurse) {
         File[] files = listFilesAsArray(new File(directory), new FileFilter(extension), recurse);
         String[] fileList = null;
@@ -523,28 +504,20 @@ public class FileUtils {
     }
 
     public static Collection<File> listFiles(File directory, FilenameFilter filter, boolean recurse) {
-        // List of files / directories
         Vector<File> files = new Vector<File>();
 
-        // Get files / directories in the directory
         File[] entries = directory.listFiles();
 
-        // Go over entries
         for (File entry : entries) {
-            // If there is no filter or the filter accepts the
-            // file / directory, add it to the list
             if (filter == null || filter.accept(directory, entry.getName())) {
                 files.add(entry);
             }
 
-            // If the file is a directory and the recurse flag
-            // is set, recurse into the directory
             if (recurse && entry.isDirectory()) {
                 files.addAll(listFiles(entry, filter, recurse));
             }
         }
 
-        // Return collection of files
         return files;
     }
 
@@ -553,7 +526,6 @@ public class FileUtils {
         try {
             out = new PrintWriter(new FileWriter(textFile));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -576,7 +548,6 @@ public class FileUtils {
         try {
             out = new PrintWriter(new FileWriter(textFile));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -594,7 +565,6 @@ public class FileUtils {
         try {
             out = new PrintWriter(new FileWriter(textFile));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -636,7 +606,7 @@ public class FileUtils {
     // unzipEntry(zipfile, entry, outputDir);
     // }
     // }
-    //
+
     // private static void unzipEntry(ZipFile zipfile, ZipEntry entry, File
     // outputDir) throws IOException {
     //

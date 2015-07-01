@@ -38,63 +38,26 @@ public class VocoderTest extends Vocoder {
 
         outFile = "/Users/posttool/Documents/tmp.wav";
 
-        String hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/demo-vocoded-1/hts/";
-        String voiceExample = "x_A002"; // sstr0007 sdsg0596 slis0208 snum1142
+        String hmmTrainDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-voc/hts/";
+        String voiceExample = "hmi_us_a0_jbw_031"; //
         // sbas0150
 
-        // Properties p = new Properties();
-        // p.setProperty("base",
-        // "/Users/posttool/Documents/github/voice-enst-catherine-hsmm/src/main/resources/marytts/voice/EnstCatherineHsmm/");
-        // p.setProperty("gender", "female");
-        // p.setProperty("rate", "16000");
-        // p.setProperty("alpha", "0.42");
-        // p.setProperty("beta", "0.3");
-        // p.setProperty("logGain", "false");
-        // p.setProperty("useGV", "false");
-        // p.setProperty("maxMgcGvIter", "200");
-        // p.setProperty("maxLf0GvIter", "200");
-        // p.setProperty("featuresFile", "utt_2513.pfeats");
-
-//        Properties p = new Properties();
-//        p.setProperty("base",
-//                "/Users/posttool/Documents/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
-//        p.setProperty("gender", "female");
-//        p.setProperty("rate", "16000");
-//        p.setProperty("alpha", "0.5");
-//        p.setProperty("beta", "0.0");
-//        p.setProperty("logGain", "true");
-//        p.setProperty("useGV", "true");
-//        p.setProperty("maxMgcGvIter", "200");
-//        p.setProperty("maxLf0GvIter", "200");
-//        p.setProperty("featuresFile", "cmu_us_arctic_slt_b0487.pfeats");
-        
-        
         Properties p = new Properties();
         p.setProperty("base",
-                "/Users/posttool/Documents/github/hmi-www/app/build/data/dv-2-voc/mary/voice-my_voice-hsmm/src/main/resources/marytts/voice/My_voiceHsmm/");
+                "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-voc/mary/voice-jbw-hsmm/src/main/resources/marytts/voice/JbwHsmm/");
         p.setProperty("gender", "male");
-        p.setProperty("rate", "16000");
-        p.setProperty("alpha", "0.42");
+        p.setProperty("rate", "22050");
+        p.setProperty("alpha", "0.405");
         p.setProperty("beta", "0.0");
         p.setProperty("logGain", "true");
-        p.setProperty("useGV", "true");
+        p.setProperty("useGV", "false");
         p.setProperty("maxMgcGvIter", "200");
         p.setProperty("maxLf0GvIter", "200");
         p.setProperty("featuresFile", "features_example.pfeats");
         p.setProperty("excitationFilters", "mix_excitation_5filters_99taps_16Kz.txt");
-       
-        
-        // # acoustic models to use (HMM models or carts from other voices can
-        // be specified)
-        // acousticModels = duration F0
-        // duration.model = hmm
-        // duration.attribute = d
-        // F0.model = hmm
-        // F0.attribute = f0
 
         pdata.initHMMData(p);
         pdata.setUseMixExc(true);
-        /* use Fourier magnitudes for pulse generation */
         pdata.setUseFourierMag(false);
 
         /* parameters extracted from real data with SPTK and snack */
@@ -134,7 +97,6 @@ public class VocoderTest extends Vocoder {
         System.out.println("Total number of Frames = " + totalFrame);
         voiced = new boolean[totalFrame];
 
-        /* Initialise HTSPStream-s */
         lf0Pst = new PStream(lf0Vsize, totalFrame, PData.FeatureType.LF0, 0);
         mcepPst = new PStream(mcepVsize, totalFrame, PData.FeatureType.MGC, 0);
         strPst = new PStream(strVsize, totalFrame, PData.FeatureType.STR, 0);
@@ -143,6 +105,7 @@ public class VocoderTest extends Vocoder {
         /* load lf0 data */
         /* for lf0 i just need to load the voiced values */
         lf0VoicedFrame = 0;
+        float d = 4.5f;
         lf0Data = new LDataInputStream(new BufferedInputStream(new FileInputStream(lf0File)));
         for (i = 0; i < totalFrame; i++) {
             fval = lf0Data.readFloat();
@@ -152,6 +115,11 @@ public class VocoderTest extends Vocoder {
                 voiced[i] = false;
             else {
                 voiced[i] = true;
+                // System.out.println(fval+" "+d);
+                // lf0Pst.setPar(lf0VoicedFrame, 0, d);
+                // d-=.0005;
+                // lf0Pst.setPar(lf0VoicedFrame, 0,
+                // Math.sin((float)lf0VoicedFrame/300f)+4);
                 lf0Pst.setPar(lf0VoicedFrame, 0, fval);
                 lf0VoicedFrame++;
             }
@@ -161,41 +129,45 @@ public class VocoderTest extends Vocoder {
         /* load mgc data */
         mcepData = new LDataInputStream(new BufferedInputStream(new FileInputStream(mcepFile)));
         for (i = 0; i < totalFrame; i++) {
-            for (j = 0; j < mcepPst.getOrder(); j++)
-                mcepPst.setPar(i, j, mcepData.readFloat());
+            for (j = 0; j < mcepPst.getOrder(); j++) {
+                float f = mcepData.readFloat();
+                mcepPst.setPar(i, j, f);
+            }
         }
         mcepData.close();
 
         /* load str data */
         strData = new LDataInputStream(new BufferedInputStream(new FileInputStream(strFile)));
         for (i = 0; i < totalFrame; i++) {
-            for (j = 0; j < strPst.getOrder(); j++)
-                strPst.setPar(i, j, strData.readFloat());
+            for (j = 0; j < strPst.getOrder(); j++) {
+                float f = strData.readFloat();
+                // System.out.println(i + " " + j + " " + f);
+                strPst.setPar(i, j, f);
+            }
         }
         strData.close();
 
         /* load mag data */
-        // magData = new LEDataInputStream(new BufferedInputStream(new
-        // FileInputStream(magFile)));
-        // for (i = 0; i < totalFrame; i++) {
-        // for (j = 0; j < magPst.getOrder(); j++)
-        // magPst.setPar(i, j, magData.readFloat());
-        // // System.out.println("i:" + i + "  f0=" + Math.exp(lf0Pst.getPar(i,
-        // // 0)) + "  mag(1)=" + magPst.getPar(i, 0) +
-        // // "  str(1)=" + strPst.getPar(i, 0) );
-        // }
-        // magData.close();
+        try {
+            magData = new LDataInputStream(new BufferedInputStream(new FileInputStream(magFile)));
+            for (i = 0; i < totalFrame; i++) {
+                for (j = 0; j < magPst.getOrder(); j++) {
+                    magPst.setPar(i, j, magData.readFloat());
+                    System.out.println("i:" + i + "  f0=" + Math.exp(lf0Pst.getPar(i, 0)) + "  mag(1)="
+                            + magPst.getPar(i, 0) + "  str(1)=" + strPst.getPar(i, 0));
+                }
+            }
+            magData.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 
         AudioFormat af = getHTSAudioFormat(pdata);
         double[] audio_double = null;
 
         VocoderTest par2speech = new VocoderTest();
 
-        // par2speech.setUseLpcVocoder(true);
-
         audio_double = par2speech.htsMLSAVocoder(lf0Pst, mcepPst, strPst, magPst, voiced, pdata, null);
-        // audio_double = par2speech.htsMLSAVocoder_residual(htsData, mcepPst,
-        // resFile);
 
         long lengthInSamples = (audio_double.length * 2) / (af.getSampleSizeInBits() / 8);
         System.out.println("length in samples=" + lengthInSamples);
@@ -376,7 +348,7 @@ public class VocoderTest extends Vocoder {
         else
             pdata.setUseLogGain(false);
         pdata.setBeta(Float.parseFloat(args[ind++])); // set beta: for
-                                                        // postfiltering
+                                                      // postfiltering
         pdata.setRate(Integer.parseInt(args[ind++])); // rate
         pdata.setFperiod(Integer.parseInt(args[ind++])); // period
 
@@ -439,9 +411,9 @@ public class VocoderTest extends Vocoder {
         // Change these for voice effects:
         // [min][max]
         pdata.setF0Std(1.0); // variable for f0 control, multiply f0
-                               // [1.0][0.0--5.0]
+                             // [1.0][0.0--5.0]
         pdata.setF0Mean(0.0); // variable for f0 control, add f0
-                                // [0.0][0.0--100.0]
+                              // [0.0][0.0--100.0]
 
         int totalFrame = 0;
         int lf0VoicedFrame = 0;

@@ -4,7 +4,7 @@ import hmi.data.Boundary;
 import hmi.data.Phone;
 import hmi.data.Segment;
 import hmi.ml.feature.FeatureVector;
-import hmi.phone.Allophone;
+import hmi.phone.PhoneEl;
 
 public class Target {
     protected String name;
@@ -103,7 +103,7 @@ public class Target {
         return isSilence == 1;
     }
 
-    public Allophone getAllophone() {
+    public PhoneEl getAllophone() {
         return null;
 //        if (sm != null) {
 //            AllophoneSet allophoneSet = null;

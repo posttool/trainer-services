@@ -8,8 +8,8 @@ import hmi.ml.feature.FeatureIO;
 import hmi.ml.feature.FeatureVector;
 import hmi.ml.string.StringAligner;
 import hmi.ml.string.StringPair;
-import hmi.phone.Allophone;
-import hmi.phone.AllophoneSet;
+import hmi.phone.PhoneEl;
+import hmi.phone.PhoneSet;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -35,7 +35,7 @@ import weka.core.Instances;
 
 public class TrainerGlyphPhoneAligner {
 
-    protected AllophoneSet phSet;
+    protected PhoneSet phSet;
     protected Set<String> graphemeSet;
 
     protected StringAligner aligner;
@@ -46,7 +46,7 @@ public class TrainerGlyphPhoneAligner {
 
     protected static String NULL = "null";
 
-    public TrainerGlyphPhoneAligner(AllophoneSet aPhSet, boolean convertToLowercase, boolean considerStress, int context) {
+    public TrainerGlyphPhoneAligner(PhoneSet aPhSet, boolean convertToLowercase, boolean considerStress, int context) {
         super();
         this.phSet = aPhSet;
         this.graphemeSet = new HashSet<String>();
@@ -237,7 +237,7 @@ public class TrainerGlyphPhoneAligner {
                     syl = syl.substring(1);
                     stress = true;
                 }
-                for (Allophone ph : phSet.splitIntoAllophones(syl)) {
+                for (PhoneEl ph : phSet.splitIntoPhones(syl)) {
                     currPh = ph.name();
                     if (stress && considerStress && ph.isVowel()) {
                         currPh += "1";
@@ -259,31 +259,7 @@ public class TrainerGlyphPhoneAligner {
         System.out.println("readLexicon complete " + aligner.size());
     }
 
-    // MAIN & TEST
-    private static String BP = "/Users/posttool/Documents/github/la/src/test/resources/en_US/";
-
-    public static void main(String[] args) throws Exception {
-        int ctx = 3;
-        AllophoneSet as = AllophoneSet.getAllophoneSet(BP + "phones.xml");
-        TrainerGlyphPhoneAligner tp = new TrainerGlyphPhoneAligner(as, true, true, ctx);
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(new FileInputStream(BP + "dict.txt")));
-        tp.readLexicon(rdr, "\\s*\\|\\s*");
-
-        CART st = tp.trainTree(10);
-
-        // CARTWriter cw = new CARTWriter();
-        // cw.dump(st, "dict.crt");
-        predictPronunciation(as, st, ctx, "this");
-        predictPronunciation(as, st, ctx, "however");
-        predictPronunciation(as, st, ctx, "youbelaline");
-        predictPronunciation(as, st, ctx, "Native");
-        predictPronunciation(as, st, ctx, "speakers");
-        predictPronunciation(as, st, ctx, "Native speakers of a given language usually perceive one phoneme in "
-                + "that language as a single distinctive sound, and are both unaware of and even shocked "
-                + "by the allophone variations used to pronounce single phonemes.");
-    }
-
-    public static String predictPronunciation(AllophoneSet allophoneSet, CART tree, int context, String graphemes) {
+    public static String predictPronunciation(PhoneSet allophoneSet, CART tree, int context, String graphemes) {
         boolean convertToLowercase = true;
         if (convertToLowercase)
             graphemes = graphemes.toLowerCase(allophoneSet.getLocale());
@@ -317,6 +293,30 @@ public class TrainerGlyphPhoneAligner {
         System.out.println("> " + returnStr);
         return returnStr;
 
+    }
+
+    // MAIN & TEST
+    private static String BP = "/Users/posttool/Documents/github/la/src/test/resources/en_US/";
+
+    public static void main(String[] args) throws Exception {
+        int ctx = 3;
+        PhoneSet as = PhoneSet.getPhoneSet(BP + "phones.xml");
+        TrainerGlyphPhoneAligner tp = new TrainerGlyphPhoneAligner(as, true, true, ctx);
+        BufferedReader rdr = new BufferedReader(new InputStreamReader(new FileInputStream(BP + "dict.txt")));
+        tp.readLexicon(rdr, "\\s*\\|\\s*");
+
+        CART st = tp.trainTree(10);
+
+        // CARTWriter cw = new CARTWriter();
+        // cw.dump(st, "dict.crt");
+        predictPronunciation(as, st, ctx, "this");
+        predictPronunciation(as, st, ctx, "however");
+        predictPronunciation(as, st, ctx, "youbelaline");
+        predictPronunciation(as, st, ctx, "Native");
+        predictPronunciation(as, st, ctx, "speakers");
+        predictPronunciation(as, st, ctx, "Native speakers of a given language usually perceive one phoneme in "
+                + "that language as a single distinctive sound, and are both unaware of and even shocked "
+                + "by the allophone variations used to pronounce single phonemes.");
     }
 
 }

@@ -28,37 +28,37 @@ import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class AllophoneSet {
-    private static Map<String, AllophoneSet> allophoneSets = new HashMap<String, AllophoneSet>();
+public class PhoneSet {
+    private static Map<String, PhoneSet> phoneSets = new HashMap<String, PhoneSet>();
 
-    public static AllophoneSet getAllophoneSet(String filename) throws Exception {
+    public static PhoneSet getPhoneSet(String filename) throws Exception {
         InputStream fis = null;
         try {
             fis = new FileInputStream(filename);
         } catch (IOException e) {
-            throw new Exception("Problem reading allophone file " + filename, e);
+            throw new Exception("Problem reading phone file " + filename, e);
         }
         assert fis != null;
-        return getAllophoneSet(fis, filename);
+        return getPhoneSet(fis, filename);
     }
 
-    public static boolean hasAllophoneSet(String identifier) {
-        return allophoneSets.containsKey(identifier);
+    public static boolean hasPhoneSet(String identifier) {
+        return phoneSets.containsKey(identifier);
     }
 
-    public static AllophoneSet getAllophoneSetById(String identifier) {
-        return allophoneSets.get(identifier);
+    public static PhoneSet getPhoneSetById(String identifier) {
+        return phoneSets.get(identifier);
     }
 
-    public static AllophoneSet getAllophoneSet(InputStream inStream, String identifier) throws Exception {
-        AllophoneSet as = allophoneSets.get(identifier);
+    public static PhoneSet getPhoneSet(InputStream inStream, String identifier) throws Exception {
+        PhoneSet as = phoneSets.get(identifier);
         if (as == null) {
             try {
-                as = new AllophoneSet(inStream);
+                as = new PhoneSet(inStream);
             } catch (Exception e) {
-                throw new Exception("Problem loading allophone set from " + identifier, e);
+                throw new Exception("Problem loading phone set from " + identifier, e);
             }
-            allophoneSets.put(identifier, as);
+            phoneSets.put(identifier, as);
         } else {
             try {
                 inStream.close();
@@ -74,15 +74,15 @@ public class AllophoneSet {
 
     private String name;
     private Locale locale;
-    private Map<String, Allophone> allophones = null;
+    private Map<String, PhoneEl> _phones = null;
     private Map<String, String[]> featureValueMap = null;
 
-    private Allophone silence = null;
+    private PhoneEl silence = null;
     private String ignore_chars = null;
-    private int maxAllophoneSymbolLength = 1;
+    private int maxPhoneSymbolLength = 1;
 
-    private AllophoneSet(InputStream inputStream) throws Exception {
-        allophones = new TreeMap<String, Allophone>();
+    private PhoneSet(InputStream inputStream) throws Exception {
+        _phones = new TreeMap<String, PhoneEl>();
         Document document;
         try {
             document = parseDocument(inputStream);
@@ -108,10 +108,10 @@ public class AllophoneSet {
         NodeIterator ni = createNodeIterator(document, root, "vowel", "consonant", "silence", "tone");
         Element a;
         while ((a = (Element) ni.nextNode()) != null) {
-            Allophone ap = new Allophone(a, featureNames);
-            if (allophones.containsKey(ap.name()))
+            PhoneEl ap = new PhoneEl(a, featureNames);
+            if (_phones.containsKey(ap.name()))
                 throw new Exception("File contains duplicate definition of allophone '" + ap.name() + "'!");
-            allophones.put(ap.name(), ap);
+            _phones.put(ap.name(), ap);
             if (ap.isPause()) {
                 if (silence != null)
                     throw new Exception("File contains more than one silence symbol: '" + silence.name() + "' and '"
@@ -119,8 +119,8 @@ public class AllophoneSet {
                 silence = ap;
             }
             int len = ap.name().length();
-            if (len > maxAllophoneSymbolLength) {
-                maxAllophoneSymbolLength = len;
+            if (len > maxPhoneSymbolLength) {
+                maxPhoneSymbolLength = len;
             }
         }
         if (silence == null)
@@ -131,7 +131,7 @@ public class AllophoneSet {
         featureValueMap = new TreeMap<String, String[]>();
         for (String feature : featureNames) {
             Set<String> featureValueSet = new TreeSet<String>();
-            for (Allophone ap : allophones.values()) {
+            for (PhoneEl ap : _phones.values()) {
                 featureValueSet.add(ap.getFeature(feature));
             }
             if (featureValueSet.contains("0"))
@@ -152,16 +152,16 @@ public class AllophoneSet {
         return locale;
     }
 
-    public Allophone getAllophone(String ph) {
-        Allophone allophone = allophones.get(ph);
-        if (allophone == null) {
+    public PhoneEl getPhone(String ph) {
+        PhoneEl phone = _phones.get(ph);
+        if (phone == null) {
             throw new IllegalArgumentException(String.format(
-                    "Allophone `%s' could not be found in AllophoneSet `%s' (Locale: %s)", ph, name, locale));
+                    "Phone `%s' could not be found in PhoneSet `%s' (Locale: %s)", ph, name, locale));
         }
-        return allophone;
+        return phone;
     }
 
-    public Allophone getSilence() {
+    public PhoneEl getSilence() {
         return silence;
     }
 
@@ -176,7 +176,7 @@ public class AllophoneSet {
     public String getPhoneFeature(String ph, String featureName) {
         if (ph == null)
             return null;
-        Allophone a = allophones.get(ph);
+        PhoneEl a = _phones.get(ph);
         if (a == null)
             return null;
         return a.getFeature(featureName);
@@ -193,33 +193,33 @@ public class AllophoneSet {
         return vals;
     }
 
-    public Set<String> getAllophoneNames() {
-        Iterator<String> it = allophones.keySet().iterator();
-        Set<String> allophoneKeySet = new TreeSet<String>();
+    public Set<String> getPhoneNames() {
+        Iterator<String> it = _phones.keySet().iterator();
+        Set<String> phoneKeySet = new TreeSet<String>();
         while (it.hasNext()) {
             String keyString = it.next();
-            if (!allophones.get(keyString).isTone()) {
-                allophoneKeySet.add(keyString);
+            if (!_phones.get(keyString).isTone()) {
+                phoneKeySet.add(keyString);
             }
         }
-        return allophoneKeySet;
+        return phoneKeySet;
     }
 
-    public Allophone[] splitIntoAllophones(String allophoneString) {
-        List<String> phones = splitIntoAllophoneList(allophoneString, false);
-        Allophone[] allos = new Allophone[phones.size()];
+    public PhoneEl[] splitIntoPhones(String phoneString) {
+        List<String> phones = splitIntoPhoneList(phoneString, false);
+        PhoneEl[] phs = new PhoneEl[phones.size()];
         for (int i = 0; i < phones.size(); i++) {
             try {
-                allos[i] = getAllophone(phones.get(i));
+                phs[i] = getPhone(phones.get(i));
             } catch (IllegalArgumentException e) {
                 throw e;
             }
         }
-        return allos;
+        return phs;
     }
 
-    public String splitAllophoneString(String allophoneString) {
-        List<String> phones = splitIntoAllophoneList(allophoneString, true);
+    public String splitPhoneString(String phoneString) {
+        List<String> phones = splitIntoPhoneList(phoneString, true);
         StringBuilder pronunciation = new StringBuilder();
         for (String a : phones) {
             if (pronunciation.length() > 0)
@@ -229,16 +229,16 @@ public class AllophoneSet {
         return pronunciation.toString();
     }
 
-    public List<String> splitIntoAllophoneList(String allophonesString) {
-        return splitIntoAllophoneList(allophonesString, true);
+    public List<String> splitIntoPhoneList(String phonesString) {
+        return splitIntoPhoneList(phonesString, true);
     }
 
-    public List<String> splitIntoAllophoneList(String allophoneString, boolean includeStressAndSyllableMarkers) {
+    public List<String> splitIntoPhoneList(String phoneString, boolean includeStressAndSyllableMarkers) {
         List<String> phones = new ArrayList<String>();
-        for (int i = 0; i < allophoneString.length(); i++) {
-            String one = allophoneString.substring(i, i + 1);
+        for (int i = 0; i < phoneString.length(); i++) {
+            String one = phoneString.substring(i, i + 1);
 
-            // Allow modification of ignore characters in allophones.xml
+            // Allow modification of ignore characters in phones.xml
             if (getIgnoreChars().contains(one)) {
                 if (includeStressAndSyllableMarkers)
                     phones.add(one);
@@ -249,11 +249,11 @@ public class AllophoneSet {
             // Try to cut off individual segments,
             // starting with the longest prefixes:
             String ph = null;
-            for (int l = maxAllophoneSymbolLength; l >= 1; l--) {
-                if (i + l <= allophoneString.length()) {
-                    ph = allophoneString.substring(i, i + l);
-                    // look up in allophone map:
-                    if (allophones.containsKey(ph)) {
+            for (int l = maxPhoneSymbolLength; l >= 1; l--) {
+                if (i + l <= phoneString.length()) {
+                    ph = phoneString.substring(i, i + l);
+                    // look up in phone map:
+                    if (_phones.containsKey(ph)) {
                         // OK, found a symbol of length l.
                         i += l - 1; // together with the i++ in the for loop,
                                     // move by l
@@ -261,20 +261,20 @@ public class AllophoneSet {
                     }
                 }
             }
-            if (ph != null && allophones.containsKey(ph)) {
+            if (ph != null && _phones.containsKey(ph)) {
                 // have found a valid phone
                 phones.add(ph);
             } else {
-                throw new IllegalArgumentException("Found unknown symbol `" + allophoneString.charAt(i)
-                        + "' in phonetic string `" + allophoneString + "' -- ignoring.");
+                throw new IllegalArgumentException("Found unknown symbol `" + phoneString.charAt(i)
+                        + "' in phonetic string `" + phoneString + "' -- ignoring.");
             }
         }
         return phones;
     }
 
-    public boolean checkAllophoneSyntax(String allophoneString) {
+    public boolean checkPhoneSyntax(String phoneString) {
         try {
-            splitIntoAllophoneList(allophoneString, false);
+            splitIntoPhoneList(phoneString, false);
             return true;
         } catch (IllegalArgumentException e) {
             return false;

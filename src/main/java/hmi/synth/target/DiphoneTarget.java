@@ -1,7 +1,7 @@
 package hmi.synth.target;
 
 import hmi.ml.feature.FeatureVector;
-import hmi.phone.Allophone;
+import hmi.phone.PhoneEl;
 
 public class DiphoneTarget extends Target {
     public final HalfPhoneTarget left;
@@ -39,7 +39,7 @@ public class DiphoneTarget extends Target {
         throw new IllegalStateException("This method should not be called for DiphoneTargets.");
     }
 
-    public Allophone getAllophone() {
+    public PhoneEl getAllophone() {
         throw new IllegalStateException("This method should not be called for DiphoneTargets.");
     }
 

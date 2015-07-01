@@ -39,8 +39,8 @@ public class Test1 {
         p.setProperty("base", BP + "/github/marytts/voice-cmu-slt-hsmm/src/main/resources/marytts/voice/CmuSltHsmm/");
         p.setProperty("gender", "male");
         p.setProperty("rate", "16000");
-        p.setProperty("alpha", "0.1");
-        p.setProperty("beta", "0.1");
+        p.setProperty("alpha", "0.2");
+        p.setProperty("beta", "0.0");
         p.setProperty("logGain", "true");
         p.setProperty("useGV", "true");
         p.setProperty("maxMgcGvIter", "200");
@@ -50,11 +50,11 @@ public class Test1 {
     }
     public static Properties getVoiceProps1() {
         Properties p = new Properties();
-        p.setProperty("base", BP + "/github/hmi-www/app/build/data/dv-2-voc/mary/voice-my_voice-hsmm/src/main/resources/marytts/voice/My_voiceHsmm/");
+        p.setProperty("base", BP + "/github/hmi-www/app/build/data/dk-1-voc/mary/voice-dk-1-hsmm/src/main/resources/marytts/voice/Dk1Hsmm/");
         p.setProperty("gender", "male");
         p.setProperty("rate", "16000");
-        p.setProperty("alpha", "0.3");
-        p.setProperty("beta", "0.1");
+        p.setProperty("alpha", "0.42");
+        p.setProperty("beta", "0.0");
         p.setProperty("logGain", "true");
         p.setProperty("useGV", "true");
         p.setProperty("maxMgcGvIter", "200");
@@ -75,14 +75,14 @@ public class Test1 {
          */
         String outWavFile = BP + "/tmp.wav";
 
-        htsData.initHMMData(getVoiceProps1());
+        htsData.initHMMData(getVoiceProps0());
 
         // Set these variables so the htsEngine use the
         // ContinuousFeatureProcessors features
         htsData.setUseAcousticModels(true);
 
         // The settings for using GV and MixExc can
-        // besynthesisWithExternalProsodySpecificationFiles changed in this way:
+        // be synthesisWithExternalProsodySpecificationFiles changed in this way:
         htsData.setUseGV(true);
         htsData.setUseMixExc(true);
         htsData.setUseFourierMag(true); // if the voice was trained with Fourier
@@ -98,7 +98,7 @@ public class Test1 {
         AudioInputStream ais;
 
         try {
-            String feaFile = BP + "/github/hmi-www/app/build/data/dv-2-voc/phonefeatures/X_0002.pfeats";
+            String feaFile = BP + "/github/hmi-www/app/build/data/dk-1-voc/phonefeatures/X_0003.pfeats";
 
             um = hmm_tts.processUttFromFile(feaFile, htsData);
 
@@ -321,8 +321,8 @@ public class Test1 {
 
         PData htsData = new PData();
         Properties p = new Properties();
-        p.setProperty("base", BP + "/github/hmi-www/app/build/data/test-2/mary/voice-my_hmmmm_voice-hsmm"
-                + "/src/main/resources/marytts/voice/My_hmmmm_voiceHsmm/");
+        p.setProperty("base", BP + "/github/hmi-www/app/build/data/test-2/mary/voice-dv-2-hsmm"
+                + "/src/main/resources/marytts/voice/voice-dv-2-hsmm/");
         p.setProperty("gender", "female");
         p.setProperty("rate", "16000");
         p.setProperty("alpha", "0.42");

@@ -74,10 +74,7 @@ public class DDSAudioInputStream extends AudioInputStream {
             } else { // 24 bit
                 boolean bigEndian = format.isBigEndian();
                 for (int i = 0; i < nRead; i++, currentPos += 3) {
-                    int sample = (int) Math.round(sampleBuf[i] * 8388605.0); // de-normalise
-                                                                             // to
-                                                                             // value
-                                                                             // range
+                    int sample = (int) Math.round(sampleBuf[i] * 8388605.0);
                     byte hibyte = (byte) (sample >> 16);
                     byte midbyte = (byte) ((sample >> 8) & 0xFF);
                     byte lobyte = (byte) (sample & 0xFF);

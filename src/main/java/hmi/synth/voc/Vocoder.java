@@ -2,10 +2,8 @@ package hmi.synth.voc;
 
 import hmi.sig.AmplitudeNormalizer;
 import hmi.sig.DDSAudioInputStream;
-import hmi.sig.FFT;
 import hmi.sig.ProducingDoubleDataSource;
 
-import java.util.Arrays;
 import java.util.Random;
 
 import javax.sound.sampled.AudioFormat;
@@ -48,7 +46,7 @@ public class Vocoder {
     private boolean fourierMagnitudes = false;
 
     /**
-     * The initialisation of VocoderSetup should be done when there is already
+     * The initialization of VocoderSetup should be done when there is already
      * information about the number of feature vectors to be processed, size of
      * the mcep vector file, etc.
      */
@@ -84,11 +82,11 @@ public class Vocoder {
             D1 = new double[vector_size];
         }
 
-        /* excitation initialisation */
+        /* excitation  */
         p1 = -1;
         pc = 0.0;
 
-    } /* method initVocoder */
+    } 
 
     /**
      * HTS_MLSA_Vocoder: Synthesis of speech out of mel-cepstral coefficients.

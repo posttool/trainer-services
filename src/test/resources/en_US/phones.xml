@@ -1,26 +1,26 @@
-<phones name="sampa" xml:lang="en-US"
+<phones name="arpabet" xml:lang="en-US"
 		features="vlng vheight vfront vrnd ctype cplace cvox">
 	<silence ph="_"/>
 
-	<vowel ph="A" vlng="l" vheight="3" vfront="3" vrnd="-"/>
-	<vowel ph="O" vlng="l" vheight="3" vfront="3" vrnd="+"/>
-	<vowel ph="u" vlng="l" vheight="1" vfront="3" vrnd="+"/>
-	<vowel ph="i" vlng="l" vheight="1" vfront="1" vrnd="-"/>
+	<vowel ph="aa" vlng="l" vheight="3" vfront="3" vrnd="-"/>
+	<vowel ph="ao" vlng="l" vheight="3" vfront="3" vrnd="+"/>
+	<vowel ph="uw" vlng="l" vheight="1" vfront="3" vrnd="+"/>
+	<vowel ph="iy" vlng="l" vheight="1" vfront="1" vrnd="-"/>
 
-	<vowel ph="{" vlng="s" vheight="3" vfront="1" vrnd="-"/>
-	<vowel ph="V" vlng="s" vheight="2" vfront="2" vrnd="-"/>
-	<vowel ph="E" vlng="s" vheight="2" vfront="1" vrnd="-"/>
-	<vowel ph="I" vlng="s" vheight="1" vfront="1" vrnd="-"/>
-	<vowel ph="U" vlng="s" vheight="1" vfront="3" vrnd="+"/>
+	<vowel ph="ae" vlng="s" vheight="3" vfront="1" vrnd="-"/>
+	<vowel ph="ax" vlng="s" vheight="2" vfront="2" vrnd="-"/>
+	<vowel ph="eh" vlng="s" vheight="2" vfront="1" vrnd="-"/>
+	<vowel ph="ih" vlng="s" vheight="1" vfront="1" vrnd="-"/>
+	<vowel ph="uh" vlng="s" vheight="1" vfront="3" vrnd="+"/>
 
-	<vowel ph="@" vlng="a" vheight="2" vfront="2" vrnd="-"/>
-	<vowel ph="r=" vlng="a" vheight="2" vfront="2" vrnd="-" ctype="r"/>
+	<vowel ph="ah" vlng="a" vheight="2" vfront="2" vrnd="-"/>
+	<vowel ph="er" vlng="a" vheight="2" vfront="2" vrnd="-" ctype="r"/>
 
-	<vowel ph="aU" vlng="d" vheight="3" vfront="2" vrnd="-"/>
-	<vowel ph="OI" vlng="d" vheight="2" vfront="3" vrnd="+"/>
-	<vowel ph="@U" vlng="d" vheight="2" vfront="3" vrnd="+"/>
-	<vowel ph="EI" vlng="d" vheight="2" vfront="1" vrnd="-"/>
-	<vowel ph="AI" vlng="d" vheight="3" vfront="2" vrnd="-"/>
+	<vowel ph="aw" vlng="d" vheight="3" vfront="2" vrnd="-"/>
+	<vowel ph="oy" vlng="d" vheight="2" vfront="3" vrnd="+"/>
+	<vowel ph="ow" vlng="d" vheight="2" vfront="3" vrnd="+"/>
+	<vowel ph="ey" vlng="d" vheight="2" vfront="1" vrnd="-"/>
+	<vowel ph="ay" vlng="d" vheight="3" vfront="2" vrnd="-"/>
 
 	<consonant ph="p" ctype="s" cplace="l" cvox="-"/>
 	<consonant ph="t" ctype="s" cplace="a" cvox="-"/>
@@ -29,24 +29,24 @@
 	<consonant ph="d" ctype="s" cplace="a" cvox="+"/>
 	<consonant ph="g" ctype="s" cplace="v" cvox="+"/>
 
-	<consonant ph="tS" ctype="a" cplace="p" cvox="-"/>
-	<consonant ph="dZ" ctype="a" cplace="p" cvox="+"/>
+	<consonant ph="ch" ctype="a" cplace="p" cvox="-"/>
+	<consonant ph="jh" ctype="a" cplace="p" cvox="+"/>
 
 	<consonant ph="f" ctype="f" cplace="b" cvox="-"/>
 	<consonant ph="v" ctype="f" cplace="b" cvox="+"/>
-	<consonant ph="T" ctype="f" cplace="d" cvox="-"/>
-	<consonant ph="D" ctype="f" cplace="d" cvox="+"/>
+	<consonant ph="th" ctype="f" cplace="d" cvox="-"/>
+	<consonant ph="dh" ctype="f" cplace="d" cvox="+"/>
 	<consonant ph="s" ctype="f" cplace="a" cvox="-"/>
 	<consonant ph="z" ctype="f" cplace="a" cvox="+"/>
-	<consonant ph="S" ctype="f" cplace="p" cvox="-"/>
-	<consonant ph="Z" ctype="f" cplace="p" cvox="+"/>
-	<consonant ph="h" ctype="f" cplace="g" cvox="-"/>
+	<consonant ph="sh" ctype="f" cplace="p" cvox="-"/>
+	<consonant ph="zh" ctype="f" cplace="p" cvox="+"/>
+	<consonant ph="hh" ctype="f" cplace="g" cvox="-"/>
 
 	<consonant ph="l" ctype="l" cplace="a" cvox="+"/>
 	<consonant ph="m" ctype="n" cplace="l" cvox="+"/>
 	<consonant ph="n" ctype="n" cplace="a" cvox="+"/>
-	<consonant ph="N" ctype="n" cplace="v" cvox="+"/>
+	<consonant ph="ng" ctype="n" cplace="v" cvox="+"/>
 	<consonant ph="r" ctype="r" cplace="a" cvox="+"/>
 	<consonant ph="w" ctype="r" cplace="l" cvox="+"/>
-	<consonant ph="j" ctype="r" cplace="p" cvox="+"/>
+	<consonant ph="y" ctype="r" cplace="p" cvox="+"/>
 </phones>

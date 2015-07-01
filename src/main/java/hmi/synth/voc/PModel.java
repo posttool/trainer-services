@@ -24,6 +24,7 @@ public class PModel {
 
     /* variance (diag) elements of log f0 for each state */
     private double lf0Variance[][];
+    
     /* mean vector of mel-cepstrum pdfs for each state */
     private double mcepMean[][];
 

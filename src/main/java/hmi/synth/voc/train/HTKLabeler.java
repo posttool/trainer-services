@@ -1,7 +1,7 @@
 package hmi.synth.voc.train;
 
-import hmi.phone.Allophone;
-import hmi.phone.AllophoneSet;
+import hmi.phone.PhoneEl;
+import hmi.phone.PhoneSet;
 import hmi.util.DirectoryList;
 import hmi.util.FileUtils;
 
@@ -50,7 +50,7 @@ public class HTKLabeler {
     protected int percent = 0;
     protected File promtallophonesDir;
     protected Map<String, TreeMap<String, String>> dictionary;
-    protected AllophoneSet allophoneSet;
+    protected PhoneSet allophoneSet;
     protected int MAX_ITERATIONS = 150;
     protected int MAX_SP_ITERATION = 10; // iteration when intra word forced
                                          // pauses (ssil) are inserted
@@ -173,7 +173,7 @@ public class HTKLabeler {
         htk = new File(getProp(HTDIR));
         // get the output directory of files used by HTK
         outputDir = htk.getAbsolutePath() + "/etc";
-        allophoneSet = AllophoneSet.getAllophoneSet(getProp(ALLOPHONES));
+        allophoneSet = PhoneSet.getPhoneSet(getProp(ALLOPHONES));
 
         // part 1: HTK basic setup and create required files
 
@@ -262,7 +262,7 @@ public class HTKLabeler {
 
         String phoneSeq;
         // transLabelOut.println("#!MLF!#");
-        Set<String> phonesList = allophoneSet.getAllophoneNames();
+        Set<String> phonesList = allophoneSet.getPhoneNames();
         Iterator<String> it = phonesList.iterator();
         while (it.hasNext()) {
             // System.out.println(it.next());
@@ -1472,7 +1472,7 @@ public class HTKLabeler {
 
                     if (delims.indexOf(currTok) == -1) {
                         // current Token is no delimiter
-                        for (Allophone ph : allophoneSet.splitIntoAllophones(currTok)) {
+                        for (PhoneEl ph : allophoneSet.splitIntoPhones(currTok)) {
                             // orig += ph.name() + " ";
                             if (ph.name().trim().equals("_"))
                                 continue;
