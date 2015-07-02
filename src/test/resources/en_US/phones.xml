@@ -1,5 +1,6 @@
 <phones name="arpabet" xml:lang="en-US"
-		features="vlng vheight vfront vrnd ctype cplace cvox">
+		features="vlng vheight vfront vrnd ctype cplace cvox"
+		ignore_chars="0123">
 	<silence ph="_"/>
 
 	<vowel ph="aa" vlng="l" vheight="3" vfront="3" vrnd="-"/>

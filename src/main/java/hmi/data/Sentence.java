@@ -27,6 +27,10 @@ public class Sentence implements Container, IsContained {
         phrases.add(p);
     }
 
+    public List<Phrase> getPhrases() {
+        return phrases;
+    }
+
     public void addWord(Word w) {
         if (!phrases.isEmpty())
             phrases.get(phrases.size() - 1).addWord(w);

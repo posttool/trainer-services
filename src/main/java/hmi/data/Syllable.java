@@ -15,8 +15,19 @@ public class Syllable implements Container, IsContained {
         phones = new ArrayList<Phone>();
     }
 
+    public Syllable(Phone... phones) {
+        this();
+        for (Phone p : phones)
+            addPhone(p);
+    }
+
     public Word getContainer() {
         return container;
+    }
+
+    public void insertPhone(int i, Phone p) {
+        p.container = this;
+        phones.add(i, p);
     }
 
     public void addPhone(Phone p) {
@@ -31,7 +42,11 @@ public class Syllable implements Container, IsContained {
 
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append("      Syllable [" + text + "]\n");
+        b.append("      Syllable");
+        if (stress != null) {
+            b.append(" " + stress.text() + "");
+        }
+        b.append("\n");
         for (Phone phone : phones) {
             b.append(phone.toString());
         }

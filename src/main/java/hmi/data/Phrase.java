@@ -23,6 +23,10 @@ public class Phrase implements Container, IsContained {
         w.container = this;
         words.add(w);
     }
+    
+    public boolean isEmpty() {
+        return words.isEmpty();
+    }
 
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -35,6 +39,10 @@ public class Phrase implements Container, IsContained {
             b.append(word.toString());
         }
         return b.toString();
+    }
+
+    public List<Word> getWords() {
+        return words;
     }
 
 }

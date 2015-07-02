@@ -1,5 +1,7 @@
 package hmi.phone;
 
+import hmi.data.Phone;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -152,6 +154,10 @@ public class PhoneSet {
         return locale;
     }
 
+    public PhoneEl getPhone(Phone ph) {
+        return getPhone(ph.getPhone());
+    }
+
     public PhoneEl getPhone(String ph) {
         PhoneEl phone = _phones.get(ph);
         if (phone == null) {
@@ -265,8 +271,9 @@ public class PhoneSet {
                 // have found a valid phone
                 phones.add(ph);
             } else {
-                throw new IllegalArgumentException("Found unknown symbol `" + phoneString.charAt(i)
-                        + "' in phonetic string `" + phoneString + "' -- ignoring.");
+                // throw new IllegalArgumentException("Found unknown symbol `" +
+                // phoneString.charAt(i)
+                // + "' in phonetic string `" + phoneString + "' -- ignoring.");
             }
         }
         return phones;

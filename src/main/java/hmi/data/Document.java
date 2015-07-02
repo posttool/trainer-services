@@ -9,13 +9,6 @@ public class Document implements Container {
 
     public Document() {
         paragraphs = new ArrayList<Paragraph>();
-        currentParagraph = new Paragraph();
-        currentParagraph.container = this;
-        paragraphs.add(currentParagraph);
-    }
-
-    public void add(Sentence s) {
-        currentParagraph.add(s);
     }
 
 }

@@ -3,11 +3,12 @@ package hmi.data;
 import java.util.ArrayList;
 import java.util.List;
 
-// sentence
-//   phrase
-//     text
-//       syllable
-//         ph
+// pp
+//   sentence
+//     phrase
+//       text
+//         syllable
+//           ph
 
 public class SpeechMarkup {
     Document document;
@@ -22,24 +23,38 @@ public class SpeechMarkup {
         this.text = text;
     }
 
-    public void addSentence(Sentence s) {
-        document.add(s);
+    public List<Paragraph> getParagraphs() {
+        return document.paragraphs;
+    }
+
+    public void addParagraph(Paragraph p) {
+        p.container = document;
+        document.paragraphs.add(p);
     }
 
     public List<Sentence> getSentences() {
         List<Sentence> sentences = new ArrayList<Sentence>();
-        for (Paragraph p : document.paragraphs) {
-            for (Sentence sentence : p.sentences) {
+        for (Paragraph p : document.paragraphs)
+            for (Sentence sentence : p.sentences)
                 sentences.add(sentence);
-            }
-        }
         return sentences;
+    }
+
+    public List<Word> getWords() {
+        List<Word> words = new ArrayList<Word>();
+        for (Paragraph p : document.paragraphs)
+            for (Sentence sentence : p.sentences)
+                for (Phrase ph : sentence.phrases)
+                    for (Word w : ph.words)
+                        words.add(w);
+        return words;
     }
 
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("HMML 0.1\n");
         for (Paragraph p : document.paragraphs) {
+            b.append("PP\n");
             for (Sentence sentence : p.sentences) {
                 b.append(sentence.toString());
             }
@@ -50,11 +65,6 @@ public class SpeechMarkup {
     public String getLocale() {
         // TODO
         return "en";
-    }
-
-    public String getVoice() {
-        // TODO
-        return "X";
     }
 
     public String getText() {

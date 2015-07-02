@@ -11,6 +11,7 @@ public class Word implements Container, IsContained {
     String g2p_method;
     String ph;
     private String pos;
+    private int depth;
 
     public Word() {
         syllables = new ArrayList<Syllable>();
@@ -35,9 +36,10 @@ public class Word implements Container, IsContained {
         b.append("    Word");
         if (text != null) {
             b.append(" [" + text);
-            if (pos != null) {
+            if (pos != null)
                 b.append("/" + pos);
-            }
+            // if (ph != null)
+            // b.append("/" + ph);
             b.append("]\n");
         }
         for (Syllable syllable : syllables) {
@@ -62,6 +64,42 @@ public class Word implements Container, IsContained {
 
     public void setPos(String pos) {
         this.pos = pos;
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int d) {
+        this.depth = d;
+    }
+
+    public String getPh() {
+        return ph;
+    }
+
+    public void setPh(String phs) {
+        this.ph = phs;
+    }
+
+    public String getG2P() {
+        return g2p_method;
+    }
+
+    public void setG2P(String g2p) {
+        this.g2p_method = g2p;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String t) {
+        this.text = t;
+    }
+
+    public boolean isVoiced() {
+        return ph != null && !text.equals(ph); // transcriptions that match the text are not voiced
     }
 
 }
