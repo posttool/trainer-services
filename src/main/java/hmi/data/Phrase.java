@@ -3,6 +3,8 @@ package hmi.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.stanford.nlp.ling.CoreLabel;
+
 public class Phrase implements Container, IsContained {
     Sentence container;
     List<Word> words;
@@ -23,7 +25,7 @@ public class Phrase implements Container, IsContained {
         w.container = this;
         words.add(w);
     }
-    
+
     public boolean isEmpty() {
         return words.isEmpty();
     }
@@ -43,6 +45,10 @@ public class Phrase implements Container, IsContained {
 
     public List<Word> getWords() {
         return words;
+    }
+
+    public Word getLastWord() {
+        return words.get(words.size() - 1);
     }
 
 }

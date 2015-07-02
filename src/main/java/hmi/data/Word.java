@@ -11,6 +11,7 @@ public class Word implements Container, IsContained {
     String g2p_method;
     String ph;
     private String pos;
+    private String entity;
     private int depth;
 
     public Word() {
@@ -38,6 +39,8 @@ public class Word implements Container, IsContained {
             b.append(" [" + text);
             if (pos != null)
                 b.append("/" + pos);
+            if (entity != null)
+                b.append("/" + entity);
             // if (ph != null)
             // b.append("/" + ph);
             b.append("]\n");
@@ -58,11 +61,11 @@ public class Word implements Container, IsContained {
         return segs;
     }
 
-    public String getPos() {
+    public String getPartOfSpeech() {
         return pos;
     }
 
-    public void setPos(String pos) {
+    public void setPartOfSpeech(String pos) {
         this.pos = pos;
     }
 
@@ -98,8 +101,17 @@ public class Word implements Container, IsContained {
         this.text = t;
     }
 
+    public String getEntity() {
+        return entity;
+    }
+
+    public void setEntity(String t) {
+        this.entity = t;
+    }
+
     public boolean isVoiced() {
-        return ph != null && !text.equals(ph); // transcriptions that match the text are not voiced
+        return ph != null && !text.equals(ph); // transcriptions that match the
+                                               // text are not voiced
     }
 
 }

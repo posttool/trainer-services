@@ -10,17 +10,12 @@ import java.util.ListIterator;
 
 public class Syllabifier {
     public static List<Syllable> syllabify(PhoneSet ps, String phoneString) {
-        // Before we process, a sanity check:
         if (phoneString.trim().isEmpty()) {
             throw new IllegalArgumentException("Cannot syllabify empty phone string");
         }
 
-        // First, split phoneString into a List of phone Strings...
         List<String> phoneStrings = ps.splitIntoPhoneList(phoneString, true);
-        // ...and create from it a List of generic Objects
         List<Object> phonesAndSyllables = new ArrayList<Object>(phoneStrings);
-
-        // Create an iterator
         ListIterator<Object> iterator = phonesAndSyllables.listIterator();
 
         // First iteration (left-to-right):
@@ -31,18 +26,20 @@ public class Syllabifier {
             try {
                 // either it's an phone
                 PhoneEl phoneel = ps.getPhone(phone);
-                PhoneEl curlastph = currentSyllable == null ? null : ps.getPhone(currentSyllable.getLastPhone());
                 if (phoneel.isSyllabic()) {
                     // if /6/ immediately follows a non-diphthong vowel, it
                     // should be appended instead of forming its own syllable
-                    if (phoneel.getFeature("ctype").equals("r") && curlastph != null && !curlastph.isDiphthong()) {
-                        iterator.remove();
-                        currentSyllable.addPhone(new Phone(phone));
-                    } else {
-                        currentSyllable = new Syllable(new Phone(phone));
-                        iterator.set(currentSyllable);
-                    }
+                    PhoneEl curlastph = currentSyllable == null ? null : ps.getPhone(currentSyllable.getLastPhone());
+                    // System.out.println(phone+" "+phoneel.getFeature("ctype").equals("r")+" "+curlastph);
+                    // if (phoneel.getFeature("ctype").equals("r") && curlastph
+                    // != null && !curlastph.isDiphthong()) {
+                    // iterator.remove();
+                    // currentSyllable.addPhone(new Phone(phone));
+                    // } else {
+                    currentSyllable = new Syllable(new Phone(phone));
+                    iterator.set(currentSyllable);
                 }
+                // }
             } catch (IllegalArgumentException e) {
                 // or a stress or boundary marker
                 if (!ps.getIgnoreChars().contains(phone)) {
@@ -70,7 +67,7 @@ public class Syllabifier {
                 try {
                     // it's an phone -- prepend to the Syllable
                     PhoneEl phonel = ps.getPhone(phone);
-                    PhoneEl curfirstph = currentSyllable == null ? null : ps.getPhone(currentSyllable.getFirstPhone());
+                    PhoneEl curfirstph = ps.getPhone(currentSyllable.getFirstPhone());
                     if (phonel.sonority() < curfirstph.sonority()) {
                         iterator.remove();
                         currentSyllable.insertPhone(0, new Phone(phone));
@@ -143,9 +140,10 @@ public class Syllabifier {
             if (o instanceof Syllable) {
                 syls.add((Syllable) o);
             } else {
-                //System.out.println(o + " is not a Syllable");
+               // System.out.println(o + " is not a Syllable");
             }
         }
+
         return syls;
     }
 }

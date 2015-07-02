@@ -11,7 +11,7 @@ public class NLPipeline {
     public NLPipeline(String lng) {
         // TODO lng
         Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, ssplit, pos, lemma, parse");
+        props.setProperty("annotators", "tokenize, ssplit, pos, lemma, parse, ner");
         pipeline = new StanfordCoreNLP(props);
 
     }

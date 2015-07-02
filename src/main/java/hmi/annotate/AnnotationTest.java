@@ -14,8 +14,8 @@ import java.util.List;
 public class AnnotationTest {
     static String BP = "/Users/posttool/Documents/github/la/src/test/resources";
     static String S = "This is one. Tis is two. How do you do, if you don't mind me asking? "
-            + "Furthermore, it stands to reason that I wouldnt use a comma here but would in San Francisco, California. "
-            + "Why wouldn't you eat out when you could eat on Mars? A sentence without a break -- like this one here -- "
+            + "Furthermore, it stands to reason that I wouldn't use a comma here but would in San Francisco, California. "
+            + "Why would you eat out when you could eat on Mars? A sentence without a break -- like this one here -- "
             + "is a weird sentence.\n\nThis is even more material for the test.";
 
     public static void main(String[] args) throws Exception {

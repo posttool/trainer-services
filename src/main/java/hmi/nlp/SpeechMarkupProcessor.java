@@ -10,6 +10,7 @@ import java.util.List;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -42,12 +43,20 @@ public class SpeechMarkupProcessor {
             }
             pp.addSentence(s);
             int ws = words.size();
+            Word lastWord = null;
             for (int i = 0; i < ws; i++) {
-                CoreLabel word = words.get(i);
-                Word w = new Word(word.word());
-                w.setPos(word.tag());
-                p.addWord(w);
-                if (word.word().equals("--") || word.word().equals(",")) {
+                CoreLabel token = words.get(i);
+                if (token.word().equals("n't")) {
+                    lastWord.setText(lastWord.getText() + token.word());
+                    lastWord.setPartOfSpeech(lastWord.getPartOfSpeech() + " " + token.tag());
+                } else {
+                    Word w = new Word(token.word());
+                    w.setPartOfSpeech(token.tag());
+                    w.setEntity(token.get(NamedEntityTagAnnotation.class));
+                    p.addWord(w);
+                    lastWord = w;
+                }
+                if (token.tag().equals(",") || token.tag().equals(":")) {
                     p = new Phrase();
                     s.addPhrase(p);
                 }
