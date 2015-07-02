@@ -1,11 +1,9 @@
 package hmi.ml.cart;
 
-import java.util.Properties;
-
-import weka.classifiers.trees.j48.C45PruneableClassifierTreeWithUnary;
-import weka.classifiers.trees.j48.TreeConverter;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
+
+import java.util.Properties;
 
 /**
  * Classification and Regression Tree

@@ -1,4 +1,4 @@
-package hmi.nlp;
+package hmi.util;
 
 import java.text.DecimalFormat;
 import java.util.regex.Matcher;

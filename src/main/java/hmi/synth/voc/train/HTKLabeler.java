@@ -1,11 +1,12 @@
 package hmi.synth.voc.train;
 
+import hmi.data.Segment;
+import hmi.data.SpeechMarkup;
 import hmi.util.FileList;
 import hmi.util.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -18,18 +19,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HTKLabeler {
     private boolean DEBUG = true; // TODO add logger
 
-    // private File htk;
     private String outputDir;
     protected String labExt = ".lab";
 
@@ -334,7 +330,6 @@ public class HTKLabeler {
         int VP_ITERATION = -1;
         int change_mix_iteration = -1;
         for (int iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
-
             System.out.println("Iteration number: " + iteration);
             String hmm0last = "hmm" + (iteration - 1);
             String hmm1now = "hmm" + iteration;
@@ -346,26 +341,22 @@ public class HTKLabeler {
             if (PHASE_NUMBER == 0) {
 
                 if (iteration == (SP_ITERATION + 1)) {
-
                     phoneMlf = getHTKPath("etc", "htk.phones2.mlf");
                     phoneList = getHTKPath("etc", "htk.phone2.list");
-
                     process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm1now, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf + " " + phoneList
                             + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
-
                     // copy of logProbFrame_array in current iteration
                     logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                     epsilon_array.add(100000000.0);
 
-                    // now we enter in PHASE 1
+                    // PHASE 1
                     PHASE_NUMBER = 1;
-                    System.out.println("Now we enter in PHASE:" + PHASE_NUMBER);
+                    System.out.println("PHASE -" + PHASE_NUMBER);
                     continue;
                 }
 
-                // check epsilon_array
                 if (iteration > 2) {
                     if (epsilon_array.get(iteration - 2) < epsilon_PHASE[PHASE_NUMBER] || iteration == MAX_SP_ITERATION) {
                         SP_ITERATION = iteration;
@@ -373,8 +364,6 @@ public class HTKLabeler {
                         String oldMacro = getHTKPath("hmm", hmm0last, "macros");
                         String newMacro = getHTKPath("hmm", hmm1now, "macros");
                         FileUtils.copy(oldMacro, newMacro);
-
-                        // copy of logProbFrame_array in current iteration
                         logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                         epsilon_array.add(100000000.0);
                         continue;
@@ -382,36 +371,28 @@ public class HTKLabeler {
                 }
             }
 
-            // /-----------------
             if (PHASE_NUMBER == 1) {
                 if (iteration == (VP_ITERATION + 1)) {
                     phoneMlf = getHTKPath("etc", "htk.phones3.mlf");
                     phoneList = getHTKPath("etc", "htk.phone3.list");
-
                     process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf_vp + " " + phoneList
                             + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
-
-                    // copy of logProbFrame_array in current iteration
                     logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                     epsilon_array.add(100000000.0);
-
-                    // now we enter in PHASE 2
+                    // PHASE 2
                     PHASE_NUMBER = 2;
-                    System.out.println("Now we enter in PHASE:" + PHASE_NUMBER);
+                    System.out.println("PHASE - " + PHASE_NUMBER);
                     continue;
                 }
 
-                // check epsilon_array
                 if (epsilon_array.get(iteration - 2) < epsilon_PHASE[PHASE_NUMBER] || iteration == MAX_VP_ITERATION) {
                     VP_ITERATION = iteration;
                     insertVirtualPauseThreeStates(iteration);
                     String oldMacro = getHTKPath("hmm", hmm0last, "macros");
                     String newMacro = getHTKPath("hmm", hmm1now, "macros");
                     FileUtils.copy(oldMacro, newMacro);
-
-                    // copy of logProbFrame_array in current iteration
                     logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                     epsilon_array.add(100000000.0);
                     continue;
@@ -441,9 +422,7 @@ public class HTKLabeler {
                             int wanted_mix = current_number_of_mixtures[state] + 1;
                             int state_to_print = state + 2;
                             hhed_conf_pw.println("MU " + wanted_mix + "{*.state[" + state_to_print + "].mix}");
-
                             current_number_of_mixtures[state] = wanted_mix;
-
                             if (current_number_of_mixtures[state] < num_mixtures_for_state[state]) {
                                 need_other_updates = true;
                             }
@@ -454,9 +433,9 @@ public class HTKLabeler {
                         // copy of logProbFrame_array in current iteration
                         // logProbFrame_array.add(logProbFrame_array.get(iteration-2));
                         // epsilon_array.add(100000000.0);
-                        // now we enter in PHASE 3
+                        // PHASE 3
                         PHASE_NUMBER = 3;
-                        System.out.println("Now we enter in PHASE:" + PHASE_NUMBER);
+                        System.out.println("PHASE:" + PHASE_NUMBER);
                         // continue;
                     }
                     hhed_conf_pw.close();
@@ -465,8 +444,6 @@ public class HTKLabeler {
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf_mix + " " + phoneList
                             + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
-
-                    // copy of logProbFrame_array in current iteration
                     logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                     epsilon_array.add(100000000.0);
                     continue;
@@ -475,21 +452,16 @@ public class HTKLabeler {
 
             // /-----------------
             if (PHASE_NUMBER == 3) {
-                // check epsilon_array
                 if (((iteration != change_mix_iteration + 2) && (epsilon_array.get(iteration - 2) < epsilon_PHASE[PHASE_NUMBER]))
                         || iteration == MAX_ITERATIONS) {
                     int last = iteration - 1;
                     int prior = iteration - 2;
-
-                    System.out.println("Average log prob per frame has not increased "
-                            + " much from the previus iteration:");
-                    System.out.println("Average log prob per frame at last HREST iteration (" + last + ")-> "
+                    System.out.println("Average log prob per frame has not increased much.");
+                    System.out.println("   at HREST iteration (" + last + ") - "
                             + logProbFrame_array.get(iteration - 2));
-                    System.out.println("Average log prob per frame at prior HREST iteration (" + prior + ")-> "
+                    System.out.println("   at REST iteration (" + prior + ") - "
                             + logProbFrame_array.get(iteration - 3));
-                    System.out.println("Delta -> " + epsilon_array.get(iteration - 2));
-                    System.out.println("Suggested Action -> stop the iterations.");
-
+                    System.out.println("Delta - " + epsilon_array.get(iteration - 2));
                     if (logProbFrame_array.get(iteration - 3) > logProbFrame_array.get(iteration - 2)) {
                         BEST_ITERATION = iteration - 2;
                     } else {
@@ -499,20 +471,18 @@ public class HTKLabeler {
                 }
             }
 
-            // Normal HEREST:
-
+            // Normal HEREST
             process("( cd " + getHTKDataDir() + "; " + herest + " " + HTK_SO + " -C " + configFile + " -I " + phoneMlf
                     + " -t 250.0 150.0 1000.0" + " -S " + trainList + " -H " + getHTKPath("hmm", hmm0last, "macros")
                     + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs") + " -M " + getHTKPath("hmm", hmm1now) + " "
                     + phoneList + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
 
-            // update average_log_prob_per_frame and deltas
             check_average_log_prob_per_frame(iteration);
 
-            System.out.println("Delta average log prob per frame to respect prior iteration-> "
+            System.out.println("Delta average log prob per frame to respect prior iteration - "
                     + epsilon_array.get(iteration - 1));
-            System.out.println("Current PHASE: " + PHASE_NUMBER);
-            System.out.println("Current state and number of mixtures (for each phoneme): "
+            System.out.println("Current PHASE - " + PHASE_NUMBER);
+            System.out.println("Current state and number of mixtures (for each phoneme) - "
                     + Arrays.toString(current_number_of_mixtures));
 
             System.out.println("---------------------------------------");
@@ -522,9 +492,7 @@ public class HTKLabeler {
         System.out.println("BEST ITERATION: " + BEST_ITERATION);
         System.out.println("COPYNING BEST ITERATION FILES IN hmm-final directory");
         System.out.println("logProbFrame_array:" + logProbFrame_array.toString());
-
         System.out.println("epsilon_array:" + epsilon_array.toString());
-
         System.out.println("***********\n");
 
         String oldMacro = getHTKPath("hmm", "hmm" + BEST_ITERATION, "macros");
@@ -756,63 +724,36 @@ public class HTKLabeler {
         transLabelOut2.close();
     }
 
-    private String getLineFromXML(String basename, boolean spause, boolean vpause) throws Exception {
+    private String re(String txt, String a, String b) {
+        Pattern pattern = Pattern.compile(a);
+        Matcher matcher = pattern.matcher(txt);
+        return matcher.replaceAll(b);
+    }
+
+    private String getLineFromXML(SpeechMarkup sm, boolean spause, boolean vpause) throws Exception {
 
         String line;
         String phoneSeq;
         Matcher matcher;
         Pattern pattern;
         StringBuilder alignBuff = new StringBuilder();
-        // alignBuff.append(basename);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(new File(getProp(PROMPTPHONESDIR) + "/" + basename + xmlExt));
-        XPath xpath = XPathFactory.newInstance().newXPath();
-        NodeList tokens = (NodeList) xpath.evaluate("//t | //boundary", doc, XPathConstants.NODESET);
+        
+        List<Segment> segments = sm.getSentences().get(0).getSegments();
 
-        alignBuff.append(collectTranscription(tokens));
+        alignBuff.append(collectTranscription(segments));
         phoneSeq = alignBuff.toString();
-        pattern = Pattern.compile("pau ssil ");
-        matcher = pattern.matcher(phoneSeq);
-        phoneSeq = matcher.replaceAll("sil ");
-
-        pattern = Pattern.compile(" ssil pau$");
-        matcher = pattern.matcher(phoneSeq);
-        phoneSeq = matcher.replaceAll(" sil");
-
+        phoneSeq = re(phoneSeq, "pau ssil ", "sil ");
+        phoneSeq = re(phoneSeq, " ssil pau$", " sil");
         if (!vpause) {
-            /*
-             * TODO: Extra code need to write to maintain minimum number of
-             * short sil. or consider word boundaries as ssil.
-             */
-            /*
-             * virtual silence on word boundaries are matched in sp
-             */
-            pattern = Pattern.compile("vssil");
-            matcher = pattern.matcher(phoneSeq);
-            phoneSeq = matcher.replaceAll("");
+            phoneSeq = re(phoneSeq, "vssil", "");
         } else {
-            /*
-             * virtual silence on word boundaries are matched in sp
-             */
-            pattern = Pattern.compile("vssil");
-            matcher = pattern.matcher(phoneSeq);
-            phoneSeq = matcher.replaceAll("sp");
+            phoneSeq = re(phoneSeq, "vssil", "sp");
         }
-
-        // checking
         if (!spause) {
-            pattern = Pattern.compile("ssil");
-            matcher = pattern.matcher(phoneSeq);
-            phoneSeq = matcher.replaceAll("");
+            phoneSeq = re(phoneSeq, "ssil", "");
         }
-
         phoneSeq += " .";
-
-        pattern = Pattern.compile("\\s+");
-        matcher = pattern.matcher(phoneSeq);
-        phoneSeq = matcher.replaceAll("\n");
-
+        phoneSeq = re(phoneSeq, "\\s+", "\n");
         // System.out.println(phoneSeq);
         return phoneSeq;
     }

@@ -88,7 +88,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class PVoiceMakeData {
+public class MakePVoiceData {
 
     public final String MGC = name + ".makeMGC";
     public final String LF0 = name + ".makeLF0";
@@ -1191,7 +1191,7 @@ public class PVoiceMakeData {
 
     public static void main(String[] args) throws Exception {
 
-        PVoiceMakeData data = new PVoiceMakeData();
+        MakePVoiceData data = new MakePVoiceData();
         String voiceDir = "/x/";
         String featuresHmmVoice = "/x/hmmFeatures.txt";
         // data.makeLabels(voiceDir);
