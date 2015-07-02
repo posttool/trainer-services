@@ -8,18 +8,18 @@ import hmi.data.Word;
 
 import java.util.List;
 
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 
-public class POSTagger {
-    private NLP pipeline;
+public class SpeechMarkupProcessor {
+    private NLPipeline pipeline;
 
-    public POSTagger(NLP pipeline) {
+    public SpeechMarkupProcessor(NLPipeline pipeline) {
         this.pipeline = pipeline;
     }
 
@@ -72,5 +72,4 @@ public class POSTagger {
                 getTree(b, child, depth + 1);
         }
     }
-
 }

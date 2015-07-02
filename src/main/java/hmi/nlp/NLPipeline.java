@@ -5,10 +5,10 @@ import java.util.Properties;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
-public class NLP {
+public class NLPipeline {
     private StanfordCoreNLP pipeline;
 
-    public NLP(String lng) {
+    public NLPipeline(String lng) {
         // TODO lng
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma, parse");

@@ -31,48 +31,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class PhoneSet {
-    private static Map<String, PhoneSet> phoneSets = new HashMap<String, PhoneSet>();
 
-    public static PhoneSet getPhoneSet(String filename) throws Exception {
-        InputStream fis = null;
-        try {
-            fis = new FileInputStream(filename);
-        } catch (IOException e) {
-            throw new Exception("Problem reading phone file " + filename, e);
-        }
-        assert fis != null;
-        return getPhoneSet(fis, filename);
+    public PhoneSet(String filename) throws Exception {
+        this(new FileInputStream(filename));
     }
-
-    public static boolean hasPhoneSet(String identifier) {
-        return phoneSets.containsKey(identifier);
-    }
-
-    public static PhoneSet getPhoneSetById(String identifier) {
-        return phoneSets.get(identifier);
-    }
-
-    public static PhoneSet getPhoneSet(InputStream inStream, String identifier) throws Exception {
-        PhoneSet as = phoneSets.get(identifier);
-        if (as == null) {
-            try {
-                as = new PhoneSet(inStream);
-            } catch (Exception e) {
-                throw new Exception("Problem loading phone set from " + identifier, e);
-            }
-            phoneSets.put(identifier, as);
-        } else {
-            try {
-                inStream.close();
-            } catch (IOException e) {
-                // ignore
-            }
-        }
-        assert as != null;
-        return as;
-    }
-
-    // //////////////////////////////////////////////////////////////////
 
     private String name;
     private Locale locale;

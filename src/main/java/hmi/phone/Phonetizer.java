@@ -1,7 +1,7 @@
 package hmi.phone;
 
 import hmi.data.Word;
-import hmi.nlp.NLP;
+import hmi.nlp.NLPipeline;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -20,13 +20,13 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class Phonetizer {
     private HashMap<String, String> lex = new HashMap<String, String>();
-    private NLP pipeline;
+    private NLPipeline pipeline;
 
-    public Phonetizer(NLP pipeline) {
+    public Phonetizer(NLPipeline pipeline) {
         this.pipeline = pipeline;
     }
 
-    public Phonetizer(NLP pipeline, String lexfile) throws FileNotFoundException, IOException {
+    public Phonetizer(NLPipeline pipeline, String lexfile) throws FileNotFoundException, IOException {
         this(pipeline);
         addLexFile(lexfile);
     }
@@ -81,7 +81,7 @@ public class Phonetizer {
     }
 
     public static void main(String[] args) throws Exception {
-        NLP nlp = new NLP("en_US");
+        NLPipeline nlp = new NLPipeline("en_US");
         Phonetizer p = new Phonetizer(nlp, "/Users/posttool/Documents/github/la/src/test/resources/en_US/dict.txt");
         List<Word> words = p.getTranscript("This is a sentence, about nothing but biazibeetri -- I think.");
         for (Word w : words) {

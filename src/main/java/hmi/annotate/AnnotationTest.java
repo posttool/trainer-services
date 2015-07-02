@@ -3,8 +3,8 @@ package hmi.annotate;
 import hmi.data.SpeechMarkup;
 import hmi.data.Syllable;
 import hmi.data.Word;
-import hmi.nlp.NLP;
-import hmi.nlp.POSTagger;
+import hmi.nlp.NLPipeline;
+import hmi.nlp.SpeechMarkupProcessor;
 import hmi.phone.PhoneSet;
 import hmi.phone.Phonetizer;
 import hmi.phone.Syllabifier;
@@ -13,19 +13,19 @@ import java.util.List;
 
 public class AnnotationTest {
     static String BP = "/Users/posttool/Documents/github/la/src/test/resources";
+    static String S = "This is one. Tis is two. How do you do, if you don't mind me asking? "
+            + "Furthermore, it stands to reason that I wouldnt use a comma here but would in San Francisco, California. "
+            + "Why wouldn't you eat out when you could eat on Mars? A sentence without a break -- like this one here -- "
+            + "is a weird sentence.\n\nThis is even more material for the test.";
 
     public static void main(String[] args) throws Exception {
         // initialize "services"
-        NLP nlp = new NLP("en_US");
-        POSTagger posTagger = new POSTagger(nlp);
+        NLPipeline nlp = new NLPipeline("en_US");
+        SpeechMarkupProcessor markup = new SpeechMarkupProcessor(nlp);
         Phonetizer phonetizer = new Phonetizer(nlp, BP + "/en_US/dict.txt");
-        PhoneSet phoneSet = PhoneSet.getPhoneSet(BP + "/en_US/phones.xml");
+        PhoneSet phoneSet = new PhoneSet(BP + "/en_US/phones.xml");
         // process a document
-        SpeechMarkup sm = posTagger
-                .process("This is one. Tis is two. How do you do, if you don't mind me asking? "
-                        + "Furthermore, it stands to reason that I wouldnt use a comma here but would in San Francisco, California. "
-                        + "Why wouldn't you eat out when you could eat on Mars? A sentence without a break -- like this one here -- "
-                        + "is a weird sentence.\n\nThis is even more material for the test.");
+        SpeechMarkup sm = markup.process(S);
         for (Word w : sm.getWords()) {
             phonetizer.addTranscript(w);
             if (w.isVoiced()) {
