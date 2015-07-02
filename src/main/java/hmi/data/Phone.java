@@ -1,5 +1,7 @@
 package hmi.data;
 
+import org.json.simple.JSONArray;
+
 public class Phone extends Segment implements IsContained {
     Syllable container;
     String text;
@@ -42,6 +44,10 @@ public class Phone extends Segment implements IsContained {
         StringBuilder b = new StringBuilder();
         b.append("        Phone [" + text + "]\n");
         return b.toString();
+    }
+
+    public String toJSON() {
+        return text;
     }
 
 }

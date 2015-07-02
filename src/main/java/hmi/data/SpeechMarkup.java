@@ -1,5 +1,7 @@
 package hmi.data;
 
+import org.json.simple.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +71,13 @@ public class SpeechMarkup {
 
     public String getText() {
         return text;
+    }
+
+    public JSONObject toJSON(){
+        JSONObject o = new JSONObject();
+        o.put("hmml", 1);
+        o.put("document", document.toJSON());
+        return o;
     }
 
 }

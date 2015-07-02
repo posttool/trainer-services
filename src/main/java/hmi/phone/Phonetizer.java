@@ -34,7 +34,7 @@ public class Phonetizer {
     private int addLexFile(String lexfile) throws FileNotFoundException, IOException {
         int c = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(lexfile))) {
-            for (String line; (line = br.readLine()) != null;) {
+            for (String line; (line = br.readLine()) != null; ) {
                 if (!line.startsWith(";;;")) {
                     int i = line.indexOf(" ");
                     String w = line.substring(0, i);

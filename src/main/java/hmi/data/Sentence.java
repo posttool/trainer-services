@@ -1,12 +1,13 @@
 package hmi.data;
 
+import org.json.simple.JSONArray;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Sentence implements Container, IsContained {
     Paragraph container;
     List<Phrase> phrases;
-    Phrase current;
     String text;
 
     public Sentence() {
@@ -69,6 +70,14 @@ public class Sentence implements Container, IsContained {
             }
         }
         return sylls;
+    }
+
+    public JSONArray toJSON() {
+        JSONArray a = new JSONArray();
+        for (Phrase p : phrases) {
+            a.add(p.toJSON());
+        }
+        return a;
     }
 
 }

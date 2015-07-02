@@ -13,7 +13,7 @@ public class FFTTest {
         for (int i = 0; i < args.length; i++) {
             System.out.println("Measuring FFT accuracy for " + args[i]);
             AudioInputStream ais = AudioSystem.getAudioInputStream(new File(args[i]));
-            double[] signal = AudioUtils.getSamplesAsDoubleArray(ais);
+            double[] signal = new double[]{1d,1d}; //AudioUtils.getSamplesAsDoubleArray(ais);
             int N = signal.length;
             if (!MathUtils.isPowerOfTwo(N)) {
                 N = MathUtils.closestPowerOfTwoAbove(N);

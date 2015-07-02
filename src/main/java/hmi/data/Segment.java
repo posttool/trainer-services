@@ -1,5 +1,7 @@
 package hmi.data;
 
+import org.json.simple.JSONArray;
+
 import java.util.List;
 
 public abstract class Segment {
@@ -115,4 +117,7 @@ public abstract class Segment {
     // PrevWordNavigator
     // FirstSegmentNextWordNavigator
     // LastWordInSentenceNavigator
+
+
+
 }

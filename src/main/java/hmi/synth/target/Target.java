@@ -60,7 +60,7 @@ public class Target {
         } else {
             if (sm == null)
                 throw new NullPointerException("Target " + name + " does not have a  element.");
-            float logf0 = new UnitLogF0().process(this);
+            float logf0 = 0;//new UnitLogF0().process(this);
             if (logf0 == 0)
                 f0 = 0;
             else

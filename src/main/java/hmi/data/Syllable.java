@@ -1,5 +1,7 @@
 package hmi.data;
 
+import org.json.simple.JSONArray;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,5 +71,13 @@ public class Syllable implements Container, IsContained {
             return null;
         else
             return phones.get(0);
+    }
+
+    public JSONArray toJSON() {
+        JSONArray a = new JSONArray();
+        for (Phone p : phones) {
+            a.add(p.toJSON());
+        }
+        return a;
     }
 }

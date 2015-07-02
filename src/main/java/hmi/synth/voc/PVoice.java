@@ -82,25 +82,25 @@ public class PVoice {
         alignDur = null;
     }
 
-    public Audio process(SpeechMarkup d, PData pdata, List<Target> targetFeaturesList) throws Exception {
-
-        PUttModel um = processTargetList(targetFeaturesList, d.getSentences().get(0).getSegments(), pdata);
-
-        ParameterGenerator pdf2par = new ParameterGenerator();
-
-        pdf2par.htsMaximumLikelihoodParameterGeneration(um, pdata);
-
-        Vocoder par2speech = new Vocoder();
-
-        AudioInputStream ais = par2speech.htsMLSAVocoder(pdf2par, pdata);
-
-        // set the actualDurations in tokensAndBoundaries
-        if (d != null)
-            setRealisedProsody(d.getSentences().get(0).getSegments(), um);
-
-        return output;
-
-    }
+//    public Audio process(SpeechMarkup d, PData pdata, List<Target> targetFeaturesList) throws Exception {
+//
+//        PUttModel um = processTargetList(targetFeaturesList, d.getSentences().get(0).getSegments(), pdata);
+//
+//        ParameterGenerator pdf2par = new ParameterGenerator();
+//
+//        pdf2par.htsMaximumLikelihoodParameterGeneration(um, pdata);
+//
+//        Vocoder par2speech = new Vocoder();
+//
+//        AudioInputStream ais = par2speech.htsMLSAVocoder(pdf2par, pdata);
+//
+//        // set the actualDurations in tokensAndBoundaries
+//        if (d != null)
+//            setRealisedProsody(d.getSentences().get(0).getSegments(), um);
+//
+//        return output;
+//
+//    }
 
     public static void setRealisedProsody(List<Segment> tokensAndBoundaries, PUttModel um) {
         // TODO
@@ -230,8 +230,8 @@ public class PVoice {
                 // the
                 // // 5 states reflect the external duration
                 // // Here the duration for phones and sil (_) are calcualted
-                // diffdurNew = cart.searchDurInCartTree(m, fv, pdata, firstPh,
-                // false, diffdurOld);
+                diffdurNew = cart.searchDurInCartTree(m, fv, pdata, firstPh,
+                false, diffdurOld);
                 //
                 // if (e.getTagName().contentEquals("ph")) {
                 // m.setXmlDur(e.getAttribute("d"));

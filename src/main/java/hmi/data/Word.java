@@ -1,5 +1,8 @@
 package hmi.data;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,7 +114,23 @@ public class Word implements Container, IsContained {
 
     public boolean isVoiced() {
         return ph != null && !text.equals(ph); // transcriptions that match the
-                                               // text are not voiced
+        // text are not voiced
+    }
+
+    public JSONObject toJSON() {
+        JSONObject o = new JSONObject();
+        o.put("text", text);
+        o.put("pos", pos);
+        if (entity != null && !entity.equals("O"))
+            o.put("entity", entity);
+        if (!syllables.isEmpty()) {
+            JSONArray a = new JSONArray();
+            for (Syllable s : syllables) {
+                a.add(s.toJSON());
+            }
+            o.put("syllables", a);
+        }
+        return o;
     }
 
 }

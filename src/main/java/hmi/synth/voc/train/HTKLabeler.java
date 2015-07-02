@@ -708,13 +708,13 @@ public class HTKLabeler {
             transLabelOut.println("\"*/" + files().get(i) + labExt + "\"");
             transLabelOut1.println("\"*/" + files().get(i) + labExt + "\"");
             transLabelOut2.println("\"*/" + files().get(i) + labExt + "\"");
-            // phoneSeq = getSingleLine(getFiles().getName(i));
-            phoneSeq = getLineFromXML(files().get(i), false, false);
-            transLabelOut.println(phoneSeq.trim());
-            phoneSeq = getLineFromXML(files().get(i), true, false);
-            transLabelOut1.println(phoneSeq.trim());
-            phoneSeq = getLineFromXML(files().get(i), true, true);
-            transLabelOut2.println(phoneSeq.trim());
+            //TODO
+//            phoneSeq = getLineFromXML(files().get(i), false, false);
+//            transLabelOut.println(phoneSeq.trim());
+//            phoneSeq = getLineFromXML(files().get(i), true, false);
+//            transLabelOut1.println(phoneSeq.trim());
+//            phoneSeq = getLineFromXML(files().get(i), true, true);
+//            transLabelOut2.println(phoneSeq.trim());
 
             // System.out.println( "    " + getFiles().getName(i) );
 
@@ -740,7 +740,7 @@ public class HTKLabeler {
         
         List<Segment> segments = sm.getSentences().get(0).getSegments();
 
-        alignBuff.append(collectTranscription(segments));
+//        alignBuff.append(collectTranscription(segments));
         phoneSeq = alignBuff.toString();
         phoneSeq = re(phoneSeq, "pau ssil ", "sil ");
         phoneSeq = re(phoneSeq, " ssil pau$", " sil");

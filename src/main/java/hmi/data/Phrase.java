@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.stanford.nlp.ling.CoreLabel;
+import org.json.simple.JSONArray;
 
 public class Phrase implements Container, IsContained {
     Sentence container;
@@ -49,6 +50,14 @@ public class Phrase implements Container, IsContained {
 
     public Word getLastWord() {
         return words.get(words.size() - 1);
+    }
+
+    public JSONArray toJSON() {
+        JSONArray a = new JSONArray();
+        for (Word w : words) {
+            a.add(w.toJSON());
+        }
+        return a;
     }
 
 }

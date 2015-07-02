@@ -46,7 +46,7 @@ public class SpeechMarkupProcessor {
             Word lastWord = null;
             for (int i = 0; i < ws; i++) {
                 CoreLabel token = words.get(i);
-                if (token.word().equals("n't")) {
+                if (token.word().indexOf("'") != -1) {
                     lastWord.setText(lastWord.getText() + token.word());
                     lastWord.setPartOfSpeech(lastWord.getPartOfSpeech() + " " + token.tag());
                 } else {

@@ -496,7 +496,7 @@ public class Test1 {
         mgc.params.skipsize = (float) ss; /* skipSizeInSeconds */
         mgc.params.winsize = (float) ws; /* windowSizeInSeconds */
 
-        mgc.writeMfccFile(outFile);
+//        mgc.writeMfccFile(outFile);
     }
 
     // public void getSptkSnackLf0() throws IOException, InterruptedException,
@@ -636,7 +636,7 @@ public class Test1 {
      *            the command line to be launched.
      * @param task
      *            a task tag for error messages, such as "Pitchmarks" or "LPC".
-     * @param the
+     * @param baseName
      *            basename of the file currently processed, for error messages.
      */
     private void launchBatchProc(String cmdLine, String task, String baseName) {
