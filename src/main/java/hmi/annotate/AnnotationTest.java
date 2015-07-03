@@ -19,21 +19,8 @@ public class AnnotationTest {
             + "is a weird sentence.\n\nThis is even more material for the test.";
 
     public static void main(String[] args) throws Exception {
-        // initialize "services"
-        NLPipeline nlp = new NLPipeline("en_US");
-        SpeechMarkupProcessor markup = new SpeechMarkupProcessor(nlp);
-        Phonetizer phonetizer = new Phonetizer(nlp, BP + "/en_US/dict.txt");
-        PhoneSet phoneSet = new PhoneSet(BP + "/en_US/phones.xml");
-        // process a document
-        SpeechMarkup sm = markup.process(S);
-        for (Word w : sm.getWords()) {
-            phonetizer.addTranscript(w);
-            if (w.isVoiced()) {
-                List<Syllable> syllables = Syllabifier.syllabify(phoneSet, w.getPh().toLowerCase());
-                for (Syllable syl : syllables)
-                    w.addSyllable(syl);
-            }
-        }
+        Annotater annotater = new Annotater("en_US");
+        SpeechMarkup sm = annotater.annotate(S);
         System.out.println(sm);
     }
 }

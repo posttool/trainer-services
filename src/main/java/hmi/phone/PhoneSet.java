@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
 
 public class PhoneSet {
 
-    public PhoneSet(String filename) throws Exception {
+    public PhoneSet(String filename) throws IOException {
         this(new FileInputStream(filename));
     }
 
@@ -45,13 +45,13 @@ public class PhoneSet {
     private String ignore_chars = null;
     private int maxPhoneSymbolLength = 1;
 
-    private PhoneSet(InputStream inputStream) throws Exception {
+    private PhoneSet(InputStream inputStream) throws IOException {
         _phones = new TreeMap<String, PhoneEl>();
         Document document;
         try {
             document = parseDocument(inputStream);
         } catch (Exception e) {
-            throw new Exception("Cannot parse phone file", e);
+            throw new IOException("Cannot parse phone file", e);
         } finally {
             try {
                 inputStream.close();
@@ -74,11 +74,11 @@ public class PhoneSet {
         while ((a = (Element) ni.nextNode()) != null) {
             PhoneEl ap = new PhoneEl(a, featureNames);
             if (_phones.containsKey(ap.name()))
-                throw new Exception("File contains duplicate definition of phone '" + ap.name() + "'!");
+                throw new IOException("File contains duplicate definition of phone '" + ap.name() + "'!");
             _phones.put(ap.name(), ap);
             if (ap.isPause()) {
                 if (silence != null)
-                    throw new Exception("File contains more than one silence symbol: '" + silence.name() + "' and '"
+                    throw new IOException("File contains more than one silence symbol: '" + silence.name() + "' and '"
                             + ap.name() + "'!");
                 silence = ap;
             }
@@ -88,7 +88,7 @@ public class PhoneSet {
             }
         }
         if (silence == null)
-            throw new Exception("File does not contain a silence symbol");
+            throw new IOException("File does not contain a silence symbol");
         // Fill the list of possible values for all features
         // such that "0" comes first and all other values are sorted
         // alphabetically

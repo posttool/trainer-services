@@ -48,7 +48,8 @@
         }
 
         .word:hover {
-            background-color: #ffc;
+            background-color: #333;
+            color: #fff;
         }
 
         #ui2 {
@@ -57,9 +58,9 @@
 
         #info {
             display: none;
-            background-color: #777;
+            background-color: #333;
             position: fixed;
-            padding: 10px;
+            padding: 4px;
             color: #fff;
             font-size: 17px;
         }
@@ -109,13 +110,7 @@
 
 An American BP subsidiary, BP Exploration and Production, will pay at least $7.1 billion, and possibly more, to the federal government and the states of Louisiana, Alabama, Mississippi, Texas and Florida, for damage to natural resources; $5.5 billion in penalties to the federal government for violation of the Clean Water Act; $4.9 billion to the states to compensate for harm to their economies; and up to $1 billion to more than 400 local governments.
 
-Researchers recorded data and photographed a dead dolphin stranded along the coastline at Port Fourchon, La., in 2012.Study Links Dolphin Deaths to Deepwater Horizon Oil SpillMAY 20, 2015
-
-The view from Bay Jimmy, La. Besides oil contamination, the area faces another problem: disappearing wetlands.Beyond the Oil Spill, the Tragedy of an Ailing GulfAPRIL 20, 2011
-
-Tim Nguyen, with his son, was surprised to learn when he tried to file a claim for spill-related losses at the Gulf Coast Claims Facility that a law firm had already filed one in his name. "I never signed up with anybody," he said.
-
-"This is a landmark settlement," Gov. Robert Bentley of Alabama said at a news conference in Montgomery. "It is designed to compensate the state for all the damages, both environmental and economic."
+Researchers recorded data and photographed a dead dolphin stranded along the coastline at Port Fourchon, La., in 2012.
     </textarea><br>
     <button id="btn">Submit</button>
 </div>
@@ -163,13 +158,16 @@ Tim Nguyen, with his son, was surprised to learn when he tried to file a claim f
                             $w.addClass(t.pos);
                             $w.mouseover(function () {
                                 var p = $w.offset();
-                                $info.css({top: (p.top + 20) + "px", left: p.left + "px"});
-
+                                $info.css({top: (p.top + 20 - $(window).scrollTop()) + "px", left: p.left + "px"});
                                 $info.empty();
                                 var tt = "";
                                 if (t.entity)
                                     tt = t.entity + " / ";
-                                tt += pos_key[t.pos];
+                                if (t.pos)
+                                    if (pos_key[t.pos])
+                                        tt += pos_key[t.pos];
+                                    else
+                                        tt += t.pos;
                                 tt += "<br>"
                                 if (t.syllables) {
                                     t.syllables.forEach(function (u) {

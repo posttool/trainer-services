@@ -26,7 +26,7 @@ public class Phonetizer {
         this.pipeline = pipeline;
     }
 
-    public Phonetizer(NLPipeline pipeline, String lexfile) throws FileNotFoundException, IOException {
+    public Phonetizer(NLPipeline pipeline, String lexfile) throws IOException {
         this(pipeline);
         addLexFile(lexfile);
     }
