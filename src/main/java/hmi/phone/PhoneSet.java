@@ -5,17 +5,7 @@ import hmi.data.Phone;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -139,6 +129,13 @@ public class PhoneSet {
         } else {
             return ignore_chars;
         }
+    }
+
+    public Set<String> getPhones(){
+        Set<String> phs = new HashSet<>();
+        for (String ph : _phones.keySet())
+            phs.add(ph);
+        return phs;
     }
 
     public String getPhoneFeature(String ph, String featureName) {

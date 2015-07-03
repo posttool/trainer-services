@@ -1,9 +1,16 @@
 package hmi.synth.voc.train;
 
+import hmi.annotate.Annotater;
+import hmi.data.Phone;
 import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
+import hmi.phone.PhoneSet;
 import hmi.util.FileList;
 import hmi.util.FileUtils;
+import hmi.util.Resource;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,6 +33,13 @@ import java.util.regex.Pattern;
 public class HTKLabeler {
     private boolean DEBUG = true; // TODO add logger
 
+    private String htkBinDir = "//";
+    private String dataDir = "//";
+    private String htkPath = "/htk";
+    private String wavPath = "/wav";
+    private String smPath = "/sm";
+    private FileList files;
+
     private String outputDir;
     protected String labExt = ".lab";
 
@@ -42,24 +56,29 @@ public class HTKLabeler {
     // 13; //13 without D_A; 13*3 with D_A
     private int Train_VECTSIZE = 13 * 3;
     private int NUMStates = 5;
-    private int[] num_mixtures_for_state = { 2, 1, 2 };
-    private int[] current_number_of_mixtures = { 1, 1, 1 };
+    private int[] num_mixtures_for_state = {2, 1, 2};
+    private int[] current_number_of_mixtures = {1, 1, 1};
 
     private ArrayList<Double> logProbFrame_array = new ArrayList<Double>();
     private ArrayList<Double> epsilon_array = new ArrayList<Double>();
     private int PHASE_NUMBER = 0;
-    private double[] epsilon_PHASE = { 0.2, 0.05, 0.001, 0.0005 }; // 0 1 2 3
+    private double[] epsilon_PHASE = {0.2, 0.05, 0.001, 0.0005}; // 0 1 2 3
 
-    public void checkHTK() throws IOException {
+
+    public HTKLabeler(String htkBinDir, String dataDir) throws Exception {
+        this.htkBinDir = htkBinDir;
+        this.dataDir = dataDir;
         File htkFile = new File(getHTKBinDir() + File.separator + "HInit");
         if (!htkFile.exists()) {
-            throw new IOException("HTK path setting is wrong. Because file " + htkFile.getAbsolutePath()
+            throw new Exception("HTK path setting is wrong. Because file " + htkFile.getAbsolutePath()
                     + " does not exist");
         }
+        files = new FileList(dataDir + wavPath, ".wav");
+        System.out.println(files.get(0));
     }
 
+
     public boolean compute(Set<String> phones) throws Exception {
-        checkHTK();
         outputDir = getHTKPath("etc");
 
         System.out.println("Preparing voice database for labelling using HTK :");
@@ -67,6 +86,7 @@ public class HTKLabeler {
         new File(getHTKDataDir()).mkdir();
         process("( cd " + getHTKDataDir() + "; mkdir -p hmm" + "; mkdir -p etc" + "; mkdir -p feat"
                 + "; mkdir -p config" + "; mkdir -p lab" + "; exit )\n");
+
         createRequiredFiles();
         createPhoneDictionary(phones);
         getPhoneSequence();
@@ -76,8 +96,9 @@ public class HTKLabeler {
             int x = i + 1;
             if (x > 7)
                 x = 3;
-            delete_multiple_sp_in_PhoneMLFile(getHTKDataDir() + File.separator + "etc" + File.separator + "htk.phones"
-                    + i + ".mlf", getHTKDataDir() + File.separator + "etc" + File.separator + "htk.phones" + x + ".mlf");
+            delete_multiple_sp_in_PhoneMLFile(
+                    getHTKPath("etc", "htk.phones" + i + ".mlf"),
+                    getHTKPath("etc", "htk.phones" + x + ".mlf"));
         }
 
         // part 2: Feature Extraction using HCopy
@@ -199,6 +220,7 @@ public class HTKLabeler {
             String input = joinPath(getWavDir(), files().get(i) + ".wav");
             String output = getHTKPath("feat", files().get(i) + ".mfcc");
             pw.println(input + " " + output);
+            System.out.println("!!!" + input + " " + output);
         }
         pw.close();
 
@@ -281,7 +303,7 @@ public class HTKLabeler {
     private void featureExtraction() throws Exception {
         String hcopy = getHTKBinDir() + File.separator + "HCopy";
         String configFile = getHTKPath("config", "featEx.conf");
-        String listFile = getHTKPath("config", "featEx.list");
+        String listFile = getHTKPath("etc", "featEx.list");
         process("( cd " + getHTKDataDir() + "; " + hcopy + " -T 1 -C " + configFile + " -S " + listFile
                 + " > log_featureExtraction.txt" + "; exit )\n");
     }
@@ -708,15 +730,13 @@ public class HTKLabeler {
             transLabelOut.println("\"*/" + files().get(i) + labExt + "\"");
             transLabelOut1.println("\"*/" + files().get(i) + labExt + "\"");
             transLabelOut2.println("\"*/" + files().get(i) + labExt + "\"");
-            //TODO
-//            phoneSeq = getLineFromXML(files().get(i), false, false);
-//            transLabelOut.println(phoneSeq.trim());
-//            phoneSeq = getLineFromXML(files().get(i), true, false);
-//            transLabelOut1.println(phoneSeq.trim());
-//            phoneSeq = getLineFromXML(files().get(i), true, true);
-//            transLabelOut2.println(phoneSeq.trim());
 
-            // System.out.println( "    " + getFiles().getName(i) );
+            phoneSeq = getLineFromSM(files().get(i), false, false);
+            transLabelOut.println(phoneSeq.trim());
+            phoneSeq = getLineFromSM(files().get(i), true, false);
+            transLabelOut1.println(phoneSeq.trim());
+            phoneSeq = getLineFromSM(files().get(i), true, true);
+            transLabelOut2.println(phoneSeq.trim());
 
         }
         transLabelOut.close();
@@ -730,17 +750,19 @@ public class HTKLabeler {
         return matcher.replaceAll(b);
     }
 
-    private String getLineFromXML(SpeechMarkup sm, boolean spause, boolean vpause) throws Exception {
+    private String getLineFromSM(String filename, boolean spause, boolean vpause) throws Exception {
 
-        String line;
         String phoneSeq;
-        Matcher matcher;
-        Pattern pattern;
         StringBuilder alignBuff = new StringBuilder();
-        
-        List<Segment> segments = sm.getSentences().get(0).getSegments();
 
-//        alignBuff.append(collectTranscription(segments));
+        JSONObject obj = (JSONObject) JSONValue.parse(FileUtils.getFileAsString(new File(getSmDir() + "/" + filename + ".json"), "UTF-8"));
+        SpeechMarkup sm = new SpeechMarkup();
+        sm.fromJSON(obj);
+
+        List<Phone> s = sm.getPhones();
+        for (Phone p : s)
+            alignBuff.append(p.getPhone() + " ");
+
         phoneSeq = alignBuff.toString();
         phoneSeq = re(phoneSeq, "pau ssil ", "sil ");
         phoneSeq = re(phoneSeq, " ssil pau$", " sil");
@@ -754,32 +776,32 @@ public class HTKLabeler {
         }
         phoneSeq += " .";
         phoneSeq = re(phoneSeq, "\\s+", "\n");
-        // System.out.println(phoneSeq);
+        //System.out.println(phoneSeq);
         return phoneSeq;
-    }
-
-    private String getHTKBinDir() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     private String getAwkBinPath() {
         return "/usr/bin/awk";
     }
 
-    private String getWavDir() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    private FileList files() {
-        // TODO Auto-generated method stub
-        return null;
+    private String getHTKBinDir() {
+        return htkBinDir;
     }
 
     private String getHTKDataDir() {
-        // TODO Auto-generated method stub
-        return null;
+        return dataDir + htkPath;
+    }
+
+    private String getWavDir() {
+        return dataDir + wavPath;
+    }
+
+    private String getSmDir() {
+        return dataDir + smPath;
+    }
+
+    private FileList files() {
+        return files;
     }
 
     private String getHTKPath(String dir) {
@@ -822,6 +844,27 @@ public class HTKLabeler {
         } else {
             return process.exitValue();
         }
+    }
+
+    public static void main(String... args) throws Exception {
+        String htkBinDir = "/usr/local/HTS-2.2beta/bin";
+        String dataDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-vocb/";
+        if (false) {
+            Annotater a = new Annotater("en_US");
+            FileList txt = new FileList(dataDir + "/text", ".txt");
+            int s = txt.length();
+            for (int i = 0; i < s; i++) {
+                String fn = txt.get(i);
+                File f = new File(dataDir + "/text/" + fn + ".txt");
+                String smof = dataDir + "/sm/" + fn + ".json";
+                String t = FileUtils.getFileAsString(f, "UTF-8");
+                SpeechMarkup sm = a.annotate(t);
+                FileUtils.writeTextFile(new String[]{sm.toJSON().toJSONString()}, smof);
+            }
+        }
+        PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
+        HTKLabeler l = new HTKLabeler(htkBinDir, dataDir);
+        l.compute(phoneSet.getPhones());
     }
 
 }

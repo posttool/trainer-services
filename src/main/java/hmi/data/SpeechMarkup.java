@@ -1,5 +1,6 @@
 package hmi.data;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
@@ -52,6 +53,18 @@ public class SpeechMarkup {
         return words;
     }
 
+    public List<Phone> getPhones() {
+        List<Phone> phones = new ArrayList<Phone>();
+        for (Paragraph p : document.paragraphs)
+            for (Sentence sentence : p.sentences)
+                for (Phrase ph : sentence.phrases)
+                    for (Word w : ph.words)
+                        for (Syllable s : w.syllables)
+                            for (Phone phone : s.phones)
+                                phones.add(phone);
+        return phones;
+    }
+
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("HMML 0.1\n");
@@ -73,11 +86,15 @@ public class SpeechMarkup {
         return text;
     }
 
-    public JSONObject toJSON(){
+    public JSONObject toJSON() {
         JSONObject o = new JSONObject();
         o.put("hmml", 1);
         o.put("document", document.toJSON());
         return o;
+    }
+
+    public void fromJSON(JSONObject o) {
+        document.fromJSON((JSONArray) o.get("document"));
     }
 
 }

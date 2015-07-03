@@ -3,10 +3,7 @@ package hmi.phone;
 import hmi.data.Word;
 import hmi.nlp.NLPipeline;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -80,6 +77,19 @@ public class Phonetizer {
         return word;
     }
 
+//    String phcwd = "/Users/posttool/Documents/github/la/deploy/install/Phonetisaurus/script";
+//
+//    public String run(String... command) throws IOException {
+//        String[] envp = {"LD_LIBRARY_PATH=/usr/local/lib"};
+//        Process p = Runtime.getRuntime().exec(command, envp, new File(phcwd));
+//        BufferedReader rin = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//        BufferedReader rerr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+//        String s;
+//        while ((s = rerr.readLine()) != null)
+//            System.out.println(s);
+//        return "X";
+//    }
+
     public static void main(String[] args) throws Exception {
         NLPipeline nlp = new NLPipeline("en_US");
         Phonetizer p = new Phonetizer(nlp, "/Users/posttool/Documents/github/la/src/test/resources/en_US/dict.txt");
@@ -87,5 +97,8 @@ public class Phonetizer {
         for (Word w : words) {
             System.out.println(w.getText() + " / " + w.getPh() + " / " + w.getG2P());
         }
+//        Phonetizer p = new Phonetizer(null);
+//        String s = p.run("/usr/bin/twistd", "-y", "g2pservice.tac");
+//        System.out.println(s);
     }
 }

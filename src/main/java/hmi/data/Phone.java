@@ -50,4 +50,8 @@ public class Phone extends Segment implements IsContained {
         return text;
     }
 
+    public void fromJSON(String s) {
+        text = s;
+    }
+
 }

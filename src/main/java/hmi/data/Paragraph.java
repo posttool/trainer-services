@@ -38,5 +38,14 @@ public class Paragraph implements Container, IsContained {
         return a;
     }
 
+    public void fromJSON(JSONArray a) {
+        for (Object o : a) {
+            Sentence s = new Sentence();
+            s.fromJSON((JSONArray) o);
+            addSentence(s);
+        }
+    }
+
+
 
 }

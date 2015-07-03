@@ -5,6 +5,7 @@ import java.util.List;
 
 import edu.stanford.nlp.ling.CoreLabel;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 public class Phrase implements Container, IsContained {
     Sentence container;
@@ -58,6 +59,14 @@ public class Phrase implements Container, IsContained {
             a.add(w.toJSON());
         }
         return a;
+    }
+
+    public void fromJSON(JSONArray a) {
+        for (Object o : a) {
+            Word w = new Word();
+            w.fromJSON((JSONObject) o);
+            addWord(w);
+        }
     }
 
 }

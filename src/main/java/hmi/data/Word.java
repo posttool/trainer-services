@@ -133,4 +133,20 @@ public class Word implements Container, IsContained {
         return o;
     }
 
+    public void fromJSON(JSONObject o) {
+        Word w = new Word();
+        w.text = (String) o.get("text");
+        w.pos = (String) o.get("text");
+        w.entity = (String) o.get("text");
+        JSONArray sylls = (JSONArray) o.get("syllables");
+        if (sylls != null) {
+            for (Object so : sylls) {
+                Syllable s = new Syllable();
+                s.fromJSON((JSONArray) so);
+                addSyllable(s);
+            }
+        }
+    }
+
+
 }

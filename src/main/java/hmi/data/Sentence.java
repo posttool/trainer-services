@@ -80,4 +80,13 @@ public class Sentence implements Container, IsContained {
         return a;
     }
 
+    public void fromJSON(JSONArray a) {
+        for (Object o : a) {
+            Phrase p = new Phrase();
+            p.fromJSON((JSONArray) o);
+            addPhrase(p);
+        }
+    }
+
+
 }

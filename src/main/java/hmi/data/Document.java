@@ -14,12 +14,21 @@ public class Document implements Container {
         paragraphs = new ArrayList<Paragraph>();
     }
 
-    public JSONArray toJSON(){
+    public JSONArray toJSON() {
         JSONArray a = new JSONArray();
         for (Paragraph p : paragraphs) {
             a.add(p.toJSON());
         }
         return a;
+    }
+
+    public void fromJSON(JSONArray a) {
+        for (Object o : a) {
+            Paragraph p = new Paragraph();
+            p.fromJSON((JSONArray) o);
+            p.container = this;
+            paragraphs.add(p);
+        }
     }
 
 }
