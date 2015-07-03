@@ -220,7 +220,6 @@ public class HTKLabeler {
             String input = joinPath(getWavDir(), files().get(i) + ".wav");
             String output = getHTKPath("feat", files().get(i) + ".mfcc");
             pw.println(input + " " + output);
-            System.out.println("!!!" + input + " " + output);
         }
         pw.close();
 
@@ -352,11 +351,11 @@ public class HTKLabeler {
         int VP_ITERATION = -1;
         int change_mix_iteration = -1;
         for (int iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
-            System.out.println("Iteration number: " + iteration);
+            System.out.println("Iteration number: " + iteration + "/" + PHASE_NUMBER);
             String hmm0last = "hmm" + (iteration - 1);
             String hmm1now = "hmm" + iteration;
 
-            File hmmItDir = new File(getHTKPath("hm", hmm1now));
+            File hmmItDir = new File(getHTKPath("hmm", hmm1now));
             if (!hmmItDir.exists())
                 hmmItDir.mkdir();
 
@@ -366,7 +365,7 @@ public class HTKLabeler {
                     phoneMlf = getHTKPath("etc", "htk.phones2.mlf");
                     phoneList = getHTKPath("etc", "htk.phone2.list");
                     process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
-                            + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm1now, "hmmdefs")
+                            + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf + " " + phoneList
                             + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
                     // copy of logProbFrame_array in current iteration
@@ -670,7 +669,6 @@ public class HTKLabeler {
                 + configFile + " -a -H " + macros + " -H " + hmmDef + " -i " + alignedMlf + " -t 250.0 -y lab" + " -I "
                 + phoneMlf + " -S " + listFile + " " + phoneDict + " " + phoneList + " > log_hviteAligning.txt"
                 + "; exit )\n");
-
     }
 
     private void htkExtraModels() throws Exception {
