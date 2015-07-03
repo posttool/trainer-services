@@ -846,7 +846,7 @@ public class HTKLabeler {
 
     public static void main(String... args) throws Exception {
         String htkBinDir = "/usr/local/HTS-2.2beta/bin";
-        String dataDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-vocb/";
+        String dataDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-vocb";
         if (false) {
             Annotater a = new Annotater("en_US");
             FileList txt = new FileList(dataDir + "/text", ".txt");
