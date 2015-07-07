@@ -54,6 +54,10 @@ public class Word implements Container, IsContained {
         return b.toString();
     }
 
+    public List<Syllable> getSyllables() {
+        return syllables;
+    }
+
     public List<Segment> getSegments() {
         List<Segment> segs = new ArrayList<Segment>();
         for (Syllable s : syllables) {

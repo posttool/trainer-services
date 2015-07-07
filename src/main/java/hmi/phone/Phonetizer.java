@@ -4,6 +4,8 @@ import hmi.data.Word;
 import hmi.nlp.NLPipeline;
 
 import java.io.*;
+import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +16,23 @@ import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 public class Phonetizer {
     private HashMap<String, String> lex = new HashMap<String, String>();
+    private HashMap<String, String> g2pcache = new HashMap<String, String>();
     private NLPipeline pipeline;
+    private G2P g2p;
 
     public Phonetizer(NLPipeline pipeline) {
         this.pipeline = pipeline;
+        try {
+            this.g2p = new G2P();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Phonetizer(NLPipeline pipeline, String lexfile) throws IOException {
@@ -61,15 +73,28 @@ public class Phonetizer {
     }
 
     public Word addTranscript(Word word) {
-        String tr = lex.get(word.getText().toUpperCase());
+        String W = word.getText().toUpperCase();
+        String tr = lex.get(W);
         String src = "lex";
         if (tr == null) {
             if (puncpatt.matcher(word.getText()).matches()) {
                 tr = word.getText();
                 src = "";
             } else {
-                // rnn g2p
                 src = "g2p";
+                if (this.g2p != null) {
+                    tr = g2pcache.get(W);
+                    if (tr == null) {
+                        try {
+                            tr = g2p.get(W);
+                            g2pcache.put(W, tr);
+                        } catch (Exception e) {
+                            tr = "?";
+                            e.printStackTrace();
+                            ;
+                        }
+                    }
+                }
             }
         }
         word.setPh(tr);
@@ -77,28 +102,55 @@ public class Phonetizer {
         return word;
     }
 
-//    String phcwd = "/Users/posttool/Documents/github/la/deploy/install/Phonetisaurus/script";
-//
-//    public String run(String... command) throws IOException {
-//        String[] envp = {"LD_LIBRARY_PATH=/usr/local/lib"};
-//        Process p = Runtime.getRuntime().exec(command, envp, new File(phcwd));
-//        BufferedReader rin = new BufferedReader(new InputStreamReader(p.getInputStream()));
-//        BufferedReader rerr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-//        String s;
-//        while ((s = rerr.readLine()) != null)
-//            System.out.println(s);
-//        return "X";
-//    }
+
+    public class G2P {
+        String hostName = "10.11.12.25";
+        int portNumber = 8111;
+        String appId = "app-id";
+
+        Socket socket;
+        DataOutputStream out;
+        DataInputStream in;
+
+        public G2P() throws IOException {
+            socket = new Socket(hostName, portNumber);
+            out = new DataOutputStream(socket.getOutputStream());
+            in = new DataInputStream(socket.getInputStream());
+        }
+
+        public String get(String word) throws IOException {
+            String s = "{\"model\":\"" + appId + "\", \"params\": {\"words\":[\"" + word + "\"],\"nbest\":1,\"band\":500,\"prune\":10}}";
+            ByteBuffer b = ByteBuffer.allocate(4);
+            b.putInt(s.length());
+            byte[] bs = b.array();
+            out.write(bs);
+            out.write(s.getBytes());
+
+            StringBuilder sb = new StringBuilder();
+            int c = in.readInt();
+            for (int i = 0; i < c; i++)
+                sb.append((char) in.read());
+            JSONObject obj = (JSONObject) JSONValue.parse(sb.toString());
+            JSONArray a0 = (JSONArray) obj.get(appId);
+            for (int i = 0; i < a0.size(); i++) {
+                JSONArray a1 = (JSONArray) a0.get(i);
+                for (int j = 0; j < a1.size(); j++) {
+                    JSONObject o = (JSONObject) a1.get(j);
+                    return (String) o.get("pron");
+                }
+            }
+            return null;
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         NLPipeline nlp = new NLPipeline("en_US");
-        Phonetizer p = new Phonetizer(nlp, "/Users/posttool/Documents/github/la/src/test/resources/en_US/dict.txt");
+        Phonetizer p = new Phonetizer(nlp, "/Users/posttool/Documents/github/la/src/main/resources/en_US/dict.txt");
         List<Word> words = p.getTranscript("This is a sentence, about nothing but biazibeetri -- I think.");
-        for (Word w : words) {
+        for (Word w : words)
             System.out.println(w.getText() + " / " + w.getPh() + " / " + w.getG2P());
-        }
-//        Phonetizer p = new Phonetizer(null);
-//        String s = p.run("/usr/bin/twistd", "-y", "g2pservice.tac");
-//        System.out.println(s);
+        words = p.getTranscript("Blonkity blobity bipity bap. I think that a smaterbash could be all that.");
+        for (Word w : words)
+            System.out.println(w.getText() + " / " + w.getPh() + " / " + w.getG2P());
     }
 }

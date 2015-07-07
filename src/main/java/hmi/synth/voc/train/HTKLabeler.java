@@ -1,14 +1,11 @@
 package hmi.synth.voc.train;
 
 import hmi.annotate.Annotater;
-import hmi.data.Phone;
-import hmi.data.Segment;
-import hmi.data.SpeechMarkup;
+import hmi.data.*;
 import hmi.phone.PhoneSet;
 import hmi.util.FileList;
 import hmi.util.FileUtils;
 import hmi.util.Resource;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -22,11 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,8 +77,8 @@ public class HTKLabeler {
         System.out.println("Preparing voice database for labelling using HTK :");
         System.out.println("Setting up HTK directories ...");
         new File(getHTKDataDir()).mkdir();
-        process("( cd " + getHTKDataDir() + "; mkdir -p hmm" + "; mkdir -p etc" + "; mkdir -p feat"
-                + "; mkdir -p config" + "; mkdir -p lab" + "; exit )\n");
+        process("( cd " + getHTKDataDir() + "; mkdir -p hmm; mkdir -p etc; mkdir -p feat; "
+                + "mkdir -p config; mkdir -p lab; mkdir -p logs; exit )\n");
 
         createRequiredFiles();
         createPhoneDictionary(phones);
@@ -121,6 +114,7 @@ public class HTKLabeler {
         // Part 6: Extra model statistics
         System.out.println("Generating Extra model statistics...");
         htkExtraModels();
+        convertLabels();
 
         return true;
     }
@@ -304,7 +298,7 @@ public class HTKLabeler {
         String configFile = getHTKPath("config", "featEx.conf");
         String listFile = getHTKPath("etc", "featEx.list");
         process("( cd " + getHTKDataDir() + "; " + hcopy + " -T 1 -C " + configFile + " -S " + listFile
-                + " > log_featureExtraction.txt" + "; exit )\n");
+                + " > logs/featureExtraction.txt" + "; exit )\n");
     }
 
     private void initializeHTKTrain() throws Exception {
@@ -313,7 +307,7 @@ public class HTKLabeler {
         String listFile = getHTKPath("etc", "htkTrain.list");
         process("( cd " + getHTKDataDir() + " ; mkdir hmm/hmm-dummy ; " + " mkdir hmm/hmm-final ; " + hcompv + " "
                 + HTK_SO + " -C " + configFile + " -f 0.01 -m -S " + listFile + " -M " + getHTKPath("hmm", "hmm-dummy")
-                + " " + getHTKPath("config", "htk.proto") + " > log_initialiseHTKTrain.txt" + "; exit )\n");
+                + " " + getHTKPath("config", "htk.proto") + " > logs/initialiseHTKTrain.txt" + "; exit )\n");
     }
 
     // etc/htkTrainScript.sh
@@ -326,7 +320,7 @@ public class HTKLabeler {
                 + getAwkBinPath() + " '/BEGINHMM/,/ENDHMM/ { print $0 }' hmm/hmm-dummy/htk >> hmm/hmm0/hmmdefs\n"
                 + "done\n");
         pw.close();
-        process("( cd " + getHTKDataDir() + "; sh etc/htkTrainScript.sh" + " > log_htkTrainScript.txt" + "; exit )\n");
+        process("( cd " + getHTKDataDir() + "; sh etc/htkTrainScript.sh" + " > logs/htkTrainScript.txt" + "; exit )\n");
 
         PrintWriter macroFile = getPW(getHTKPath("hmm", "hmm0", "macros"));
         macroFile.println("~o\n" + "<VecSize> 13\n" + "<" + Train_FEAT + ">");
@@ -367,7 +361,7 @@ public class HTKLabeler {
                     process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf + " " + phoneList
-                            + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
+                            + " >> logs/herestTraining_" + iteration + ".txt" + "; exit )\n");
                     // copy of logProbFrame_array in current iteration
                     logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                     epsilon_array.add(100000000.0);
@@ -399,7 +393,7 @@ public class HTKLabeler {
                     process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf_vp + " " + phoneList
-                            + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
+                            + " >> logs/herestTraining_" + iteration + ".txt" + "; exit )\n");
                     logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                     epsilon_array.add(100000000.0);
                     // PHASE 2
@@ -464,7 +458,7 @@ public class HTKLabeler {
                     process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf_mix + " " + phoneList
-                            + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
+                            + " >> logs/herestTraining_" + iteration + ".txt" + "; exit )\n");
                     logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                     epsilon_array.add(100000000.0);
                     continue;
@@ -496,7 +490,7 @@ public class HTKLabeler {
             process("( cd " + getHTKDataDir() + "; " + herest + " " + HTK_SO + " -C " + configFile + " -I " + phoneMlf
                     + " -t 250.0 150.0 1000.0" + " -S " + trainList + " -H " + getHTKPath("hmm", hmm0last, "macros")
                     + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs") + " -M " + getHTKPath("hmm", hmm1now) + " "
-                    + phoneList + " >> log_herestTraining_" + iteration + ".txt" + "; exit )\n");
+                    + phoneList + " >> logs/herestTraining_" + iteration + ".txt" + "; exit )\n");
 
             check_average_log_prob_per_frame(iteration);
 
@@ -527,7 +521,7 @@ public class HTKLabeler {
     }
 
     private void check_average_log_prob_per_frame(int iteration) throws IOException {
-        String filename = getHTKPath("log_herestTraining_" + iteration + ".txt");
+        String filename = getHTKPath("logs/herestTraining_" + iteration + ".txt");
 
         // Reestimation complete - average log prob per frame = xxx
         Pattern p = Pattern.compile("^.*average log prob per frame = (.*)$");
@@ -667,7 +661,7 @@ public class HTKLabeler {
 
         process("( cd " + getHTKDataDir() + "; " + hvite + " " + HTK_SO + " -b sil -l " + labDir + " -o W -C "
                 + configFile + " -a -H " + macros + " -H " + hmmDef + " -i " + alignedMlf + " -t 250.0 -y lab" + " -I "
-                + phoneMlf + " -S " + listFile + " " + phoneDict + " " + phoneList + " > log_hviteAligning.txt"
+                + phoneMlf + " -S " + listFile + " " + phoneDict + " " + phoneList + " > logs/hviteAligning.txt"
                 + "; exit )\n");
     }
 
@@ -690,7 +684,7 @@ public class HTKLabeler {
         String netFile = getHTKPath("etc", "htk.phones.net");
 
         process("( cd " + getHTKDataDir() + "; " + hlstats + " -T 1 -C " + configFile + " -b " + bigFile + " -o "
-                + phoneList + " " + phoneMlf + " > log_hlstats.txt" + "; exit )\n");
+                + phoneList + " " + phoneMlf + " > logs/hlstats.txt" + "; exit )\n");
 
         String fileDict = FileUtils.getFileAsString(new File(phoneDict), "ASCII");
         PrintWriter augPhoneDict = new PrintWriter(new FileWriter(phoneAugDict));
@@ -707,7 +701,7 @@ public class HTKLabeler {
         augPhoneList.close();
 
         process("( cd " + getHTKDataDir() + "; " + hbuild + " -T 1 -C " + configFile + " -n " + bigFile + " "
-                + phoneAugList + " " + netFile + " > log_hbuild.txt" + "; exit )\n");
+                + phoneAugList + " " + netFile + " > logs/hbuild.txt" + "; exit )\n");
 
     }
 
@@ -742,40 +736,107 @@ public class HTKLabeler {
         transLabelOut2.close();
     }
 
-    private String re(String txt, String a, String b) {
-        Pattern pattern = Pattern.compile(a);
-        Matcher matcher = pattern.matcher(txt);
-        return matcher.replaceAll(b);
-    }
-
     private String getLineFromSM(String filename, boolean spause, boolean vpause) throws Exception {
-
-        String phoneSeq;
-        StringBuilder alignBuff = new StringBuilder();
 
         JSONObject obj = (JSONObject) JSONValue.parse(FileUtils.getFileAsString(new File(getSmDir() + "/" + filename + ".json"), "UTF-8"));
         SpeechMarkup sm = new SpeechMarkup();
         sm.fromJSON(obj);
 
-        List<Phone> s = sm.getPhones();
-        for (Phone p : s)
-            alignBuff.append(p.getPhone() + " ");
+        StringBuilder b = new StringBuilder();
+        b.append("sil\n");
+        for (Sentence sentence : sm.getSentences()) {
+            for (Phrase ph : sentence.getPhrases()) {
+                for (Word w : ph.getWords()) {
+                    for (Syllable s : w.getSyllables()) {
+                        for (Phone phone : s.getPhones()) {
+                            b.append(phone.getPhone());
+                            b.append("\n");
+                        }
+                    }
+                    if (vpause)
+                        b.append("sp\n");
+                }
+                if (spause)
+                    b.append("ssil\n");
+            }
+        }
+        b.append("sil\n");
+        b.append(".");
 
-        phoneSeq = alignBuff.toString();
-        phoneSeq = re(phoneSeq, "pau ssil ", "sil ");
-        phoneSeq = re(phoneSeq, " ssil pau$", " sil");
-        if (!vpause) {
-            phoneSeq = re(phoneSeq, "vssil", "");
-        } else {
-            phoneSeq = re(phoneSeq, "vssil", "sp");
+        String s = b.toString();
+        s = s.replaceAll("sp\nssil\n", "ssil\n");
+        s = s.replaceAll("ssil\nsil\n", "sil\n");
+
+        return s;
+    }
+
+    private void convertLabels() throws Exception {
+        String alignedMlf = getHTKPath("aligned.mlf");
+        BufferedReader htkLab = new BufferedReader(new FileReader(alignedMlf));
+        File labDir = new File(getHTKPath("tmplab"));
+        if (!labDir.exists())
+            labDir.mkdir();
+
+        String header = htkLab.readLine().trim();
+        if (!header.equals("#!MLF!#")) {
+            System.err.println("Header format not supported");
+            throw new RuntimeException("Header format not supported");
         }
-        if (!spause) {
-            phoneSeq = re(phoneSeq, "ssil", "");
+        String line;
+        while ((line = htkLab.readLine()) != null) {
+            line = line.trim();
+            String MLFfileName = line.substring(1, line.length() - 1);
+            String Basename = new File(MLFfileName).getName();
+            System.out.println("Basename: " + Basename);
+            String fileName = labDir.getCanonicalPath() + File.separator + Basename;
+
+            PrintWriter pw = new PrintWriter(new FileWriter(fileName));
+            pw.println("#");
+            while (true) {
+                String nline = htkLab.readLine().trim();
+                if (nline.equals("."))
+                    break;
+                StringTokenizer st = new StringTokenizer(nline);
+                Double tStart = Double.parseDouble(st.nextToken().trim());
+                Double tStamp = Double.parseDouble(st.nextToken().trim());
+                String phoneSeg = st.nextToken().trim();
+
+                Double dur = tStamp - tStart;
+                Double durms = dur / 10000;
+                if (phoneSeg.equals("sp")) {
+                    if (dur == 0) {
+                        // System.out.println("sp to delete!!!");
+                        continue;
+                    }
+
+					/*
+                     * else if (dur <= 150000) //150000 = 15 ms { //TODO: A better post processing should be done: i.e. check the
+					 * previous and the next phone ... System.out.println("sp <= 15 ms to delete!!!"); continue; }
+					 */
+                    else {
+                        System.out.println(fileName + ": a sp (virtual) pause with duration: " + durms
+                                + " ms, has been detected at " + tStart + " " + tStamp);
+                        /*
+                         * The following gawk lines cab be used to inspect very long sp pause: gawk 'match($0, /^(.*): a
+						 * sp.*duration: ([0-9]+\.[0-9]+) ms.*$/, arr) {if (arr[2]>200) {print "file:" arr[1] " duration:" arr[2]}
+						 * }' nohup.out gawk 'match($0, /^(.*): a sp.*duration: ([0-9]+\.[0-9]+) ms.*$/, arr) {if (arr[2]>400)
+						 * {print $0} }' nohup.out
+						 */
+
+                    }
+
+                }
+
+                if (phoneSeg.equals("sil") || phoneSeg.equals("ssil") || phoneSeg.equals("sp"))
+                    phoneSeg = "_";
+
+                pw.println(tStamp / 10000000 + " 125 " + phoneSeg);
+            }
+
+            pw.flush();
+            pw.close();
         }
-        phoneSeq += " .";
-        phoneSeq = re(phoneSeq, "\\s+", "\n");
-        //System.out.println(phoneSeq);
-        return phoneSeq;
+
     }
 
     private String getAwkBinPath() {

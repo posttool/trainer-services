@@ -38,9 +38,8 @@ public class Syllable implements Container, IsContained {
         phones.add(p);
     }
 
-    public void prependPhone(Phone p) {
-        p.container = this;
-        phones.add(0, p);
+    public List<Phone> getPhones() {
+        return phones;
     }
 
     public String toString() {
