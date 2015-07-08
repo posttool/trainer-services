@@ -5,9 +5,9 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class MakePVoiceConfigure {
+public class XConfig {
 //
-//    private String name = "MakePVoiceConfigure";
+//    private String name = "XConfig";
 //    public final String ADAPTSCRIPTS = name + ".adaptScripts";
 //
 //    /** settings for speaker independent training */

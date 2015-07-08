@@ -74,33 +74,53 @@ public class Phonetizer {
 
     public Word addTranscript(Word word) {
         String W = word.getText().toUpperCase();
-        String tr = lex.get(W);
+        String phones = lex.get(W);
         String src = "lex";
-        if (tr == null) {
-            if (puncpatt.matcher(word.getText()).matches()) {
-                tr = word.getText();
+        if (phones == null) {
+            if (isPunctuation(word)) {
+                phones = word.getText();
                 src = "";
-            } else {
-                src = "g2p";
+            } else if (!processSpecialCase(word)) {
                 if (this.g2p != null) {
-                    tr = g2pcache.get(W);
-                    if (tr == null) {
-                        try {
-                            tr = g2p.get(W);
-                            g2pcache.put(W, tr);
-                        } catch (Exception e) {
-                            tr = "?";
-                            e.printStackTrace();
-                        }
-                    }
+                    phones = g2p_get(W);
+                    src = "g2p";
                 } else {
-                    tr = "?";
+                    phones = "?";
+                    src = "";
                 }
             }
         }
-        word.setPh(tr);
+        word.setPh(phones);
         word.setG2P(src);
         return word;
+    }
+
+    private String g2p_get(String W) {
+        String transcript = g2pcache.get(W);
+        if (transcript == null) {
+            try {
+                transcript = g2p.get(W);
+                g2pcache.put(W, transcript);
+            } catch (Exception e) {
+                transcript = "?";
+                e.printStackTrace();
+            }
+        }
+        return transcript;
+    }
+
+    public boolean isPunctuation(Word word) {
+        return puncpatt.matcher(word.getText()).matches();
+    }
+
+    public boolean processSpecialCase(Word word) {
+        // if word is
+        // number
+        // number w/ letters
+        // $ amount
+        // % amount
+        // phone number, etc
+        return false;
     }
 
 

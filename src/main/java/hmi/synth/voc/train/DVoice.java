@@ -11,7 +11,7 @@ import java.util.Locale;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class MakePVoice {
+public class DVoice {
 
 //    private String name = "HMMVoiceMakeVoice";
 //

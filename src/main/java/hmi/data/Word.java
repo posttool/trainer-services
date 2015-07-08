@@ -125,6 +125,7 @@ public class Word implements Container, IsContained {
         JSONObject o = new JSONObject();
         o.put("text", text);
         o.put("pos", pos);
+        o.put("depth", depth);
         if (entity != null && !entity.equals("O"))
             o.put("entity", entity);
         if (!syllables.isEmpty()) {

@@ -26,6 +26,10 @@ import java.util.Vector;
 
 public class FileUtils {
 
+    public static String getFile(File file) throws IOException {
+        return getFileAsString(file, "UTF-8");
+    }
+
     public static String getFileAsString(File file, String encoding) throws IOException {
         FileInputStream fis = new FileInputStream(file);
         try {

@@ -13,13 +13,13 @@ import hmi.util.Resource;
 import java.io.IOException;
 import java.util.List;
 
-public class Annotater {
+public class SpeechMarkupAnnotater {
     NLPipeline nlp;
     SpeechMarkupProcessor markup;
     Phonetizer phonetizer;
     PhoneSet phoneSet;
 
-    public Annotater(String lng) throws IOException {
+    public SpeechMarkupAnnotater(String lng) throws IOException {
         nlp = new NLPipeline(lng);
         markup = new SpeechMarkupProcessor(nlp);
         phonetizer = new Phonetizer(nlp, Resource.path("/" + lng + "/dict.txt"));
@@ -27,7 +27,7 @@ public class Annotater {
     }
 
     public SpeechMarkup annotate(String text) {
-        SpeechMarkup sm = markup.process(text);
+        SpeechMarkup sm = markup.from(text);
         for (Word w : sm.getWords()) {
             phonetizer.addTranscript(w);
             if (w.isVoiced()) {

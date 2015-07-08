@@ -5,9 +5,11 @@ import org.json.simple.JSONArray;
 public class Phone extends Segment implements IsContained {
     Syllable container;
     String text;
-    float d;
+    float begin;
     float end;
-    String f0;
+    float duration;
+    float[] f0;
+
 
     public Phone() {
     }
@@ -32,12 +34,36 @@ public class Phone extends Segment implements IsContained {
         return container;
     }
 
-    public void setDuration(float newDuration) {
-        this.d = newDuration;
+    public float getDuration() {
+        return duration;
     }
 
-    public float getDuration() {
-        return d;
+    public void setDuration(float d) {
+        this.duration = d;
+    }
+
+    public float getBegin() {
+        return begin;
+    }
+
+    public void setBegin(float begin) {
+        this.begin = begin;
+    }
+
+    public float getEnd() {
+        return end;
+    }
+
+    public void setEnd(float end) {
+        this.end = end;
+    }
+
+    public float[] getF0() {
+        return f0;
+    }
+
+    public void setF0(float[] f0) {
+        this.f0 = f0;
     }
 
     public String toString() {

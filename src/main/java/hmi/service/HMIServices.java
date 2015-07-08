@@ -1,6 +1,6 @@
 package hmi.service;
 
-import hmi.annotate.Annotater;
+import hmi.annotate.SpeechMarkupAnnotater;
 import hmi.data.SpeechMarkup;
 import hmi.util.HandlebarsTemplateEngine;
 import hmi.util.SparkAccess;
@@ -13,7 +13,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import spark.ModelAndView;
 import spark.Request;
 
-import javax.servlet.MultipartConfigElement;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +26,7 @@ public class HMIServices {
     static final String dir = "/Users/posttool/Documents/hmi-repo";
 
     public static void main(String[] args) throws Exception {
-        final Annotater annotater = null;//new Annotater("en_US");
+        final SpeechMarkupAnnotater annotater = null;//new SpeechMarkupAnnotater("en_US");
 
         staticFileLocation("/public");
 
@@ -85,6 +84,10 @@ public class HMIServices {
         });
 
         get("/work", (req, res) -> new ModelAndView(req.session().attribute("work"), "work.html"), new HandlebarsTemplateEngine());
+
+        get("/work/info", "application/json", (req, res) -> {
+            return req.session().attribute("work");
+        });
     }
 
     public static void doWork(Work w) throws Exception {

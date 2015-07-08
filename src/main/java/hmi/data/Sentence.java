@@ -1,6 +1,7 @@
 package hmi.data;
 
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,15 @@ public class Sentence implements Container, IsContained {
         if (!phrases.isEmpty())
             phrases.get(phrases.size() - 1).addWord(w);
     }
+
+    public List<Word> getWords() {
+        List<Word> words = new ArrayList<Word>();
+        for (Phrase ph : phrases)
+            for (Word w : ph.words)
+                words.add(w);
+        return words;
+    }
+
 
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -83,7 +93,7 @@ public class Sentence implements Container, IsContained {
     public void fromJSON(JSONArray a) {
         for (Object o : a) {
             Phrase p = new Phrase();
-            p.fromJSON((JSONArray) o);
+            p.fromJSON((JSONObject) o);
             addPhrase(p);
         }
     }

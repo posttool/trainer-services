@@ -1,10 +1,14 @@
 package hmi.data;
 
+import org.json.simple.JSONObject;
+
 public class Boundary extends Segment implements IsContained {
     Phrase container;
+
+
     int breakIndex;
     String tone;
-    float d;
+    float duration;
 
     public Boundary() {
     }
@@ -18,10 +22,31 @@ public class Boundary extends Segment implements IsContained {
     }
 
     public void setDuration(float newDuration) {
-        this.d = newDuration;
+        this.duration = newDuration;
     }
-    
+
     public float getDuration() {
-        return d;
+        return duration;
     }
+
+    public int getBreakIndex() {
+        return breakIndex;
+    }
+
+    public void setBreakIndex(int breakIndex) {
+        this.breakIndex = breakIndex;
+    }
+
+    public JSONObject toJSON() {
+        JSONObject o = new JSONObject();
+        o.put("duration", duration);
+        o.put("breakIndex", breakIndex);
+        return o;
+    }
+
+    public void fromJSON(JSONObject o) {
+        duration = (float) o.get("duration");
+        breakIndex = (int) o.get("breakIndex");
+    }
+
 }

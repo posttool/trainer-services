@@ -4,6 +4,8 @@ package hmi.util;
 import java.io.File;
 
 public class FileList {
+    String path;
+    String ext;
     String[] files;
 
     public FileList(String path, String ext) {
@@ -14,7 +16,7 @@ public class FileList {
         return files.length;
     }
 
-    public String get(int i) {
+    public String name(int i) {
         File f = new File(files[i]);
         String n = f.getName();
         int d = n.indexOf(".");
@@ -23,11 +25,11 @@ public class FileList {
         return n;
     }
 
-    public String getFile(int i) {
-        return files[i];
+    public File file(int i) {
+        return new File(path, files[i]);
     }
 
-    public String[] getFiles() {
+    public String[] files() {
         return files;
     }
 

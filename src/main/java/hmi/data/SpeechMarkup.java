@@ -1,8 +1,12 @@
 package hmi.data;
 
+import hmi.util.FileUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,10 +51,16 @@ public class SpeechMarkup {
         List<Word> words = new ArrayList<Word>();
         for (Paragraph p : document.paragraphs)
             for (Sentence sentence : p.sentences)
-                for (Phrase ph : sentence.phrases)
-                    for (Word w : ph.words)
-                        words.add(w);
+                words.addAll(sentence.getWords());
         return words;
+    }
+
+    public List<Segment> getSegments() {
+        List<Segment> segs = new ArrayList<Segment>();
+        for (Paragraph p : document.paragraphs)
+            for (Sentence sentence : p.sentences)
+                segs.addAll(sentence.getSegments());
+        return segs;
     }
 
     public List<Phone> getPhones() {
@@ -95,6 +105,18 @@ public class SpeechMarkup {
 
     public void fromJSON(JSONObject o) {
         document.fromJSON((JSONArray) o.get("document"));
+    }
+
+    public void readJSON(String filepath) {
+        try {
+            fromJSON((JSONObject) JSONValue.parse(FileUtils.getFileAsString(new File(filepath), "UTF-8")));
+        } catch (IOException e){
+            System.err.println("SpeechMarkup.fromJSONFile COULDNT READ "+filepath);
+        }
+    }
+    public void writeJSON(String filepath) {
+        FileUtils.writeTextFile(new String[]{this.toJSON().toJSONString()}, filepath);
+
     }
 
 }

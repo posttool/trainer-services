@@ -10,10 +10,10 @@ import org.json.simple.JSONObject;
 public class Phrase implements Container, IsContained {
     Sentence container;
     List<Word> words;
+
+
     Boundary boundary;
     String text;
-    String prosodyRange;
-    String prosodyPitch;
 
     public Phrase() {
         words = new ArrayList<Word>();
@@ -53,19 +53,36 @@ public class Phrase implements Container, IsContained {
         return words.get(words.size() - 1);
     }
 
-    public JSONArray toJSON() {
+    public Boundary getBoundary() {
+        return boundary;
+    }
+
+    public void setBoundary(Boundary boundary) {
+        this.boundary = boundary;
+    }
+
+    public JSONObject toJSON() {
+        JSONObject o = new JSONObject();
         JSONArray a = new JSONArray();
+        o.put("words", a);
         for (Word w : words) {
             a.add(w.toJSON());
         }
-        return a;
+        if (boundary != null)
+            o.put("boundary", boundary.toJSON());
+        return o;
     }
 
-    public void fromJSON(JSONArray a) {
-        for (Object o : a) {
+    public void fromJSON(JSONObject o) {
+        JSONArray a = (JSONArray) o.get("words");
+        for (Object wo : a) {
             Word w = new Word();
-            w.fromJSON((JSONObject) o);
+            w.fromJSON((JSONObject) wo);
             addWord(w);
+        }
+        if (o.get("boundary") != null) {
+            Boundary b = new Boundary();
+            b.fromJSON((JSONObject) o.get("boundary"));
         }
     }
 

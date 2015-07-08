@@ -26,7 +26,6 @@ public class FeatureDefinition {
     int numContinuousFeatures;
     float[] featureWeights;
     CLInt featureNames;
-    // feature values: for byte and short features only
     CLByte[] byteFeatureValues;
     CLShort[] shortFeatureValues;
     String[] floatWeightFuncts; // for continuous features only
@@ -427,7 +426,6 @@ public class FeatureDefinition {
      * have in common. WARNING: this assumes that the feature vectors are issued
      * from the same FeatureDefinition; only the number of features is checked
      * for compatibility.
-     * 
      */
     public static int diff(FeatureVector v1, FeatureVector v2) {
 
@@ -483,7 +481,7 @@ public class FeatureDefinition {
         }
         return new FeatureVector(bytes, shorts, floats, unitIndex);
     }
-    
+
     public FeatureVector toFeatureVector(int unitIndex, String featureString) {
         String[] featureValues = featureString.split("\\s+");
         if (featureValues.length != numByteFeatures + numShortFeatures + numContinuousFeatures)
