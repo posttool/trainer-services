@@ -68,7 +68,7 @@ public class Phone extends Segment implements IsContained {
 
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append("        Phone [" + text + "]\n");
+        b.append("        Phone [" + text + "/" + duration + "]\n");
         return b.toString();
     }
 

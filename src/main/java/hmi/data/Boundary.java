@@ -45,8 +45,8 @@ public class Boundary extends Segment implements IsContained {
     }
 
     public void fromJSON(JSONObject o) {
-        duration = (float) o.get("duration");
-        breakIndex = (int) o.get("breakIndex");
+        duration = (float) (double) o.get("duration");
+        breakIndex = (int) (long) o.get("breakIndex");
     }
 
 }

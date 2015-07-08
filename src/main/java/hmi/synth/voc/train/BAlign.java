@@ -831,28 +831,43 @@ public class BAlign {
 
     public void copyToSpeechMarkup() {
         int s = files().length();
-        for (int i = 0; i < s; i++) {
+        for (int i = 0; i < 1; i++) {
+            String smjson = root.path("sm", files().name(i) + ".json");
             SpeechMarkup sm = new SpeechMarkup();
-            sm.readJSON(root.path("sm", files().name(i) + ".json"));
+            sm.readJSON(smjson);
             List<Segment> segs = sm.getSegments();
-            System.out.println(segs);
-            Iterator<Segment> si = segs.iterator();
+            int segi = 0;
             String o = root.path("htk", "tmplab", files().name(i) + ".lab");
             try {
-                String fs = FileUtils.getFileAsString(new File(o), "UTF-8");
+                String fs = FileUtils.getFile(new File(o));
                 String[] lines = fs.split("\n");
                 for (int c = 1; c < lines.length; c++) {
                     String[] line = lines[c].split(" ");
                     float t = Float.parseFloat(line[0]);
-                    String ph = line[2];
+                    String phstr = line[2];
+                    float duration = 0;
                     if (c != lines.length - 1) {
                         String[] nextline = lines[c + 1].split(" ");
-                        float nt = Float.parseFloat(line[0]);
-                        float duration = nt - t;
+                        float nt = Float.parseFloat(nextline[0]);
+                        duration = nt - t;
                     }
-                    System.out.println(ph+" "+si.next());
+                    if (segi < segs.size()) {
+                        Segment seg = segs.get(segi);
+                        if (seg instanceof Phone) {
+                            Phone ph = (Phone) seg;
+                            if (ph.getPhone().equals(phstr)) {
+                                ph.setDuration(duration);
+                                segi++;
+                            }
+                            //System.out.println(ph.getPhone() + " " + phstr + " " + duration);
+                        } else {
+                            Boundary b = (Boundary) seg;
+                            System.out.println("!" + b);
+                        }
+                    }
                 }
-
+                sm.writeJSON(smjson);
+                System.out.println(sm);
             } catch (IOException e) {
                 System.err.println("COULDNT READ " + o);
             }
