@@ -929,7 +929,7 @@ public class BAlign {
         String dataDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-vocb";
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
         BAlign aligner = new BAlign(htkBinDir, dataDir);
-        //aligner.compute(phoneSet.getPhones());
+        aligner.compute(phoneSet.getPhones());
         aligner.copyToSpeechMarkup();
     }
 

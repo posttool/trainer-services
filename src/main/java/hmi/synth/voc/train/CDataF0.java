@@ -11,24 +11,24 @@ import java.io.IOException;
 
 public class CDataF0 {
     String reaperBin;
-    String dataDir;
+    VoiceRoot root;
     FileList files;
 
     public CDataF0(String reaperBin, String dataDir) throws Exception {
         this.reaperBin = reaperBin;
-        this.dataDir = dataDir;
+        this.root = new VoiceRoot(dataDir);
+        root.init("reaper");
+        files = root.wavFiles();
         File f = new File(reaperBin);
         if (!f.exists())
             throw new Exception("No REAPER: " + reaperBin);
-        new File(dataDir + "/reaper/").mkdir();
-        files = new FileList(dataDir + "/wav", ".wav");
     }
 
     public void compute() {
         int s = files.length();
         for (int i = 0; i < s; i++) {
-            String w = dataDir + "/wav/" + files.name(i) + ".wav";
-            String o = dataDir + "/reaper/" + files.name(i) + ".f0";
+            String w = root.path("wav", files.name(i) + ".wav");
+            String o = root.path("reaper", files.name(i) + ".f0");
             try {
                 Command.bash(reaperBin + " -i " + w + " -f " + o + " -a");
             } catch (Exception e) {
@@ -41,8 +41,8 @@ public class CDataF0 {
         int s = files.length();
         for (int i = 0; i < s; i++) {
             SpeechMarkup sm = new SpeechMarkup();
-            sm.readJSON(dataDir + "/sm/" + files.name(i) + ".json");
-            String o = dataDir + "/reaper/" + files.name(i) + ".f0";
+            sm.readJSON(root.path("sm", files.name(i) + ".json"));
+            String o = root.path("reaper", files.name(i) + ".f0");
             try {
                 String fs = FileUtils.getFileAsString(new File(o), "UTF-8");
                 String[] lines = fs.split("\n");
