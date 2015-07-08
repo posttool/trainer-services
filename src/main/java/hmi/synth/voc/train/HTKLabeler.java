@@ -43,7 +43,7 @@ public class HTKLabeler {
 
     protected int noIterCompleted = 0;
 
-    private String HTK_SO = "-A -D -V -T 1"; // Main HTK standard Options HTK_SO
+    private String htkStandardOptions = "-A -D -V -T 1"; // Main HTK standard Options htkStandardOptions
     private String Extract_FEAT = "MFCC_0"; // MFCC_E
     private String Train_FEAT = "MFCC_0_D_A"; // MFCC_E_D_A
     // 13; //13 without D_A; 13*3 with D_A
@@ -302,11 +302,11 @@ public class HTKLabeler {
     }
 
     private void initializeHTKTrain() throws Exception {
-        String hcompv = getHTKBinDir() + File.separator + "HCompV";
+        String HCompV = getHTKBinDir() + File.separator + "HCompV";
         String configFile = getHTKPath("config", "htkTrain.conf");
         String listFile = getHTKPath("etc", "htkTrain.list");
-        process("( cd " + getHTKDataDir() + " ; mkdir hmm/hmm-dummy ; " + " mkdir hmm/hmm-final ; " + hcompv + " "
-                + HTK_SO + " -C " + configFile + " -f 0.01 -m -S " + listFile + " -M " + getHTKPath("hmm", "hmm-dummy")
+        process("( cd " + getHTKDataDir() + " ; mkdir hmm/hmm-dummy ; " + " mkdir hmm/hmm-final ; " + HCompV + " "
+                + htkStandardOptions + " -C " + configFile + " -f 0.01 -m -S " + listFile + " -M " + getHTKPath("hmm", "hmm-dummy")
                 + " " + getHTKPath("config", "htk.proto") + " > logs/initialiseHTKTrain.txt" + "; exit )\n");
     }
 
@@ -330,8 +330,8 @@ public class HTKLabeler {
 
     private void herestTraining() throws Exception {
 
-        String herest = getHTKBinDir() + File.separator + "HERest";
-        String hhed = getHTKBinDir() + File.separator + "HHEd";
+        String HERest = getHTKBinDir() + File.separator + "HERest";
+        String HHEd = getHTKBinDir() + File.separator + "HHEd";
 
         String configFile = getHTKPath("config", "htkTrain.conf");
         String hhedconf = getHTKPath("config", "sil.hed");
@@ -358,7 +358,7 @@ public class HTKLabeler {
                 if (iteration == (SP_ITERATION + 1)) {
                     phoneMlf = getHTKPath("etc", "htk.phones2.mlf");
                     phoneList = getHTKPath("etc", "htk.phone2.list");
-                    process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
+                    process("( cd " + getHTKDataDir() + "; " + HHEd + " " + htkStandardOptions + " -H "
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf + " " + phoneList
                             + " >> logs/herestTraining_" + iteration + ".txt" + "; exit )\n");
@@ -390,7 +390,7 @@ public class HTKLabeler {
                 if (iteration == (VP_ITERATION + 1)) {
                     phoneMlf = getHTKPath("etc", "htk.phones3.mlf");
                     phoneList = getHTKPath("etc", "htk.phone3.list");
-                    process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
+                    process("( cd " + getHTKDataDir() + "; " + HHEd + " " + htkStandardOptions + " -H "
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf_vp + " " + phoneList
                             + " >> logs/herestTraining_" + iteration + ".txt" + "; exit )\n");
@@ -455,7 +455,7 @@ public class HTKLabeler {
                     }
                     hhed_conf_pw.close();
 
-                    process("( cd " + getHTKDataDir() + "; " + hhed + " " + HTK_SO + " -H "
+                    process("( cd " + getHTKDataDir() + "; " + HHEd + " " + htkStandardOptions + " -H "
                             + getHTKPath("hmm", hmm0last, "macros") + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs")
                             + " -M " + getHTKPath("hmm", hmm1now) + " " + hhedconf_mix + " " + phoneList
                             + " >> logs/herestTraining_" + iteration + ".txt" + "; exit )\n");
@@ -487,7 +487,7 @@ public class HTKLabeler {
             }
 
             // Normal HEREST
-            process("( cd " + getHTKDataDir() + "; " + herest + " " + HTK_SO + " -C " + configFile + " -I " + phoneMlf
+            process("( cd " + getHTKDataDir() + "; " + HERest + " " + htkStandardOptions + " -C " + configFile + " -I " + phoneMlf
                     + " -t 250.0 150.0 1000.0" + " -S " + trainList + " -H " + getHTKPath("hmm", hmm0last, "macros")
                     + " -H " + getHTKPath("hmm", hmm0last, "hmmdefs") + " -M " + getHTKPath("hmm", hmm1now) + " "
                     + phoneList + " >> logs/herestTraining_" + iteration + ".txt" + "; exit )\n");
@@ -659,7 +659,7 @@ public class HTKLabeler {
         String phoneDict = getHTKPath("etc", "htk.phone.dict");
         String labDir = getHTKPath("lab");
 
-        process("( cd " + getHTKDataDir() + "; " + hvite + " " + HTK_SO + " -b sil -l " + labDir + " -o W -C "
+        process("( cd " + getHTKDataDir() + "; " + hvite + " " + htkStandardOptions + " -b sil -l " + labDir + " -o W -C "
                 + configFile + " -a -H " + macros + " -H " + hmmDef + " -i " + alignedMlf + " -t 250.0 -y lab" + " -I "
                 + phoneMlf + " -S " + listFile + " " + phoneDict + " " + phoneList + " > logs/hviteAligning.txt"
                 + "; exit )\n");
@@ -908,7 +908,8 @@ public class HTKLabeler {
     public static void main(String... args) throws Exception {
         String htkBinDir = "/usr/local/HTS-2.2beta/bin";
         String dataDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-vocb";
-        if (false) {
+        if (true) {
+            new File(dataDir + "/sm/").mkdir();
             Annotater a = new Annotater("en_US");
             FileList txt = new FileList(dataDir + "/text", ".txt");
             int s = txt.length();
@@ -922,8 +923,8 @@ public class HTKLabeler {
             }
         }
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
-        HTKLabeler l = new HTKLabeler(htkBinDir, dataDir);
-        l.compute(phoneSet.getPhones());
+        HTKLabeler labeler = new HTKLabeler(htkBinDir, dataDir);
+        labeler.compute(phoneSet.getPhones());
     }
 
 }

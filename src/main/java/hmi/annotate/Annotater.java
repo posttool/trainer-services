@@ -31,8 +31,12 @@ public class Annotater {
         for (Word w : sm.getWords()) {
             phonetizer.addTranscript(w);
             if (w.isVoiced()) {
-                List<Syllable> syllables = Syllabifier.syllabify(phoneSet, w.getPh().toLowerCase());
-                syllables.stream().forEach((syl) -> w.addSyllable(syl));
+                try {
+                    List<Syllable> syllables = Syllabifier.syllabify(phoneSet, w.getPh().toLowerCase());
+                    syllables.stream().forEach((syl) -> w.addSyllable(syl));
+                } catch (Exception e) {
+                    System.out.println("CANT SYLLABIFY '"+w.getPh()+"' ("+text+")");
+                }
             }
         }
         return sm;
