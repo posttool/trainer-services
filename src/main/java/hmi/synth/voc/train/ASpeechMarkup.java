@@ -21,7 +21,7 @@ public class ASpeechMarkup {
     public void compute() {
         FileList textFiles = root.textFiles();
         int s = textFiles.length();
-        for (int i = 0; i < s; i++) {
+        for (int i = 0; i < 1; i++) {
             String fn = textFiles.name(i);
             String smof = root.path("sm", fn + ".json");
             try {
@@ -32,7 +32,6 @@ public class ASpeechMarkup {
                 System.err.println("CANT PROCESS " + fn);
             }
         }
-
     }
 
     public static void main(String... args) throws Exception {

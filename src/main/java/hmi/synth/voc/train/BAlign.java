@@ -845,10 +845,10 @@ public class BAlign {
                     String[] line = lines[c].split(" ");
                     float t = Float.parseFloat(line[0]);
                     String phstr = line[2];
-                    float duration = 0;
+                    float duration = 0, nt = 0;
                     if (c != lines.length - 1) {
                         String[] nextline = lines[c + 1].split(" ");
-                        float nt = Float.parseFloat(nextline[0]);
+                        nt = Float.parseFloat(nextline[0]);
                         duration = nt - t;
                     }
                     if (segi < segs.size()) {
@@ -856,18 +856,23 @@ public class BAlign {
                         if (seg instanceof Phone) {
                             Phone ph = (Phone) seg;
                             if (ph.getPhone().equals(phstr)) {
+                                ph.setBegin(t);
+                                ph.setEnd(nt);
                                 ph.setDuration(duration);
                                 segi++;
                             }
-                            //System.out.println(ph.getPhone() + " " + phstr + " " + duration);
                         } else {
                             Boundary b = (Boundary) seg;
-                            System.out.println("!" + b);
+                            if (phstr.equals("_")) {
+                                b.setDuration(duration);
+                                b.setBegin(t);
+                                b.setEnd(nt);
+                                segi++;
+                            }
                         }
                     }
                 }
                 sm.writeJSON(smjson);
-                System.out.println(sm);
             } catch (IOException e) {
                 System.err.println("COULDNT READ " + o);
             }

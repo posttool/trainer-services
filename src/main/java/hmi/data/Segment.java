@@ -5,6 +5,9 @@ import org.json.simple.JSONArray;
 import java.util.List;
 
 public abstract class Segment {
+    public abstract float getBegin();
+    public abstract float getEnd();
+    public abstract float getDuration();
 
     @SuppressWarnings("unchecked")
     public <T> T getContainer(Class<T> clazz) {
