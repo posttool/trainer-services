@@ -34,11 +34,11 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
-class KrawlTagger {
+class CorpusTagger {
     private StanfordCoreNLP pipeline;
     private String basepath;
 
-    private KrawlTagger(String outfile) throws IOException {
+    private CorpusTagger(String outfile) throws IOException {
         basepath = outfile;
     }
 
@@ -264,7 +264,7 @@ class KrawlTagger {
     }
 
     public static void main(String[] args) throws Exception {
-        KrawlTagger tagger = new KrawlTagger("/Users/posttool/Documents/github/hmi-www/app/krawl/data/");
+        CorpusTagger tagger = new CorpusTagger("/Users/posttool/Documents/github/hmi-www/app/krawl/data/");
         tagger.processData();
     }
 

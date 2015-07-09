@@ -4,10 +4,9 @@ import org.json.simple.JSONObject;
 
 public class Boundary extends Segment implements IsContained {
     Phrase container;
-
-
     int breakIndex;
-    String tone;
+    float begin;
+    float end;
     float duration;
 
     public Boundary() {
@@ -27,6 +26,22 @@ public class Boundary extends Segment implements IsContained {
 
     public float getDuration() {
         return duration;
+    }
+
+    public float getBegin() {
+        return begin;
+    }
+
+    public void setBegin(float begin) {
+        this.begin = begin;
+    }
+
+    public float getEnd() {
+        return end;
+    }
+
+    public void setEnd(float end) {
+        this.end = end;
     }
 
     public int getBreakIndex() {

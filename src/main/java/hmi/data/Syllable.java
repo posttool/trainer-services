@@ -84,7 +84,7 @@ public class Syllable implements Container, IsContained {
     public void fromJSON(JSONArray a) {
         for (Object o : a) {
             Phone p = new Phone();
-            p.fromJSON((String) o);
+            p.fromJSON((JSONObject) o);
             addPhone(p);
         }
     }

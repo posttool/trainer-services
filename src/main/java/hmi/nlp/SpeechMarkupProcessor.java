@@ -29,7 +29,7 @@ public class SpeechMarkupProcessor {
         List<CoreMap> sentences = document.get(SentencesAnnotation.class);
         for (CoreMap sentence : sentences) {
             Sentence s = new Sentence();
-            Phrase p = new Phrase();
+            Phrase p = new Phrase(1);
             s.addPhrase(p);
             List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
             int sentenceOffsetStart = sentence.get(CharacterOffsetBeginAnnotation.class);
@@ -55,17 +55,11 @@ public class SpeechMarkupProcessor {
                 }
                 // time for a phrase?
                 if (token.tag().equals(":")) {
-                    p = new Phrase();
+                    p = new Phrase(2);
                     s.addPhrase(p);
-                    Boundary b = new Boundary();
-                    b.setBreakIndex(2);
-                    p.setBoundary(b);
                 } else if (token.tag().equals(",")) {
-                    p = new Phrase();
+                    p = new Phrase(1);
                     s.addPhrase(p);
-                    Boundary b = new Boundary();
-                    b.setBreakIndex(1);
-                    p.setBoundary(b);
                 }
             }
             Tree tree = sentence.get(TreeAnnotation.class);

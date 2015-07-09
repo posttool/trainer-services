@@ -33,11 +33,6 @@ public class Sentence implements Container, IsContained {
         return phrases;
     }
 
-    public void addWord(Word w) {
-        if (!phrases.isEmpty())
-            phrases.get(phrases.size() - 1).addWord(w);
-    }
-
     public List<Word> getWords() {
         List<Word> words = new ArrayList<Word>();
         for (Phrase ph : phrases)
@@ -46,19 +41,6 @@ public class Sentence implements Container, IsContained {
         return words;
     }
 
-
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        b.append("Sentence");
-        if (text != null) {
-            b.append("[" + text + "]");
-        }
-        b.append("\n");
-        for (Phrase phrase : phrases) {
-            b.append(phrase.toString());
-        }
-        return b.toString();
-    }
 
     public List<Segment> getSegments() {
         List<Segment> segs = new ArrayList<Segment>();
@@ -82,16 +64,31 @@ public class Sentence implements Container, IsContained {
         return sylls;
     }
 
-    public JSONArray toJSON() {
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("Sentence");
+        if (text != null) {
+            b.append("[" + text + "]");
+        }
+        b.append("\n");
+        for (Phrase phrase : phrases) {
+            b.append(phrase.toString());
+        }
+        return b.toString();
+    }
+
+    public JSONObject toJSON() {
+        JSONObject o = new JSONObject();
         JSONArray a = new JSONArray();
         for (Phrase p : phrases) {
             a.add(p.toJSON());
         }
-        return a;
+        o.put("phrases", a);
+        return o;
     }
 
-    public void fromJSON(JSONArray a) {
-        for (Object o : a) {
+    public void fromJSON(JSONObject a) {
+        for (Object o : (JSONArray) a.get("phrases")) {
             Phrase p = new Phrase();
             p.fromJSON((JSONObject) o);
             addPhrase(p);

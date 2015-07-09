@@ -1,6 +1,7 @@
 package hmi.data;
 
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,18 +31,20 @@ public class Paragraph implements Container, IsContained {
         return sentences.isEmpty();
     }
 
-    public JSONArray toJSON(){
+    public JSONObject toJSON(){
+        JSONObject o = new JSONObject();
         JSONArray a = new JSONArray();
         for (Sentence s : sentences) {
             a.add(s.toJSON());
         }
-        return a;
+        o.put("sentences", a);
+        return o;
     }
 
-    public void fromJSON(JSONArray a) {
-        for (Object o : a) {
+    public void fromJSON(JSONObject a) {
+        for (Object o : (JSONArray) a.get("sentences")) {
             Sentence s = new Sentence();
-            s.fromJSON((JSONArray) o);
+            s.fromJSON((JSONObject) o);
             addSentence(s);
         }
     }

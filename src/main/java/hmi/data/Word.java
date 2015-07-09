@@ -46,8 +46,9 @@ public class Word implements Container, IsContained {
                 b.append("/" + entity);
             // if (ph != null)
             // b.append("/" + ph);
-            b.append("]\n");
+            b.append("]");
         }
+        b.append("\n");
         for (Syllable syllable : syllables) {
             b.append(syllable.toString());
         }
@@ -139,10 +140,10 @@ public class Word implements Container, IsContained {
     }
 
     public void fromJSON(JSONObject o) {
-        Word w = new Word();
-        w.text = (String) o.get("text");
-        w.pos = (String) o.get("text");
-        w.entity = (String) o.get("text");
+        text = (String) o.get("text");
+        pos = (String) o.get("pos");
+        entity = (String) o.get("entity");
+        depth = (int) (long) o.get("depth");
         JSONArray sylls = (JSONArray) o.get("syllables");
         if (sylls != null) {
             for (Object so : sylls) {

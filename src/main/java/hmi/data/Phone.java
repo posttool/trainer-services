@@ -1,6 +1,7 @@
 package hmi.data;
 
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 public class Phone extends Segment implements IsContained {
     Syllable container;
@@ -68,16 +69,37 @@ public class Phone extends Segment implements IsContained {
 
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append("        Phone [" + text + "/" + duration + "]\n");
+        b.append("        Phone [" + text + "/" + begin + "-" + end + "]\n");
         return b.toString();
     }
 
-    public String toJSON() {
-        return text;
+    public JSONObject toJSON() {
+        JSONObject o = new JSONObject();
+        o.put("text", text);
+        o.put("begin", begin);
+        o.put("end", end);
+        o.put("duration", duration);
+        if (f0 != null && f0.length != 0) {
+            JSONArray a = new JSONArray();
+            for (float f : f0)
+                a.add(f);
+            o.put("f0", a);
+        }
+        return o;
     }
 
-    public void fromJSON(String s) {
-        text = s;
+    public void fromJSON(JSONObject o) {
+        text = (String) o.get("text");
+        begin = (float) (double) o.get("begin");
+        end = (float) (double) o.get("end");
+        duration = (float) (double) o.get("duration");
+        if (o.get("f0") != null) {
+            JSONArray a = (JSONArray) o.get("f0");
+            f0 = new float[a.size()];
+            for (int i = 0; i < a.size(); i++) {
+                f0[i] = (float) (double) a.get(i);
+            }
+        }
     }
 
 }

@@ -10,13 +10,17 @@ import org.json.simple.JSONObject;
 public class Phrase implements Container, IsContained {
     Sentence container;
     List<Word> words;
-
-
     Boundary boundary;
     String text;
 
     public Phrase() {
         words = new ArrayList<Word>();
+    }
+
+    public Phrase(int boundaryBreakIndex) {
+        words = new ArrayList<Word>();
+        boundary = new Boundary();
+        boundary.breakIndex = boundaryBreakIndex;
     }
 
     public Sentence getContainer() {
@@ -81,8 +85,8 @@ public class Phrase implements Container, IsContained {
             addWord(w);
         }
         if (o.get("boundary") != null) {
-            Boundary b = new Boundary();
-            b.fromJSON((JSONObject) o.get("boundary"));
+            boundary = new Boundary();
+            boundary.fromJSON((JSONObject) o.get("boundary"));
         }
     }
 

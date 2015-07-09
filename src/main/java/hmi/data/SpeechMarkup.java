@@ -104,7 +104,7 @@ public class SpeechMarkup {
     }
 
     public void fromJSON(JSONObject o) {
-        document.fromJSON((JSONArray) o.get("document"));
+        document.fromJSON((JSONObject) o.get("document"));
     }
 
     public void readJSON(String filepath) {

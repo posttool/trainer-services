@@ -8,24 +8,25 @@ import java.util.List;
 
 public class Document implements Container {
     List<Paragraph> paragraphs;
-    Paragraph currentParagraph;
 
     public Document() {
         paragraphs = new ArrayList<Paragraph>();
     }
 
-    public JSONArray toJSON() {
+    public JSONObject toJSON() {
+        JSONObject o = new JSONObject();
         JSONArray a = new JSONArray();
         for (Paragraph p : paragraphs) {
             a.add(p.toJSON());
         }
-        return a;
+        o.put("paragraphs", a);
+        return o;
     }
 
-    public void fromJSON(JSONArray a) {
-        for (Object o : a) {
+    public void fromJSON(JSONObject a) {
+        for (Object o : (JSONArray) a.get("paragraphs")) {
             Paragraph p = new Paragraph();
-            p.fromJSON((JSONArray) o);
+            p.fromJSON((JSONObject) o);
             p.container = this;
             paragraphs.add(p);
         }
