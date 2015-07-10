@@ -1,6 +1,5 @@
 package hmi.synth.voc.train;
 
-import hmi.annotate.SpeechMarkupAnnotater;
 import hmi.data.*;
 import hmi.phone.PhoneSet;
 import hmi.util.FileList;
@@ -24,7 +23,7 @@ public class BAlign {
     private boolean DEBUG = true; // TODO add logger
 
     private String htkBinDir = "//";
-    private VoiceRoot root;
+    private VoiceRepo root;
 
     private String outputDir;
     protected String labExt = ".lab";
@@ -53,7 +52,7 @@ public class BAlign {
 
     public BAlign(String htkBinDir, String dataDir) throws Exception {
         this.htkBinDir = htkBinDir;
-        this.root = new VoiceRoot(dataDir);
+        this.root = new VoiceRepo(dataDir);
         File htkFile = new File(getHTKBinDir() + File.separator + "HInit");
         if (!htkFile.exists()) {
             throw new Exception("HTK path setting is wrong. Because file " + htkFile.getAbsolutePath()
@@ -845,19 +844,19 @@ public class BAlign {
                     String[] line = lines[c].split(" ");
                     float t = Float.parseFloat(line[0]);
                     String phstr = line[2];
-                    float duration = 0, nt = 0;
-                    if (c != lines.length - 1) {
-                        String[] nextline = lines[c + 1].split(" ");
-                        nt = Float.parseFloat(nextline[0]);
-                        duration = nt - t;
+                    float duration = 0, pt = 0;
+                    if (c != 1) {
+                        String[] pline = lines[c - 1].split(" ");
+                        pt = Float.parseFloat(pline[0]);
+                        duration = t - pt;
                     }
                     if (segi < segs.size()) {
                         Segment seg = segs.get(segi);
                         if (seg instanceof Phone) {
                             Phone ph = (Phone) seg;
                             if (ph.getPhone().equals(phstr)) {
-                                ph.setBegin(t);
-                                ph.setEnd(nt);
+                                ph.setBegin(pt);
+                                ph.setEnd(t);
                                 ph.setDuration(duration);
                                 segi++;
                             }
@@ -865,8 +864,8 @@ public class BAlign {
                             Boundary b = (Boundary) seg;
                             if (phstr.equals("_")) {
                                 b.setDuration(duration);
-                                b.setBegin(t);
-                                b.setEnd(nt);
+                                b.setBegin(pt);
+                                b.setEnd(t);
                                 segi++;
                             }
                         }
@@ -931,10 +930,10 @@ public class BAlign {
 
     public static void main(String... args) throws Exception {
         String htkBinDir = "/usr/local/HTS-2.2beta/bin";
-        String dataDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-vocb";
+        String dataDir = "jbw-vocb";
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
         BAlign aligner = new BAlign(htkBinDir, dataDir);
-        aligner.compute(phoneSet.getPhones());
+        //aligner.compute(phoneSet.getPhones());
         aligner.copyToSpeechMarkup();
     }
 

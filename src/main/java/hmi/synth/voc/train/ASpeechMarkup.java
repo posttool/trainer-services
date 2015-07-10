@@ -3,17 +3,18 @@ package hmi.synth.voc.train;
 
 import hmi.annotate.SpeechMarkupAnnotater;
 import hmi.data.SpeechMarkup;
+import hmi.data.VoiceRepo;
 import hmi.util.FileList;
 import hmi.util.FileUtils;
 
 import java.io.IOException;
 
 public class ASpeechMarkup {
-    VoiceRoot root;
+    VoiceRepo root;
     SpeechMarkupAnnotater ann;
 
     public ASpeechMarkup(String dataDir) throws IOException {
-        root = new VoiceRoot(dataDir);
+        root = new VoiceRepo(dataDir);
         root.init("/sm");
         this.ann = new SpeechMarkupAnnotater("en_US");
     }
@@ -35,7 +36,7 @@ public class ASpeechMarkup {
     }
 
     public static void main(String... args) throws Exception {
-        String dataDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-vocb";
+        String dataDir = "jbw-vocb";
         ASpeechMarkup asm = new ASpeechMarkup(dataDir);
         asm.compute();
     }

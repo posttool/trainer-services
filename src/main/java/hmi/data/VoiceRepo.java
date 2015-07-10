@@ -1,4 +1,4 @@
-package hmi.synth.voc.train;
+package hmi.data;
 
 
 import hmi.util.FileList;
@@ -6,21 +6,28 @@ import hmi.util.FileList;
 import java.io.File;
 import java.io.IOException;
 
-public class VoiceRoot {
+public class VoiceRepo {
+    public final static String BD = "/Users/posttool/Documents/github/hmi-www/app/build/data/";
+
+    static {
+        System.out.println("VOICE REPO INIT " + BD);
+    }
+
     String dataDir;
     FileList wavFiles;
     FileList textFiles;
 
     // TODO force constructor to declare requirements ["wav", "sm", "etc"]
-    public VoiceRoot(String dataDir) throws IOException {
-        this.dataDir = dataDir;
+    public VoiceRepo(String dataDir) throws IOException {
+        this.dataDir = BD + dataDir;
         File wav = getFile("wav");
         File txt = getFile("text");
         if (!wav.exists() || !txt.exists() || !wav.isDirectory() || !txt.isDirectory()) {
-            throw new IOException("Requires /wav and /text directories.");
+            throw new IOException("Requires /wav and /text directories [" + this.dataDir + "].");
         }
-        wavFiles = new FileList(dataDir + "/wav", ".wav");
-        textFiles = new FileList(dataDir + "/text", ".txt");
+        System.out.println("VoiceRepo [" + this.dataDir + "]");
+        wavFiles = new FileList(this.dataDir + "/wav", ".wav");
+        textFiles = new FileList(this.dataDir + "/text", ".txt");
     }
 
     public boolean init(String dir) {
@@ -36,11 +43,11 @@ public class VoiceRoot {
         return new File(path(path));
     }
 
-    public FileList wavFiles(){
+    public FileList wavFiles() {
         return wavFiles;
     }
 
-    public FileList textFiles(){
+    public FileList textFiles() {
         return textFiles;
     }
 

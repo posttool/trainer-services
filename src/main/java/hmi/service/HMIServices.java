@@ -2,28 +2,20 @@ package hmi.service;
 
 import hmi.annotate.SpeechMarkupAnnotater;
 import hmi.data.SpeechMarkup;
+import hmi.data.VoiceRepo;
 import hmi.util.HandlebarsTemplateEngine;
 import hmi.util.SparkAccess;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import spark.ModelAndView;
-import spark.Request;
+import spark.utils.IOUtils;
 
-import java.io.File;
+import java.io.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-import static spark.Spark.*;
+import static spark.Spark.get;
+import static spark.Spark.staticFileLocation;
 
 public class HMIServices {
-    static final String tmp = System.getProperty("java.io.tmpdir");
-    static final String dir = "/Users/posttool/Documents/hmi-repo";
 
     public static void main(String[] args) throws Exception {
         final SpeechMarkupAnnotater annotater = null;//new SpeechMarkupAnnotater("en_US");
@@ -39,84 +31,68 @@ public class HMIServices {
             return sm.toJSON();
         });
 
-        get("/create", (req, res) -> new ModelAndView(new HashMap<>(), "create.html"), new HandlebarsTemplateEngine());
+        get("/view", (req, res) -> {
+            Map<String, Object> data = new HashMap<>();
+            String vid = req.queryParams("vid");
+            String uid = req.queryParams("uid");
+            if (vid == null || uid == null) {
+                data.put("error", "Requires vid and uid.");
+                return new ModelAndView(data, "error.html");
+            }
+            try {
+                VoiceRepo root = new VoiceRepo(vid);
+                SpeechMarkup sm = new SpeechMarkup();
+                sm.readJSON(root.path("sm", uid + ".json"));
+                System.out.print(sm);
+                data.put("speechMarkupJson", sm.toJSON().toJSONString());
+                return new ModelAndView(data, "view.html");
+            } catch (Exception e) {
+                e.printStackTrace();
+                data.put("error", e.getMessage());
+                return new ModelAndView(data, "error.html");
+            }
+        }, new HandlebarsTemplateEngine());
 
-        post("/create", (req, res) -> {
-            Map<String, String> workInfo = new HashMap<>();
-            workInfo.put("message", "processing file");
-            FileItem item = getFileItem(req, "zip");
-            doWork(() -> {
-                // get uuid for new repo
-                String uid = UUID.randomUUID().toString();
-                String fileName = item.getName();
-                File repoDir = new File(dir, uid);
-                repoDir.mkdir();
-                File f = new File(repoDir, fileName);
-                item.write(f);
-                workInfo.put("message", "checked in");
-                // unzip
-                try {
-                    ZipFile zipFile = new ZipFile(f);
-                    zipFile.extractAll(repoDir.getAbsolutePath());
-                } catch (ZipException e) {
-                    e.printStackTrace();
-                    workInfo.put("message", e.getMessage());
-                    f.delete();
-                    repoDir.delete();
-                    return false;
-                }
-                workInfo.put("message", "unzipped");
-                // validate
-                File text = new File(repoDir, "text");
-                File wav = new File(repoDir, "wav");
-                if (text.exists() && wav.exists()) {
-                    workInfo.put("message", "validated");
-                    workInfo.put("uid", uid.toString());
-                    return true;
+        get("/wav", (req, res) -> {
+            Map<String, Object> data = new HashMap<>();
+            String vid = req.queryParams("vid");
+            String uid = req.queryParams("uid");
+            if (vid == null || uid == null) {
+                data.put("error", "Requires vid and uid.");
+                return new ModelAndView(data, "error.html");
+            }
+            try {
+                VoiceRepo root = new VoiceRepo(vid);
+                InputStream inputStream = new FileInputStream(root.path("wav", uid + ".wav"));
+                if (inputStream != null) {
+                    res.type("audio/x-wav");
+                    res.status(200);
+
+                    byte[] buf = new byte[1024];
+                    OutputStream os = res.raw().getOutputStream();
+                    OutputStreamWriter outWriter = new OutputStreamWriter(os);
+                    int count = 0;
+                    while ((count = inputStream.read(buf)) >= 0) {
+                        os.write(buf, 0, count);
+                    }
+                    inputStream.close();
+                    outWriter.close();
+
+                    return "";
                 } else {
-                    workInfo.put("message", "no text/wav files");
-                    return false;
+                    return null;
                 }
-            });
-            req.session().attribute("work", workInfo);
-            res.redirect("/work");
-            return null;
+            } catch (Exception e) {
+                data.put("error", e.getMessage());
+            }
+            return "";
         });
 
         get("/work", (req, res) -> new ModelAndView(req.session().attribute("work"), "work.html"), new HandlebarsTemplateEngine());
 
         get("/work/info", "application/json", (req, res) -> {
-            return req.session().attribute("work");
+            return "no work yet";
         });
-    }
-
-    public static void doWork(Work w) throws Exception {
-        new Thread(() -> {
-            try {
-                w.work();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    interface Work {
-        boolean work() throws Exception;
-    }
-
-    public static FileItem getFileItem(Request req, String fieldName) throws FileUploadException {
-        final File upload = new File(tmp);
-        if (!upload.exists() && !upload.mkdirs()) {
-            throw new RuntimeException("Failed to create directory " + upload.getAbsolutePath());
-        }
-        DiskFileItemFactory factory = new DiskFileItemFactory();
-        factory.setRepository(upload);
-        ServletFileUpload fileUpload = new ServletFileUpload(factory);
-        List<FileItem> items = fileUpload.parseRequest(req.raw());
-        return items.stream()
-                .filter(e -> fieldName.equals(e.getFieldName()))
-                .findFirst().get();
-
     }
 
 

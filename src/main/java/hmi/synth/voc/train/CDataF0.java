@@ -5,6 +5,7 @@ import com.google.common.primitives.Floats;
 import hmi.data.Phone;
 import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
+import hmi.data.VoiceRepo;
 import hmi.util.Command;
 import hmi.util.FileList;
 import hmi.util.FileUtils;
@@ -16,12 +17,12 @@ import java.util.List;
 
 public class CDataF0 {
     String reaperBin;
-    VoiceRoot root;
+    VoiceRepo root;
     FileList files;
 
     public CDataF0(String reaperBin, String dataDir) throws Exception {
         this.reaperBin = reaperBin;
-        this.root = new VoiceRoot(dataDir);
+        this.root = new VoiceRepo(dataDir);
         root.init("reaper");
         files = root.wavFiles();
         File f = new File(reaperBin);
@@ -64,7 +65,7 @@ public class CDataF0 {
                         if (cur instanceof Phone) {
                             Phone ph = (Phone) cur;
                             ph.setF0(Floats.toArray(floats));
-                            System.out.println(ph + " " + floats);
+                            //System.out.println(ph + " " + floats);
                         }
                         segi++;
                         if (segi < segs.size()) {
