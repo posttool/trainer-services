@@ -13,21 +13,21 @@ public class VoiceRepo {
         System.out.println("VOICE REPO INIT " + BD);
     }
 
-    String dataDir;
+    String voiceId;
     FileList wavFiles;
     FileList textFiles;
 
-    // TODO force constructor to declare requirements ["wav", "sm", "etc"]
-    public VoiceRepo(String dataDir) throws IOException {
-        this.dataDir = BD + dataDir;
+    // TODO  constructor to declare requirements ["wav", "sm", "etc"]
+    public VoiceRepo(String voiceId) throws IOException {
+        this.voiceId = voiceId;
         File wav = getFile("wav");
         File txt = getFile("text");
         if (!wav.exists() || !txt.exists() || !wav.isDirectory() || !txt.isDirectory()) {
-            throw new IOException("Requires /wav and /text directories [" + this.dataDir + "].");
+            throw new IOException("Requires /wav and /text directories [" + this.voiceId + "].");
         }
-        System.out.println("VoiceRepo [" + this.dataDir + "]");
-        wavFiles = new FileList(this.dataDir + "/wav", ".wav");
-        textFiles = new FileList(this.dataDir + "/text", ".txt");
+        System.out.println("VoiceRepo [" + this.voiceId + "]");
+        wavFiles = new FileList(path("wav"), ".wav");
+        textFiles = new FileList(path("text"), ".txt");
     }
 
     public boolean init(String dir) {
@@ -53,7 +53,8 @@ public class VoiceRepo {
 
     public String path(String... path) {
         StringBuilder b = new StringBuilder();
-        b.append(dataDir);
+        b.append(BD);
+        b.append(voiceId);
         for (String s : path) {
             b.append(File.separator);
             b.append(s);

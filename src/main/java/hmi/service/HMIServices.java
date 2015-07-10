@@ -43,7 +43,6 @@ public class HMIServices {
                 VoiceRepo root = new VoiceRepo(vid);
                 SpeechMarkup sm = new SpeechMarkup();
                 sm.readJSON(root.path("sm", uid + ".json"));
-                System.out.print(sm);
                 data.put("speechMarkupJson", sm.toJSON().toJSONString());
                 return new ModelAndView(data, "view.html");
             } catch (Exception e) {
@@ -54,10 +53,10 @@ public class HMIServices {
         }, new HandlebarsTemplateEngine());
 
         get("/wav", (req, res) -> {
-            Map<String, Object> data = new HashMap<>();
             String vid = req.queryParams("vid");
             String uid = req.queryParams("uid");
             if (vid == null || uid == null) {
+                Map<String, Object> data = new HashMap<>();
                 data.put("error", "Requires vid and uid.");
                 return new ModelAndView(data, "error.html");
             }
@@ -67,7 +66,6 @@ public class HMIServices {
                 if (inputStream != null) {
                     res.type("audio/x-wav");
                     res.status(200);
-
                     byte[] buf = new byte[1024];
                     OutputStream os = res.raw().getOutputStream();
                     OutputStreamWriter outWriter = new OutputStreamWriter(os);
@@ -77,15 +75,16 @@ public class HMIServices {
                     }
                     inputStream.close();
                     outWriter.close();
-
                     return "";
                 } else {
                     return null;
                 }
             } catch (Exception e) {
+                e.printStackTrace();
+                Map<String, Object> data = new HashMap<>();
                 data.put("error", e.getMessage());
+                return new ModelAndView(data, "error.html");
             }
-            return "";
         });
 
         get("/work", (req, res) -> new ModelAndView(req.session().attribute("work"), "work.html"), new HandlebarsTemplateEngine());

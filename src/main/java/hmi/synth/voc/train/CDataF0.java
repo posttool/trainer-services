@@ -20,9 +20,9 @@ public class CDataF0 {
     VoiceRepo root;
     FileList files;
 
-    public CDataF0(String reaperBin, String dataDir) throws Exception {
+    public CDataF0(String reaperBin, String voiceId) throws Exception {
         this.reaperBin = reaperBin;
-        this.root = new VoiceRepo(dataDir);
+        this.root = new VoiceRepo(voiceId);
         root.init("reaper");
         files = root.wavFiles();
         File f = new File(reaperBin);
@@ -46,8 +46,9 @@ public class CDataF0 {
     public void copyToSpeechMarkup() {
         int s = files.length();
         for (int i = 0; i < 1; i++) {
+            String smof = root.path("sm", files.name(i) + ".json");
             SpeechMarkup sm = new SpeechMarkup();
-            sm.readJSON(root.path("sm", files.name(i) + ".json"));
+            sm.readJSON(smof);
             List<Segment> segs = sm.getSegments();
             int segi = 0;
             Segment cur = segs.get(segi);
@@ -78,7 +79,7 @@ public class CDataF0 {
                         floats.add(f0);
                     }
                 }
-                sm.writeJSON(root.path("sm", files.name(i) + ".json"));
+                sm.writeJSON(smof);
             } catch (IOException e) {
                 System.err.println("COULDNT READ " + files.name(i));
             }
@@ -87,8 +88,7 @@ public class CDataF0 {
 
     public static void main(String... args) throws Exception {
         String reaperBin = "/Users/posttool/Documents/github/REAPER/build/reaper";
-        String dataDir = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-vocb";
-        CDataF0 r = new CDataF0(reaperBin, dataDir);
+        CDataF0 r = new CDataF0(reaperBin, "jbw-vocb");
 //        r.compute();
         r.copyToSpeechMarkup();
     }
