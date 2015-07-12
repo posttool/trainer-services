@@ -45,7 +45,7 @@ public class CDataF0 {
 
     public void copyToSpeechMarkup() {
         int s = files.length();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < s; i++) {
             String smof = root.path("sm", files.name(i) + ".json");
             SpeechMarkup sm = new SpeechMarkup();
             sm.readJSON(smof);

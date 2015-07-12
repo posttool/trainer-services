@@ -22,7 +22,7 @@ public class ASpeechMarkup {
     public void compute() {
         FileList textFiles = root.textFiles();
         int s = textFiles.length();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < s; i++) {
             String fn = textFiles.name(i);
             String smof = root.path("sm", fn + ".json");
             try {

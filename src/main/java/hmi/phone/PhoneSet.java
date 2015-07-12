@@ -138,6 +138,10 @@ public class PhoneSet {
         return phs;
     }
 
+    public Map<String, PhoneEl> getPhoneEls(){
+        return _phones;
+    }
+
     public String getPhoneFeature(String ph, String featureName) {
         if (ph == null)
             return null;

@@ -830,7 +830,7 @@ public class BAlign {
 
     public void copyToSpeechMarkup() {
         int s = files().length();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < s; i++) {
             String smjson = root.path("sm", files().name(i) + ".json");
             SpeechMarkup sm = new SpeechMarkup();
             sm.readJSON(smjson);
@@ -930,9 +930,8 @@ public class BAlign {
 
     public static void main(String... args) throws Exception {
         String htkBinDir = "/usr/local/HTS-2.2beta/bin";
-        String dataDir = "jbw-vocb";
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
-        BAlign aligner = new BAlign(htkBinDir, dataDir);
+        BAlign aligner = new BAlign(htkBinDir, "jbw-vocb");
         //aligner.compute(phoneSet.getPhones());
         aligner.copyToSpeechMarkup();
     }

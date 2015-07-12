@@ -2,6 +2,7 @@ package hmi.data;
 
 
 import hmi.util.FileList;
+import hmi.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class VoiceRepo {
         System.out.println("VoiceRepo [" + this.voiceId + "]");
         wavFiles = new FileList(path("wav"), ".wav");
         textFiles = new FileList(path("text"), ".txt");
+        // compare...
     }
 
     public boolean init(String dir) {
@@ -41,6 +43,10 @@ public class VoiceRepo {
 
     public File getFile(String... path) {
         return new File(path(path));
+    }
+
+    public FileList files() {
+        return wavFiles;
     }
 
     public FileList wavFiles() {
@@ -60,6 +66,13 @@ public class VoiceRepo {
             b.append(s);
         }
         return b.toString();
+    }
+
+    //
+    public SpeechMarkup getSpeechMarkup(int idx) throws IOException {
+        SpeechMarkup sm = new SpeechMarkup();
+        sm.readJSON(path("sm", wavFiles.name(idx) + ".json"));
+        return sm;
     }
 
 }
