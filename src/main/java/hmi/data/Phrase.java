@@ -20,6 +20,7 @@ public class Phrase implements Container, IsContained {
     public Phrase(int boundaryBreakIndex) {
         words = new ArrayList<Word>();
         boundary = new Boundary();
+        boundary.container = this;
         boundary.breakIndex = boundaryBreakIndex;
     }
 
@@ -62,7 +63,18 @@ public class Phrase implements Container, IsContained {
     }
 
     public void setBoundary(Boundary boundary) {
+        boundary.container = this;
         this.boundary = boundary;
+    }
+
+    public List<Syllable> getSyllables() {
+        List<Syllable> syls = new ArrayList<>();
+        for (Word word : words) {
+            for (Syllable syl : word.syllables) {
+                syls.add(syl);
+            }
+        }
+        return syls;
     }
 
     public JSONObject toJSON() {
@@ -86,6 +98,7 @@ public class Phrase implements Container, IsContained {
         }
         if (o.get("boundary") != null) {
             boundary = new Boundary();
+            boundary.container = this;
             boundary.fromJSON((JSONObject) o.get("boundary"));
         }
     }

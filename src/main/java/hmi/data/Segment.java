@@ -6,7 +6,9 @@ import java.util.List;
 
 public abstract class Segment {
     public abstract float getBegin();
+
     public abstract float getEnd();
+
     public abstract float getDuration();
 
     @SuppressWarnings("unchecked")
@@ -14,12 +16,46 @@ public abstract class Segment {
         Object p = this;
         while (p instanceof IsContained) {
             Container c = ((IsContained) p).getContainer();
+            if (c == null)
+                return null;
             if (c.getClass() == clazz) {
                 return (T) c;
             }
             p = c;
         }
         return null;
+    }
+
+    public int fromSyllableEnd() {
+        Syllable syllable = getContainer(Syllable.class);
+        if (syllable == null || syllable.phones == null)
+            return 0;
+        else
+            return syllable.phones.size() - syllable.phones.indexOf(this);
+    }
+
+    public int fromSyllableStart() {
+        Syllable syllable = getContainer(Syllable.class);
+        if (syllable == null || syllable.phones == null)
+            return 0;
+        else
+            return syllable.phones.indexOf(this);
+    }
+
+    public int fromWordEnd() {
+        Word word = getContainer(Word.class);
+        if (word == null)
+            return 0;
+        List<Segment> wordSegs = word.getSegments();
+        return wordSegs.size() - wordSegs.indexOf(this);
+    }
+
+    public int fromWordStart() {
+        Word word = getContainer(Word.class);
+        if (word == null)
+            return 0;
+        List<Segment> wordSegs = word.getSegments();
+        return wordSegs.indexOf(this);
     }
 
     public Segment getPrevSegment() {
@@ -110,17 +146,6 @@ public abstract class Segment {
             return null;
         return syllables.get(idx - 1);
     }
-
-    // PrevPrevSyllableNavigator
-    // NextSyllableNavigator
-    // NextNextSyllableNavigator
-    // WordNavigator
-    // LastSyllableInPhraseNavigator
-    // NextWordNavigator
-    // PrevWordNavigator
-    // FirstSegmentNextWordNavigator
-    // LastWordInSentenceNavigator
-
 
 
 }
