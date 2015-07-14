@@ -932,7 +932,7 @@ public class BAlign {
         String htkBinDir = "/usr/local/HTS-2.2beta/bin";
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
         BAlign aligner = new BAlign(htkBinDir, "jbw-vocb");
-        //aligner.compute(phoneSet.getPhones());
+        aligner.compute(phoneSet.getPhones());
         aligner.copyToSpeechMarkup();
     }
 

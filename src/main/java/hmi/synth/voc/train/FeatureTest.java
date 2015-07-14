@@ -27,8 +27,6 @@ public class FeatureTest {
 
 //        System.out.println(qst);
         SentenceFeatures sf = new SentenceFeatures(fa);
-        for (String f : sf.getFeatures())
-            fa.add(f);
 //        String qst2 = sf.questions_qst001_hed();
 //        System.out.println(qst2);
         List<SegmentFeatures> segfs = sf.getFeatures(sm);

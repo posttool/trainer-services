@@ -5,6 +5,8 @@ import org.json.simple.JSONArray;
 import java.util.List;
 
 public abstract class Segment {
+    public abstract String getPhone();
+
     public abstract float getBegin();
 
     public abstract float getEnd();

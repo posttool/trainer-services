@@ -62,7 +62,8 @@ public class VoiceRepo {
         b.append(BD);
         b.append(voiceId);
         for (String s : path) {
-            b.append(File.separator);
+            if (s.charAt(0) != File.separatorChar)
+                b.append(File.separatorChar);
             b.append(s);
         }
         return b.toString();

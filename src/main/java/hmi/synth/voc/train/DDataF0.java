@@ -15,12 +15,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CDataF0 {
+public class DDataF0 {
     String reaperBin;
     VoiceRepo root;
     FileList files;
 
-    public CDataF0(String reaperBin, String voiceId) throws Exception {
+    public DDataF0(String reaperBin, String voiceId) throws Exception {
         this.reaperBin = reaperBin;
         this.root = new VoiceRepo(voiceId);
         root.init("reaper");
@@ -88,7 +88,7 @@ public class CDataF0 {
 
     public static void main(String... args) throws Exception {
         String reaperBin = "/Users/posttool/Documents/github/REAPER/build/reaper";
-        CDataF0 r = new CDataF0(reaperBin, "jbw-vocb");
+        DDataF0 r = new DDataF0(reaperBin, "jbw-vocb");
 //        r.compute();
         r.copyToSpeechMarkup();
     }

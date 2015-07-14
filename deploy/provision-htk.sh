@@ -38,8 +38,14 @@ make install
 
 
 
-
-
+#SPTK
+cd $ROOT
+wget http://downloads.sourceforge.net/sp-tk/SPTK-3.8.tar.gz
+tar -zxvf SPTK-3.8.tar.gz
+cd SPTK-3.8
+./configure
+make
+sudo make install
 
 
 

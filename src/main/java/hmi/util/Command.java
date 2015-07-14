@@ -1,6 +1,7 @@
 package hmi.util;
 
 import java.io.*;
+import java.util.Scanner;
 
 
 public class Command {
@@ -23,5 +24,28 @@ public class Command {
         } else {
             return process.exitValue();
         }
+    }
+
+    public static int process(String cwd, String... cmd) throws Exception {
+        System.out.println(cmd);
+        ProcessBuilder builder = new ProcessBuilder(cmd);
+        if (cwd != null)
+            builder.directory(new File(cwd));
+        builder.redirectErrorStream(true);
+        Process process = builder.start();
+
+        Scanner s = new Scanner(process.getInputStream());
+        StringBuilder text = new StringBuilder();
+        while (s.hasNextLine()) {
+            text.append(s.nextLine());
+            text.append("\n");
+        }
+        s.close();
+
+        int result = process.waitFor();
+
+        System.out.printf("Process exited with result %d and output %s%n", result, text);
+        return result;
+
     }
 }
