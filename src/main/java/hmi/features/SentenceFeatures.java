@@ -79,7 +79,6 @@ public class SentenceFeatures {
             for (int i = 0; i < features.length; i++) {
                 sf.add(new FeatureValue(fa.getAlias(features[i]), getFeatureValue(features[i], seg)));
             }
-            System.out.println(sf);
             sfs.add(sf);
         }
         return sfs;

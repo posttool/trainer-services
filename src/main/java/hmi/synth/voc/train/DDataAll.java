@@ -24,10 +24,6 @@ public class DDataAll {
     public final boolean SCP = true;
     public final boolean ADAPTSCRIPTS = false;
 
-    public void init() {
-
-    }
-
     public boolean compute(VoiceRepo repo, PhoneSet phoneSet) throws Exception {
         String voiceDir = repo.path("/");
 
@@ -74,7 +70,6 @@ public class DDataAll {
 
         return true;
     }
-//
 
     private void makeQuestions(VoiceRepo repo, PhoneSet ps) throws IOException {
         File qdir = new File(repo.path("/hts/data/questions"));

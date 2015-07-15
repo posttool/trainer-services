@@ -13,14 +13,10 @@ import java.util.Locale;
 
 public class EVoice {
 
-
     public boolean compute(VoiceRepo repo) throws Exception {
-
         String voicedir = repo.path("/");
-
         launchProcWithLogFile("perl " + voicedir + "hts/scripts/Training.pl " + voicedir
                 + "hts/scripts/Config.pm", voicedir);
-
         return true;
     }
 
