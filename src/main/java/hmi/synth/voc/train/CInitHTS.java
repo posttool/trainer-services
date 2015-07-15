@@ -28,8 +28,8 @@ public class CInitHTS {
         this.htsEnginePath = htsEnginePath;
         this.soxPath = soxPath;
         configureFile = repo.path("hts/configure");
-        speaker = "slt";
-        dataset = "cmu_us_arctic";
+        speaker = "jbw";
+        dataset = "hmi_us_a0";
         lowerF0 = "110";
         upperF0 = "280";
         numTestFiles = "10";
@@ -90,7 +90,7 @@ public class CInitHTS {
     }
 
     public void init() throws Exception {
-        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), false);
+        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), true);
         convertWav2Raw(repo.path("hts/data/scripts"), repo.path("wav"), repo.path("hts/data/raw"));
     }
 
@@ -113,10 +113,9 @@ public class CInitHTS {
                 /* if previous files and directories exist then run configure */
                 /* first it should go to the hts directory and there run ./configure */
             System.out.println("Running make configure: ");
-            String cmdLine = "chmod +x " + configureFile;
-            Command.bash(cmdLine);
+            Command.bash("chmod +x " + configureFile);
 
-            cmdLine = "cd " + repo.path("hts") + "\n"
+            Command.bash("cd " + repo.path("hts") + "\n"
                     + configureFile
 //                    + " --with-tcl-search-path=" + tlcPath
                     + " --with-sptk-search-path=" + sptkPath
@@ -142,8 +141,7 @@ public class CInitHTS {
                     + " LNGAIN=" + lnGain
                     + " SAMPFREQ=" + sampFreq
                     + " NSTATE=" + nState
-                    + " NITER=" + nIter;
-            Command.bash(cmdLine);
+                    + " NITER=" + nIter);
 
         } else {
 //            System.out.println("Running make configure: ");

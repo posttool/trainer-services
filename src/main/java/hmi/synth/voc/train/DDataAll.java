@@ -14,10 +14,10 @@ import java.util.*;
 
 public class DDataAll {
 
-    public final boolean MGC = true;
-    public final boolean LF0 = true;
-    public final boolean STR = true;
-    public final boolean CMP = true;
+    public final boolean MGC = false;
+    public final boolean LF0 = false;
+    public final boolean STR = false;
+    public final boolean CMP = false;
     public final boolean LABEL = true;
     public final boolean QUESTIONS = true;
     public final boolean LIST = true;
@@ -29,26 +29,19 @@ public class DDataAll {
     }
 
     public boolean compute(VoiceRepo repo, PhoneSet phoneSet) throws Exception {
-        String voiceDir = repo.path("");
-
-        String cmdLine;
+        String voiceDir = repo.path("/");
 
         if (MGC) {
-            cmdLine = "cd " + voiceDir + "hts/data; make mgc;";
-            Command.bash(cmdLine);
+            Command.bash("cd " + voiceDir + "hts/data; make mgc;");
         }
         if (LF0) {
-            cmdLine = "cd " + voiceDir + "hts/data\nmake lf0\n";
-            Command.bash(cmdLine);
+            Command.bash("cd " + voiceDir + "hts/data; make lf0;");
         }
         if (STR) {
-            cmdLine = "cd " + voiceDir + "hts/data\nmake str\n";
-            Command.bash(cmdLine);
+            Command.bash("cd " + voiceDir + "hts/data; make str;");
         }
         if (CMP) {
-            // Check, at least, that there is data in the directories mgc, lf0
-            // and str
-            System.out.println("\nConcatenating mgc, lf0 and str data:");
+            System.out.println("Concatenating mgc, lf0 and str data:");
             File dirMgc = new File(voiceDir + "hts/data/mgc");
             if (dirMgc.exists() && dirMgc.list().length == 0)
                 throw new Exception("Error: directory " + voiceDir + "hts/data/mgc ");
@@ -61,12 +54,8 @@ public class DDataAll {
             if (dirStr.exists() && dirStr.list().length == 0)
                 throw new Exception("Error: directory " + voiceDir + "hts/data/str ");
 
-            // If the directories contain files
-            cmdLine = "cd " + voiceDir + "hts/data\nmake cmp\n";
-            Command.bash(cmdLine);
+            Command.bash("cd " + voiceDir + "hts/data; make cmp;");
         }
-
-
         if (LABEL) {
             if (!ADAPTSCRIPTS)
                 makeLabels(repo);
@@ -77,20 +66,13 @@ public class DDataAll {
             makeQuestions(repo, phoneSet);
         }
         if (LIST) {
-            cmdLine = "cd " + voiceDir + "hts/data\nmake list\n";
-            Command.bash(cmdLine);
+            Command.bash("cd " + voiceDir + "hts/data\nmake list\n");
         }
         if (SCP) {
-            cmdLine = "cd " + voiceDir + "hts/data\nmake scp\n";
-            Command.bash(cmdLine);
+            Command.bash("cd " + voiceDir + "hts/data\nmake scp\n");
         }
 
-        /* delete the temporary file */
-        File tmpBatch = new File(voiceDir + "tmp.bat");
-        tmpBatch.delete();
-
         return true;
-
     }
 //
 
@@ -206,9 +188,9 @@ public class DDataAll {
         VoiceRepo repo = new VoiceRepo("jbw-vocb");
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
         DDataAll data = new DDataAll();
-        //data.compute(repo, phoneSet);
-        data.makeQuestions(repo, phoneSet);
-        data.makeLabels(repo);
+        data.compute(repo, phoneSet);
+//        data.makeQuestions(repo, phoneSet);
+//        data.makeLabels(repo);
     }
 
 }

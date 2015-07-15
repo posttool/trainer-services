@@ -27,7 +27,7 @@ public class Command {
     }
 
     public static int process(String cwd, String... cmd) throws Exception {
-        System.out.println(cmd);
+        //System.out.println(cmd[0]);
         ProcessBuilder builder = new ProcessBuilder(cmd);
         if (cwd != null)
             builder.directory(new File(cwd));

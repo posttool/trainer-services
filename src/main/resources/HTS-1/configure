@@ -2157,54 +2157,7 @@ if test "${with_fest_search_path+set}" = set; then
 fi
 
 
-# dumpfeats (festival)
-# Extract the first word of "dumpfeats", so it can be a program name with args.
-set dummy dumpfeats; ac_word=$2
-{ $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if test "${ac_cv_path_DUMPFEATS+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  case $DUMPFEATS in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_DUMPFEATS="$DUMPFEATS" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy="${fest_search_path}:$PATH"
-for as_dir in $as_dummy
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-  for ac_exec_ext in '' $ac_executable_extensions; do
-  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_path_DUMPFEATS="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-done
-IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_DUMPFEATS" && ac_cv_path_DUMPFEATS=":"
-  ;;
-esac
-fi
-DUMPFEATS=$ac_cv_path_DUMPFEATS
-if test -n "$DUMPFEATS"; then
-  { $as_echo "$as_me:$LINENO: result: $DUMPFEATS" >&5
-$as_echo "$DUMPFEATS" >&6; }
-else
-  { $as_echo "$as_me:$LINENO: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-if test ! -f "$DUMPFEATS"; then
-	{ { $as_echo "$as_me:$LINENO: error: Can't find dumpfeats of festival" >&5
-$as_echo "$as_me: error: Can't find dumpfeats of festival" >&2;}
-   { (exit 1); exit 1; }; }
-fi
 
 
 
@@ -5151,7 +5104,8 @@ $debug ||
 if test -n "$CONFIG_FILES"; then
 
 
-ac_cr=''
+ac_cr='
+'
 ac_cs_awk_cr=`$AWK 'BEGIN { print "a\rb" }' </dev/null 2>/dev/null`
 if test "$ac_cs_awk_cr" = "a${ac_cr}b"; then
   ac_cs_awk_cr='\\r'
