@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 public class PhoneTranslator {
     String[] types;
     Map<String, String[]> map;
-    boolean spaced = true;
 
     public PhoneTranslator(String filename) throws IOException {
         String ms = FileUtils.getFile(new File(Resource.path(filename)));
@@ -38,16 +37,20 @@ public class PhoneTranslator {
         return -1;
     }
 
-    Pattern p = Pattern.compile("/([A-Z][A-Z])([0-3])/");
+    Pattern phonePattern = Pattern.compile("/([A-Z][A-Z])([0-3])/");
 
     public String translate(String line, String from, String to) {
+        return translate(line, from, to, true);
+    }
+
+    public String translate(String line, String from, String to, boolean spaced) {
         int in_idx = find(from);
         int out_idx = find(to);
         StringBuilder ls = new StringBuilder();
         String[] phs = line.split(" ");
         for (String s : phs) {
             String accent = null;
-            Matcher m = p.matcher(s);
+            Matcher m = phonePattern.matcher(s);
             if (m.find())
                 s = m.group();
             if (m.find())
@@ -74,7 +77,7 @@ public class PhoneTranslator {
 
     public static void main(String... a) throws Exception {
         PhoneTranslator pt = new PhoneTranslator("/en_US/phoneset.tsv");
-        String t = pt.translate("t ay p", "FESTVOX", "SAMPA");
+        String t = pt.translate("t ay phonePattern", "FESTVOX", "SAMPA");
         System.out.println(t);
     }
 
