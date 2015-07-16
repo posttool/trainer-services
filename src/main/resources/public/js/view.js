@@ -12,6 +12,7 @@ var urlParams;
 })();
 
 var wavesurfer = Object.create(WaveSurfer);
+var pregion, nextregion = null;
 
 $(document).ready(function () {
 
@@ -21,8 +22,7 @@ $(document).ready(function () {
         minPxPerSec: 500,
         scrollParent: true,
         normalize: true,
-        minimap: true,
-//        backend: 'AudioElement'
+        minimap: true
     });
 
     wavesurfer.load('/wav?vid='+urlParams['vid']+'&uid='+urlParams['uid']);
@@ -32,29 +32,12 @@ $(document).ready(function () {
     });
 
     wavesurfer.on('ready', function () {
-        addRegions();
+        addRegionsWords();
     });
 
-    var pregion;
     wavesurfer.on('region-click', function (region, e) {
         e.stopPropagation();
-        if (pregion)
-            pregion.update({color: color(200,200,200,.1)})
-        region.update({color: color(200,200,200,.6)});
-        pregion = region;
-        e.shiftKey ? region.playLoop() : region.play();
-    });
-
-    wavesurfer.on('region-click', editAnnotation);
-//    wavesurfer.on('region-updated', saveRegions);
-//    wavesurfer.on('region-removed', saveRegions);
-    wavesurfer.on('region-in', showNote);
-
-    wavesurfer.on('region-play', function (region) {
-//        region.once('out', function () {
-//            wavesurfer.play(region.start);
-//            wavesurfer.pause();
-//        });
+        showNote(region,  e.shiftKey);
     });
 
 
@@ -65,7 +48,6 @@ $(document).ready(function () {
         cursorColor: '#999'
     });
 
-
     wavesurfer.on('ready', function () {
         var timeline = Object.create(WaveSurfer.Timeline);
         timeline.init({
@@ -74,17 +56,25 @@ $(document).ready(function () {
         });
     });
 
+    $(document).keypress(function(e){
+        if (e.keyCode == 46) {
+            showNote(nextregion);
+        }
+    });
 
-    var playButton = $('#play');
-    var pauseButton = $('#pause');
-    wavesurfer.on('play', function () {
-        playButton.hide()
-        pauseButton.show();
-    });
-    wavesurfer.on('pause', function () {
-        playButton.show()
-        pauseButton.hide();
-    });
+    $("#word").click(function(){
+        pregion =null;
+        addRegionsWords();
+    })
+    $("#syll").click(function(){
+        pregion =null;
+        addRegionsSyllables();
+    })
+    $("#ph").click(function(){
+        pregion =null;
+        addRegionsPhones();
+    })
+
 });
 
 
@@ -96,9 +86,133 @@ function color(r,g,b,alpha) {
 }
 
 
-/**
- * Edit annotation for a region.
- */
+
+
+
+function addRegionsPhones(){
+    wavesurfer.clearRegions();
+    sm.document.paragraphs.forEach(function(paragraph){
+        paragraph.sentences.forEach(function(sentence){
+            sentence.phrases.forEach(function(phrase){
+                // boundary;
+                phrase.words.forEach(function(word){
+                    //depth, pos, text
+                    if (word.syllables) {
+                        word.syllables.forEach(function(syllable){
+                            syllable.forEach(function(ph){
+                                var r = {
+                                    start: ph.begin,
+                                    end: ph.end,
+                                    drag: false,
+                                    color: color(200,200,200,.1),
+                                    data: ph
+                                }
+                                wavesurfer.addRegion(r);
+                                if (nextregion == null) {
+                                    for (var p in wavesurfer.regions.list)
+                                        nextregion = wavesurfer.regions.list[p];
+                                }
+                            });
+                        });
+                    }
+                });
+            })
+        })
+    });
+}
+
+function addRegionsSyllables(){
+    wavesurfer.clearRegions();
+    sm.document.paragraphs.forEach(function(paragraph){
+        paragraph.sentences.forEach(function(sentence){
+            sentence.phrases.forEach(function(phrase){
+                // boundary;
+                phrase.words.forEach(function(word){
+                    //depth, pos, text
+                    if (word.syllables) {
+                        word.syllables.forEach(function(syllable){
+                            var r = {
+                                start: syllable[0].begin,
+                                end: syllable[syllable.length-1].end,
+                                drag: false,
+                                color: color(200,200,200,.1),
+                                data: syllable
+                                };
+                            wavesurfer.addRegion(r);
+                            if (nextregion == null) {
+                                for (var p in wavesurfer.regions.list)
+                                    nextregion = wavesurfer.regions.list[p];
+                            }
+                        });
+                    }
+                });
+            })
+        })
+    });
+}
+
+
+function addRegionsWords(){
+    wavesurfer.clearRegions();
+    sm.document.paragraphs.forEach(function(paragraph){
+        paragraph.sentences.forEach(function(sentence){
+            sentence.phrases.forEach(function(phrase){
+                // boundary;
+                phrase.words.forEach(function(word){
+                    if (word.syllables) {
+                     var begin = 11111111, end  =0;
+                        word.syllables.forEach(function(syllable){
+                            begin = Math.min(begin, syllable[0].begin)
+                            end = Math.max(end, syllable[syllable.length-1].end)
+                     });
+                       var r = {
+                            start: begin,
+                            end: end,
+                            drag: false,
+                            color: color(200,200,200,.1),
+                            data: word
+                            };
+                        wavesurfer.addRegion(r);
+                        if (nextregion == null) {
+                            for (var p in wavesurfer.regions.list)
+                                nextregion = wavesurfer.regions.list[p];
+                        }
+                    }
+                });
+            })
+        })
+    });
+}
+
+
+
+function showNote (region, loop) {
+    var rsort = [];
+    for (var p in wavesurfer.regions.list) {
+        rsort.push(wavesurfer.regions.list[p])
+    }
+    rsort.sort(function(a,b){
+        return a.end - b.end;
+    });
+
+    for (var i=0; i<rsort.length; i++) {
+        var r = rsort[i];
+        if(r.id == region.id) {
+            nextregion = rsort[i+1];
+        }
+    }
+    if (pregion)
+        pregion.update({color: color(200,200,200,.1)})
+    region.update({color: color(200,200,200,.6)});
+    pregion = region;
+    editAnnotation(region);
+    if (loop)
+        region.playLoop();
+    else
+       region.play();
+
+}
+
 function editAnnotation (region) {
     var form = document.forms.edit;
     form.style.opacity = 1;
@@ -123,51 +237,11 @@ function editAnnotation (region) {
     form.dataset.region = region.id;
 }
 
-
-function addRegions(){
-    console.log(sm);
-    sm.document.paragraphs.forEach(function(paragraph){
-        paragraph.sentences.forEach(function(sentence){
-            sentence.phrases.forEach(function(phrase){
-                // boundary;
-                phrase.words.forEach(function(word){
-                    //depth, pos, text
-                    if (word.syllables)
-                        word.syllables.forEach(function(syllable){
-                            syllable.forEach(function(ph){
-                                wavesurfer.addRegion({
-                                    start: ph.begin,
-                                    end: ph.end,
-                                    drag: false,
-                                    color: color(200,200,200,.1),
-                                    data: ph
-                                });
-                            })
-                        });
-                });
-            })
-        })
-    });
-}
-
-
-function showNote (region) {
-//    if (!showNote.el) {
-//        showNote.el = document.querySelector('#subtitle');
-//    }
-//    showNote.el.textContent = region.data.note || '–';
-}
-
-//GLOBAL_ACTIONS['delete-region'] = function () {
-//    var form = document.forms.edit;
-//    var regionId = form.dataset.region;
-//    if (regionId) {
-//        wavesurfer.regions.list[regionId].remove();
-//        form.reset();
-//    }
-//};
-//
-//GLOBAL_ACTIONS['export'] = function () {
-//    window.open('data:application/json;charset=utf-8,' +
-//        encodeURIComponent(localStorage.regions));
-//};
+function deleteRegion () {
+    var form = document.forms.edit;
+    var regionId = form.dataset.region;
+    if (regionId) {
+        wavesurfer.regions.list[regionId].remove();
+        form.reset();
+    }
+};
