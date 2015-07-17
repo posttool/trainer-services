@@ -52,6 +52,15 @@ public class HMIServices {
             }
         }, new HandlebarsTemplateEngine());
 
+        get("/view.json", "application/json", (req, res) -> {
+            String vid = req.queryParams("vid");
+            String uid = req.queryParams("uid");
+            VoiceRepo root = new VoiceRepo(vid);
+            SpeechMarkup sm = new SpeechMarkup();
+            sm.readJSON(root.path("sm", uid + ".json"));
+            return sm.toJSON();
+        });
+
         get("/wav", (req, res) -> {
             String vid = req.queryParams("vid");
             String uid = req.queryParams("uid");

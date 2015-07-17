@@ -43,7 +43,7 @@ public class DDataF0 {
         }
     }
 
-    public void copyToSpeechMarkup() {
+    public void copyToSpeechMarkup() throws IOException {
         int s = files.length();
         for (int i = 0; i < s; i++) {
             String smof = root.path("sm", files.name(i) + ".json");

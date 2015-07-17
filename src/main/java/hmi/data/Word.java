@@ -122,6 +122,13 @@ public class Word implements Container, IsContained {
         // text are not voiced
     }
 
+    public void replaceWith(List<Word> words) {
+        int idx = container.words.indexOf(this);
+        for (int i = 0; i < words.size(); i++)
+            container.addWord(idx + i, words.get(i));
+        container.words.remove(this);
+    }
+
     public JSONObject toJSON() {
         JSONObject o = new JSONObject();
         o.put("text", text);

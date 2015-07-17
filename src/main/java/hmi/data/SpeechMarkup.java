@@ -107,12 +107,8 @@ public class SpeechMarkup {
         document.fromJSON((JSONObject) o.get("document"));
     }
 
-    public void readJSON(String filepath) {
-        try {
+    public void readJSON(String filepath) throws IOException {
             fromJSON((JSONObject) JSONValue.parse(FileUtils.getFileAsString(new File(filepath), "UTF-8")));
-        } catch (IOException e){
-            System.err.println("SpeechMarkup.fromJSONFile COULDNT READ "+filepath);
-        }
     }
     public void writeJSON(String filepath) {
         FileUtils.writeTextFile(new String[]{this.toJSON().toJSONString()}, filepath);

@@ -33,6 +33,12 @@ public class Phrase implements Container, IsContained {
         words.add(w);
     }
 
+
+    public void addWord(int i, Word w) {
+        w.container = this;
+        words.add(i, w);
+    }
+
     public boolean isEmpty() {
         return words.isEmpty();
     }

@@ -23,7 +23,7 @@ public class BAlign {
     private boolean DEBUG = true; // TODO add logger
 
     private String htkBinDir = "//";
-    private VoiceRepo root;
+    private VoiceRepo repo;
 
     private String outputDir;
     protected String labExt = ".lab";
@@ -50,18 +50,20 @@ public class BAlign {
     private double[] epsilon_PHASE = {0.2, 0.05, 0.001, 0.0005}; // 0 1 2 3
 
 
-    public BAlign(String htkBinDir, String dataDir) throws Exception {
-        this.htkBinDir = htkBinDir;
-        this.root = new VoiceRepo(dataDir);
+    public BAlign(VoiceRepo root) throws Exception {
+        this.repo = root;
+        this.htkBinDir = root.prop("htkBinDir");
         File htkFile = new File(getHTKBinDir() + File.separator + "HInit");
         if (!htkFile.exists()) {
             throw new Exception("HTK path setting is wrong. Because file " + htkFile.getAbsolutePath()
                     + " does not exist");
         }
+        root.init("htk");
     }
 
 
-    public boolean compute(Set<String> phones) throws Exception {
+    public boolean compute(PhoneSet phoneSet) throws Exception {
+        Set<String> phones = phoneSet.getPhones();
         outputDir = getHTKPath("etc");
 
         System.out.println("Preparing voice database for labelling using HTK :");
@@ -828,15 +830,15 @@ public class BAlign {
 
     }
 
-    public void copyToSpeechMarkup() {
+    public void copyToSpeechMarkup() throws IOException{
         int s = files().length();
         for (int i = 0; i < s; i++) {
-            String smjson = root.path("sm", files().name(i) + ".json");
+            String smjson = repo.path("sm", files().name(i) + ".json");
             SpeechMarkup sm = new SpeechMarkup();
             sm.readJSON(smjson);
             List<Segment> segs = sm.getSegments();
             int segi = 0;
-            String o = root.path("htk", "tmplab", files().name(i) + ".lab");
+            String o = repo.path("htk", "tmplab", files().name(i) + ".lab");
             try {
                 String fs = FileUtils.getFile(new File(o));
                 String[] lines = fs.split("\n");
@@ -887,19 +889,19 @@ public class BAlign {
     }
 
     private String getHTKDataDir() {
-        return root.path("htk");
+        return repo.path("htk");
     }
 
     private String getWavDir() {
-        return root.path("wav");
+        return repo.path("wav");
     }
 
     private String getSmDir() {
-        return root.path("sm");
+        return repo.path("sm");
     }
 
     private FileList files() {
-        return root.wavFiles();
+        return repo.wavFiles();
     }
 
     private String getHTKPath(String dir) {
@@ -929,10 +931,9 @@ public class BAlign {
 
 
     public static void main(String... args) throws Exception {
-        String htkBinDir = "/usr/local/HTS-2.2beta/bin";
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
-        BAlign aligner = new BAlign(htkBinDir, "jbw-vocb");
-        aligner.compute(phoneSet.getPhones());
+        BAlign aligner = new BAlign(new VoiceRepo("jbw-vocb"));
+        aligner.compute(phoneSet);
         aligner.copyToSpeechMarkup();
     }
 

@@ -14,17 +14,24 @@ import java.util.*;
 
 public class DDataAll {
 
-    public final boolean MGC = false;
-    public final boolean LF0 = false;
+    public final boolean MGC = true;
+    public final boolean LF0 = true;
     public final boolean STR = false;
-    public final boolean CMP = false;
+    public final boolean CMP = true;
     public final boolean LABEL = true;
     public final boolean QUESTIONS = true;
     public final boolean LIST = true;
     public final boolean SCP = true;
     public final boolean ADAPTSCRIPTS = false;
 
-    public boolean compute(VoiceRepo repo, PhoneSet phoneSet) throws Exception {
+    VoiceRepo repo;
+
+    public DDataAll(VoiceRepo repo) {
+        this.repo = repo;
+
+    }
+
+    public boolean compute(PhoneSet phoneSet) throws Exception {
         String voiceDir = repo.path("/");
 
         if (MGC) {
@@ -37,41 +44,28 @@ public class DDataAll {
             Command.bash("cd " + voiceDir + "hts/data; make str;");
         }
         if (CMP) {
-            System.out.println("Concatenating mgc, lf0 and str data:");
-            File dirMgc = new File(voiceDir + "hts/data/mgc");
-            if (dirMgc.exists() && dirMgc.list().length == 0)
-                throw new Exception("Error: directory " + voiceDir + "hts/data/mgc ");
-
-            File dirLf0 = new File(voiceDir + "hts/data/lf0");
-            if (dirLf0.exists() && dirLf0.list().length == 0)
-                throw new Exception("Error: directory " + voiceDir + "hts/data/lf0 ");
-
-            File dirStr = new File(voiceDir + "hts/data/str");
-            if (dirStr.exists() && dirStr.list().length == 0)
-                throw new Exception("Error: directory " + voiceDir + "hts/data/str ");
-
             Command.bash("cd " + voiceDir + "hts/data; make cmp;");
         }
         if (LABEL) {
             if (!ADAPTSCRIPTS)
-                makeLabels(repo);
+                makeLabels();
 //            else
 //                makeLabelsAdapt(voiceDir);
         }
         if (QUESTIONS) {
-            makeQuestions(repo, phoneSet);
+            makeQuestions(phoneSet);
         }
         if (LIST) {
-            Command.bash("cd " + voiceDir + "hts/data\nmake list\n");
+            Command.bash("cd " + voiceDir + "hts/data; make list;");
         }
         if (SCP) {
-            Command.bash("cd " + voiceDir + "hts/data\nmake scp\n");
+            Command.bash("cd " + voiceDir + "hts/data; make scp;");
         }
 
         return true;
     }
 
-    private void makeQuestions(VoiceRepo repo, PhoneSet ps) throws IOException {
+    public void makeQuestions(PhoneSet ps) throws IOException {
         File qdir = new File(repo.path("/hts/data/questions"));
         if (!qdir.exists())
             qdir.mkdir();
@@ -88,7 +82,7 @@ public class DDataAll {
         qfile.close();
     }
 
-    private void makeLabels(VoiceRepo repo) throws Exception {
+    public void makeLabels() throws Exception {
 
         System.out.println("\n Making labels:");
         FeatureAlias fa = new FeatureAlias();
@@ -182,10 +176,10 @@ public class DDataAll {
     public static void main(String[] args) throws Exception {
         VoiceRepo repo = new VoiceRepo("jbw-vocb");
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
-        DDataAll data = new DDataAll();
-        data.compute(repo, phoneSet);
-//        data.makeQuestions(repo, phoneSet);
-//        data.makeLabels(repo);
+        DDataAll data = new DDataAll(repo);
+        data.compute(phoneSet);
+//        data.makeQuestions(phoneSet);
+//        data.makeLabels();
     }
 
 }

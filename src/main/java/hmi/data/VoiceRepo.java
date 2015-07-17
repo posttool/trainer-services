@@ -5,7 +5,10 @@ import hmi.util.FileList;
 import hmi.util.FileUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 public class VoiceRepo {
     public final static String BD = "/Users/posttool/Documents/github/hmi-www/app/build/data/";
@@ -16,20 +19,28 @@ public class VoiceRepo {
 
     String voiceId;
     FileList wavFiles;
-    FileList textFiles;
+    // FileList textFiles;
+    Properties properties;
 
     // TODO  constructor to declare requirements ["wav", "sm", "etc"]
     public VoiceRepo(String voiceId) throws IOException {
         this.voiceId = voiceId;
         File wav = getFile("wav");
-        File txt = getFile("text");
-        if (!wav.exists() || !txt.exists() || !wav.isDirectory() || !txt.isDirectory()) {
-            throw new IOException("Requires /wav and /text directories [" + this.voiceId + "].");
+        if (!wav.exists() || !wav.isDirectory()) {
+            throw new IOException("Requires /wav  directory [" + this.voiceId + "].");
+        }
+        File props = getFile("voice.properties");
+        if (!props.exists()) {
+            throw new IOException("Requires voice.properties [\" + this.voiceId + \"].");
         }
         System.out.println("VoiceRepo [" + this.voiceId + "]");
         wavFiles = new FileList(path("wav"), ".wav");
-        textFiles = new FileList(path("text"), ".txt");
+        //textFiles = new FileList(path("text"), ".txt");
         // compare...
+        properties = new Properties();
+        InputStream in = new FileInputStream(props);
+        properties.load(in);
+        in.close();
     }
 
     public boolean init(String dir) {
@@ -54,7 +65,11 @@ public class VoiceRepo {
     }
 
     public FileList textFiles() {
-        return textFiles;
+        return new FileList(path("text"), ".txt");
+    }
+
+    public String prop(String key) {
+        return (String) properties.get(key);
     }
 
     public String path(String... path) {

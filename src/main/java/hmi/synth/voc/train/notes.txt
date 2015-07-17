@@ -4,3 +4,9 @@ http://stackoverflow.com/questions/11465258/xlib-h-not-found-when-building-graph
 
 also had to change a header file before compiling
 import malloc.h -> import stdlib.h
+
+
+to start phonetisaurus
+$ cd /home/vagrant/Phonetisaurus/script; /usr/bin/twistd -y g2pservice.tac
+to kill
+$ kill -9 `pgrep twistd`; twistd -y g2pservice.tac -l log.txt; tail -f log.txt

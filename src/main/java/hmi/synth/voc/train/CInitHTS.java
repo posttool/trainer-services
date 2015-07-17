@@ -2,40 +2,24 @@ package hmi.synth.voc.train;
 
 
 import hmi.data.VoiceRepo;
-import hmi.phone.PhoneSet;
 import hmi.util.Command;
 import hmi.util.FileUtils;
 import hmi.util.Resource;
 
 import java.io.File;
-import java.io.IOException;
 
 public class CInitHTS {
 
     VoiceRepo repo;
-    String tlcPath, sptkPath, htsPath, htsEnginePath, soxPath;
     String configureFile;
-    String speaker, dataset, lowerF0, upperF0, ver, qnum, frameLen, frameShift, windowType, normalize, fftLen, freqWarp,
-            gamma, mgcOrder, strOrder, strFilterName, lnGain, sampFreq, nState, nIter, mgcBandWidth, strBandWith, lf0BandWidth,
-            adaptTrainingSpkr, adaptSpeaker, adaptF0Ranges, adaptSpkrMask, adaptHead, numTestFiles, adaptTreeKind, adaptTransKind;
-    boolean adaptScripts;
+    int sampRate;
+    String frameLen, frameShift, fftLen, freqWarp, strFilterName;
 
-    public CInitHTS(VoiceRepo repo, int sampRate, String tlcPath, String sptkPath, String htsPath, String htsEnginePath, String soxPath) {
+    public CInitHTS(VoiceRepo repo) {
         this.repo = repo;
-        this.tlcPath = tlcPath;
-        this.sptkPath = sptkPath;
-        this.htsPath = htsPath;
-        this.htsEnginePath = htsEnginePath;
-        this.soxPath = soxPath;
+        this.repo.init("hts");
         configureFile = repo.path("hts/configure");
-        speaker = "jbw";
-        dataset = "hmi_us_a0";
-        lowerF0 = "110";
-        upperF0 = "280";
-        numTestFiles = "10";
-        ver = "1";
-        qnum = "001";
-        sampFreq = Integer.toString(sampRate);
+        sampRate = Integer.parseInt(repo.prop("sampRate"));
         frameLen = Integer.toString((int) Math.round(sampRate * 0.025));
         frameShift = Integer.toString((int) Math.round(sampRate * 0.005));
         if (sampRate >= 48000) {
@@ -60,90 +44,66 @@ public class CInitHTS {
             fftLen = "256";
             freqWarp = "0.31";
         }
-        windowType = "1";
-        normalize = "1";
-        gamma = "0";
-        mgcOrder = "34";
-        strOrder = "5";
+
         if (sampRate >= 48000) {
             strFilterName = "filters/mix_excitation_5filters_199taps_48Kz.txt";
         } else {
             strFilterName = "filters/mix_excitation_5filters_99taps_16Kz.txt";
         }
-        mgcBandWidth = "35";
-        strBandWith = "5";
-        lf0BandWidth = "1";
-        lnGain = "1";
-        nState = "5";
-        nIter = "5";
-        adaptTrainingSpkr = "'bdl clb jmk rms'";
-        adaptSpeaker = "slt";
-        // "'awb 40 280  bdl 40 280  clb 80 350  jmk 40 280  rms 40 280  slt 80 350'";
-        adaptF0Ranges = "'bdl 40 210 clb 130 260 jmk 50 180 rms 40 200 slt 110 280'";
-        adaptSpkrMask = "*/cmu_us_arctic_%%%_*";
-        adaptHead = "b05";
-        numTestFiles = "5";
-        adaptTreeKind = "dec";
-        adaptTransKind = "feat";
 
-        adaptScripts = false;
     }
 
     public void init() throws Exception {
-        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), true);
-        convertWav2Raw(repo.path("hts/data/scripts"), repo.path("wav"), repo.path("hts/data/raw"));
+        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), false);
+        convertWav2Raw(repo.path("wav"), repo.path("hts/data/raw"));
     }
 
-    private void convertWav2Raw(String scriptsDir, String wavDirName, String rawDirName) throws Exception {
-        String cmdLine;
-        String wav2rawCmd = scriptsDir + "/wav2raw.sh";
-        System.out.println("Converting wav files to raw from: " + wavDirName + "  to: " + rawDirName);
+    private void convertWav2Raw(String wavDirName, String rawDirName) throws Exception {
         File rawDir = new File(rawDirName);
         if (!rawDir.exists())
             rawDir.mkdir();
-        cmdLine = "chmod +x " + wav2rawCmd;
-        Command.bash(cmdLine);
-        cmdLine = wav2rawCmd + " " + soxPath + " " + wavDirName + " " + rawDirName;
-        Command.bash(cmdLine);
+        File wavDir = new File(wavDirName);
+        for (File f : wavDir.listFiles()) {
+            String n = f.getName();
+            n = n.substring(0, n.lastIndexOf('.'));
+            Command.bash(repo.prop("soxPath") + "/sox -v 0.7 " + f.getAbsolutePath() + " " + rawDirName + "/" + n + ".raw");
+        }
     }
 
     public void compute() throws Exception {
         String configureFile = repo.path("hts/configure");
-        if (!adaptScripts) {
+//        if (!repo.prop("adaptScripts").equals("true")) {
                 /* if previous files and directories exist then run configure */
                 /* first it should go to the hts directory and there run ./configure */
             System.out.println("Running make configure: ");
             Command.bash("chmod +x " + configureFile);
-
             Command.bash("cd " + repo.path("hts") + "\n"
                     + configureFile
-//                    + " --with-tcl-search-path=" + tlcPath
-                    + " --with-sptk-search-path=" + sptkPath
-                    + " --with-hts-search-path=" + htsPath
-                    + " --with-hts-engine-search-path=" + htsEnginePath
-//                    + " --with-sox-search-path=" + soxPath
-                    + " SPEAKER=" + speaker
-                    + " DATASET=" + dataset
-                    + " LOWERF0=" + lowerF0
-                    + " UPPERF0=" + upperF0
-                    + " VER=" + ver
-                    + " QNUM=" + qnum
+                    + " --with-sptk-search-path=" + repo.prop("sptkPath")
+                    + " --with-hts-search-path=" + repo.prop("htsPath")
+                    + " --with-hts-engine-search-path=" + repo.prop("htsEnginePath")
+                    + " SPEAKER=" + repo.prop("speaker")
+                    + " DATASET=" + repo.prop("dataset")
+                    + " LOWERF0=" + repo.prop("lowerF0")
+                    + " UPPERF0=" + repo.prop("upperF0")
+                    + " VER=" + repo.prop("ver")
+                    + " QNUM=" + repo.prop("qnum")
                     + " FRAMELEN=" + frameLen
                     + " FRAMESHIFT=" + frameShift
-                    + " WINDOWTYPE=" + windowType
-                    + " NORMALIZE=" + normalize
+                    + " WINDOWTYPE=" + repo.prop("windowType")
+                    + " NORMALIZE=" + repo.prop("normalize")
                     + " FFTLEN=" + fftLen
                     + " FREQWARP=" + freqWarp
-                    + " GAMMA=" + gamma
-                    + " MGCORDER=" + mgcOrder
-                    + " STRORDER=" + strOrder
+                    + " GAMMA=" + repo.prop("gamma")
+                    + " MGCORDER=" + repo.prop("mgcOrder")
+                    + " STRORDER=" + repo.prop("strOrder")
                     + " STRFILTERNAME=" + strFilterName
-                    + " LNGAIN=" + lnGain
-                    + " SAMPFREQ=" + sampFreq
-                    + " NSTATE=" + nState
-                    + " NITER=" + nIter);
+                    + " LNGAIN=" + repo.prop("lnGain")
+                    + " SAMPFREQ=" + sampRate
+                    + " NSTATE=" + repo.prop("nState")
+                    + " NITER=" + repo.prop("nIter"));
 
-        } else {
+//        } else {
 //            System.out.println("Running make configure: ");
 //            cmdLine = "chmod +x " + getProp(CONFIGUREFILE);
 //            General.launchProc(cmdLine, "configure", filedir);
@@ -182,19 +142,14 @@ public class CInitHTS {
 //                    " LF0BANDWIDTH=" + getProp(LF0BANDWIDTH) +
 //                    " TREEKIND=" + getProp(ADAPTTREEKIND) +
 //                    " TRANSKIND=" + getProp(ADAPTTRANSKIND);
-        }
+//        }
 
     }
 
 
     public static void main(String[] args) throws Exception {
         VoiceRepo repo = new VoiceRepo("jbw-vocb");
-        CInitHTS hts = new CInitHTS(repo, 16000,
-                "/Library/Tcl/",
-                "/usr/local",
-                "/usr/local/HTS-2.2beta/bin",
-                "/Users/posttool/Documents/github/la/deploy/install/hts_engine_API-1.09/bin",
-                "/usr/local/bin");
+        CInitHTS hts = new CInitHTS(repo);
         hts.init();
         hts.compute();
     }

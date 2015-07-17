@@ -18,7 +18,11 @@ public class ASpeechMarkup {
     SpeechMarkupAnnotater ann;
 
     public ASpeechMarkup(String dataDir) throws IOException {
-        root = new VoiceRepo(dataDir);
+        this(new VoiceRepo(dataDir));
+    }
+
+    public ASpeechMarkup(VoiceRepo root) throws IOException {
+        this.root = root;
         root.init("/sm");
     }
 
