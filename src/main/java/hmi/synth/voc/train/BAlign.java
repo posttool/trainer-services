@@ -46,7 +46,7 @@ public class BAlign {
 
     private ArrayList<Double> logProbFrame_array = new ArrayList<Double>();
     private ArrayList<Double> epsilon_array = new ArrayList<Double>();
-    private int PHASE_NUMBER = 0;
+    private int phaseNumber = 0;
     private double[] epsilon_PHASE = {0.2, 0.05, 0.001, 0.0005}; // 0 1 2 3
 
 
@@ -332,12 +332,12 @@ public class BAlign {
         String phoneList = getHTKPath("etc", "htk.phone.list");
         String phoneMlf = getHTKPath("etc", "htk.phones.mlf");
 
-        int BEST_ITERATION = MAX_ITERATIONS;
-        int SP_ITERATION = -1;
-        int VP_ITERATION = -1;
+        int bestIteration = MAX_ITERATIONS;
+        int spIteration = -1;
+        int vpIteration = -1;
         int change_mix_iteration = -1;
         for (int iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
-            System.out.println("Iteration number: " + iteration + "/" + PHASE_NUMBER);
+            System.out.println("Iteration number: " + iteration + "/" + phaseNumber);
             String hmm0last = "hmm" + (iteration - 1);
             String hmm1now = "hmm" + iteration;
 
@@ -345,9 +345,9 @@ public class BAlign {
             if (!hmmItDir.exists())
                 hmmItDir.mkdir();
 
-            if (PHASE_NUMBER == 0) {
+            if (phaseNumber == 0) {
 
-                if (iteration == (SP_ITERATION + 1)) {
+                if (iteration == (spIteration + 1)) {
                     phoneMlf = getHTKPath("etc", "htk.phones2.mlf");
                     phoneList = getHTKPath("etc", "htk.phone2.list");
                     Command.bash("( cd " + getHTKDataDir() + "; " + HHEd + " " + htkStandardOptions + " -H "
@@ -359,14 +359,14 @@ public class BAlign {
                     epsilon_array.add(100000000.0);
 
                     // PHASE 1
-                    PHASE_NUMBER = 1;
-                    System.out.println("PHASE -" + PHASE_NUMBER);
+                    phaseNumber = 1;
+                    System.out.println("PHASE -" + phaseNumber);
                     continue;
                 }
 
                 if (iteration > 2) {
-                    if (epsilon_array.get(iteration - 2) < epsilon_PHASE[PHASE_NUMBER] || iteration == MAX_SP_ITERATION) {
-                        SP_ITERATION = iteration;
+                    if (epsilon_array.get(iteration - 2) < epsilon_PHASE[phaseNumber] || iteration == MAX_SP_ITERATION) {
+                        spIteration = iteration;
                         insertShortPause(iteration);
                         String oldMacro = getHTKPath("hmm", hmm0last, "macros");
                         String newMacro = getHTKPath("hmm", hmm1now, "macros");
@@ -378,8 +378,8 @@ public class BAlign {
                 }
             }
 
-            if (PHASE_NUMBER == 1) {
-                if (iteration == (VP_ITERATION + 1)) {
+            if (phaseNumber == 1) {
+                if (iteration == (vpIteration + 1)) {
                     phoneMlf = getHTKPath("etc", "htk.phones3.mlf");
                     phoneList = getHTKPath("etc", "htk.phone3.list");
                     Command.bash("( cd " + getHTKDataDir() + "; " + HHEd + " " + htkStandardOptions + " -H "
@@ -389,13 +389,13 @@ public class BAlign {
                     logProbFrame_array.add(logProbFrame_array.get(iteration - 2));
                     epsilon_array.add(100000000.0);
                     // PHASE 2
-                    PHASE_NUMBER = 2;
-                    System.out.println("PHASE - " + PHASE_NUMBER);
+                    phaseNumber = 2;
+                    System.out.println("PHASE - " + phaseNumber);
                     continue;
                 }
 
-                if (epsilon_array.get(iteration - 2) < epsilon_PHASE[PHASE_NUMBER] || iteration == MAX_VP_ITERATION) {
-                    VP_ITERATION = iteration;
+                if (epsilon_array.get(iteration - 2) < epsilon_PHASE[phaseNumber] || iteration == MAX_VP_ITERATION) {
+                    vpIteration = iteration;
                     insertVirtualPauseThreeStates(iteration);
                     String oldMacro = getHTKPath("hmm", hmm0last, "macros");
                     String newMacro = getHTKPath("hmm", hmm1now, "macros");
@@ -407,13 +407,13 @@ public class BAlign {
             }
 
             // /-----------------
-            if (PHASE_NUMBER == 2) {
+            if (phaseNumber == 2) {
                 // check epsilon_array
                 // the following change_mix_iteration + 2 is used to allow more
                 // than one re-estimation after insertion of new mixture because
                 // just after the insertion the delta can be negative
 
-                if (((iteration != change_mix_iteration + 2) && (epsilon_array.get(iteration - 2) < epsilon_PHASE[PHASE_NUMBER]))
+                if (((iteration != change_mix_iteration + 2) && (epsilon_array.get(iteration - 2) < epsilon_PHASE[phaseNumber]))
                         || iteration == MAX_MIX_ITERATION) {
                     change_mix_iteration = iteration;
                     MAX_MIX_ITERATION = -1;
@@ -441,8 +441,8 @@ public class BAlign {
                         // logProbFrame_array.add(logProbFrame_array.get(iteration-2));
                         // epsilon_array.add(100000000.0);
                         // PHASE 3
-                        PHASE_NUMBER = 3;
-                        System.out.println("PHASE:" + PHASE_NUMBER);
+                        phaseNumber = 3;
+                        System.out.println("PHASE:" + phaseNumber);
                         // continue;
                     }
                     hhed_conf_pw.close();
@@ -458,8 +458,8 @@ public class BAlign {
             }
 
             // /-----------------
-            if (PHASE_NUMBER == 3) {
-                if (((iteration != change_mix_iteration + 2) && (epsilon_array.get(iteration - 2) < epsilon_PHASE[PHASE_NUMBER]))
+            if (phaseNumber == 3) {
+                if (((iteration != change_mix_iteration + 2) && (epsilon_array.get(iteration - 2) < epsilon_PHASE[phaseNumber]))
                         || iteration == MAX_ITERATIONS) {
                     int last = iteration - 1;
                     int prior = iteration - 2;
@@ -470,9 +470,9 @@ public class BAlign {
                             + logProbFrame_array.get(iteration - 3));
                     System.out.println("Delta - " + epsilon_array.get(iteration - 2));
                     if (logProbFrame_array.get(iteration - 3) > logProbFrame_array.get(iteration - 2)) {
-                        BEST_ITERATION = iteration - 2;
+                        bestIteration = iteration - 2;
                     } else {
-                        BEST_ITERATION = iteration - 1;
+                        bestIteration = iteration - 1;
                     }
                     break;
                 }
@@ -488,7 +488,7 @@ public class BAlign {
 
             System.out.println("Delta average log prob per frame to respect prior iteration - "
                     + epsilon_array.get(iteration - 1));
-            System.out.println("Current PHASE - " + PHASE_NUMBER);
+            System.out.println("Current PHASE - " + phaseNumber);
             System.out.println("Current state and number of mixtures (for each phoneme) - "
                     + Arrays.toString(current_number_of_mixtures));
 
@@ -496,17 +496,17 @@ public class BAlign {
         }
 
         System.out.println("***********\n");
-        System.out.println("BEST ITERATION: " + BEST_ITERATION);
+        System.out.println("BEST ITERATION: " + bestIteration);
         System.out.println("COPYNING BEST ITERATION FILES IN hmm-final directory");
         System.out.println("logProbFrame_array:" + logProbFrame_array.toString());
         System.out.println("epsilon_array:" + epsilon_array.toString());
         System.out.println("***********\n");
 
-        String oldMacro = getHTKPath("hmm", "hmm" + BEST_ITERATION, "macros");
+        String oldMacro = getHTKPath("hmm", "hmm" + bestIteration, "macros");
         String newMacro = getHTKPath("hmm", "hmm-final", "macros");
         FileUtils.copy(oldMacro, newMacro);
 
-        String oldHmmdefs = getHTKPath("hmm", "hmm" + BEST_ITERATION, "hmmdefs");
+        String oldHmmdefs = getHTKPath("hmm", "hmm" + bestIteration, "hmmdefs");
         String newHmmdefs = getHTKPath("hmm", "hmm-final", "hmmdefs");
         FileUtils.copy(oldHmmdefs, newHmmdefs);
 
