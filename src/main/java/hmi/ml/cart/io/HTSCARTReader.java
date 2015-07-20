@@ -1,36 +1,26 @@
 package hmi.ml.cart.io;
 
 import hmi.ml.cart.CART;
-import hmi.ml.cart.DecisionNode;
-import hmi.ml.cart.DecisionNode.BinaryByteDecisionNode;
+import hmi.ml.cart.DecisionNodeX;
 import hmi.ml.cart.LeafNode;
 import hmi.ml.cart.LeafNode.PdfLeafNode;
 import hmi.ml.cart.Node;
-import hmi.ml.feature.FeatureDefinition;
-import hmi.ml.feature.FeatureIO;
 import hmi.synth.voc.PData.PdfFileFormat;
-import hmi.synth.voc.PhoneTranslator;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.Scanner;
 import java.util.StringTokenizer;
-
 
 
 public class HTSCARTReader {
 
-    private FeatureDefinition featDef;
-    private PhoneTranslator phTrans;
     private int vectorSize; // the vector size of the mean and variance on the
-                            // leaves of the tree.
+    // leaves of the tree.
 
     public int getVectorSize() {
         return vectorSize;
@@ -38,33 +28,20 @@ public class HTSCARTReader {
 
     /**
      * Load the cart from the given file
-     * 
-     * @param nummStates
-     *            number of states in the HTS model, it will create one cart
-     *            tree per state.
-     * @param treefileName
-     *            the HTS tree text file, example tree-mgc.inf.
-     * @param pdfFileName
-     *            the corresponding HTS pdf binary file, example mgc.pdf.
-     * @param featDefinition
-     *            the feature definition
-     * @param CART
-     *            [] Fills this array of CART trees, one per state.
+     *
+     * @param numStates  number of states in the HTS model, it will create one cart
+     *                   tree per state.
+     * @param treeStream the HTS tree text file, example tree-mgc.inf.
+     * @param pdfStream  the corresponding HTS pdf binary file, example mgc.pdf.
      * @return the size of the mean and variance vectors on the leaves.
-     * @throws IOException
-     *             if a problem occurs while loading
+     * @throws IOException if a problem occurs while loading
      */
-    public CART[] load(int numStates, InputStream treeStream, InputStream pdfStream, PdfFileFormat fileFormat,
-            FeatureDefinition featDefinition, PhoneTranslator phTranslator) throws IOException,
-            Exception {
+    public CART[] load(int numStates, InputStream treeStream, InputStream pdfStream, PdfFileFormat fileFormat) throws Exception {
 
-        featDef = featDefinition;
-        // phTrans = phoneTranslator;
-        int i, j, length, state;
+        int i, state;
         BufferedReader s = null;
         String line, aux;
 
-        phTrans = phTranslator;
 
         // create the number of carts it is going to read
         CART treeSet[] = new CART[numStates];
@@ -91,8 +68,6 @@ public class HTSCARTReader {
         double pdf[][][][];
         pdf = loadPdfs(numStates, pdfStream, fileFormat);
 
-        assert featDefinition != null : "Feature Definition was not set";
-
         /* read lines of tree-*.inf fileName */
         s = new BufferedReader(new InputStreamReader(treeStream, "UTF-8"));
 
@@ -114,8 +89,8 @@ public class HTSCARTReader {
 
                 // Now count all data once, so that getNumberOfData()
                 // will return the correct figure.
-                if (treeSet[state - 2].getRootNode() instanceof DecisionNode)
-                    ((DecisionNode) treeSet[state - 2].getRootNode()).countData();
+                if (treeSet[state - 2].getRootNode() instanceof DecisionNodeX)
+                    ((DecisionNodeX) treeSet[state - 2].getRootNode()).countData();
 
                 System.out.println("load: CART[" + (state - 2) + "], total number of nodes in this CART: "
                         + treeSet[state - 2].getNumNodes());
@@ -135,24 +110,22 @@ public class HTSCARTReader {
 
     /**
      * Load a tree per state
-     * 
-     * @param s
-     *            : text scanner of the whole tree-*.inf file
-     * @param pdf
-     *            : the pdfs for this state,
+     *
+     * @param s   : text scanner of the whole tree-*.inf file
+     * @param pdf : the pdfs for this state,
      *            pdf[numPdfs][numStreams][2*vectorSize]
      */
     private Node loadStateTree(BufferedReader s, double pdf[][][]) throws IOException, Exception {
 
-        Node rootNode = null;
-        Node lastNode = null;
+        DecisionNodeX rootNode = null;
+//        DecisionNodeX lastNode = null;
 
         StringTokenizer sline;
         String aux, buf;
 
         // create an empty binary decision node with unique id=0, this will be
         // the rootNode
-        Node nextNode = new DecisionNode.BinaryByteDecisionNode(0, featDef);
+        DecisionNodeX nextNode = new DecisionNodeX(0);
 
         // this is the rootNode
         rootNode = nextNode;
@@ -161,22 +134,13 @@ public class HTSCARTReader {
         int iaux, feaIndex, ndec, nleaf;
         ndec = 0;
         nleaf = 0;
-        Node node = null;
+        DecisionNodeX node = null;
         aux = s.readLine(); /* next line for this state tree must be { */
         int id;
 
         if (aux.indexOf("{") >= 0) {
-            while ((aux = s.readLine()) != null && aux.indexOf("}") < 0) { /*
-                                                                            * last
-                                                                            * line
-                                                                            * for
-                                                                            * this
-                                                                            * state
-                                                                            * tree
-                                                                            * must
-                                                                            * be
-                                                                            * }
-                                                                            */
+
+            while ((aux = s.readLine()) != null && aux.indexOf("}") < 0) {
                 /* then parse this line, it contains 4 fields */
                 /* 1: node index # 2: Question name 3: NO # node 4: YES # node */
                 sline = new StringTokenizer(aux);
@@ -203,36 +167,10 @@ public class HTSCARTReader {
                                                         * splits
                                                         * featureName=featureValue
                                                         */
-                    feaIndex = featDef.getFeatureIndex(fea_val[0]);
 
-                    /* Replace back punctuation values */
-                    /*
-                     * what about tricky phones, if using halfphones it would
-                     * not be necessary
-                     */
-                    if (fea_val[0].contentEquals("sentence_punc") || fea_val[0].contentEquals("prev_punctuation")
-                            || fea_val[0].contentEquals("next_punctuation")) {
-                        // System.out.print("CART replace punc: " + fea_val[0] +
-                        // " = " + fea_val[1]);
-                        fea_val[1] = phTrans.replaceBackPunc(fea_val[1]);
-                        // System.out.println(" --> " + fea_val[0] + " = " +
-                        // fea_val[1]);
-                    } else if (fea_val[0].contains("tobi_")) {
-                        // System.out.print("CART replace tobi: " + fea_val[0] +
-                        // " = " + fea_val[1]);
-                        fea_val[1] = phTrans.replaceBackToBI(fea_val[1]);
-                        // System.out.println(" --> " + fea_val[0] + " = " +
-                        // fea_val[1]);
-                    } else if (fea_val[0].contains("phone")) {
-                        // System.out.print("CART replace phone: " + fea_val[0]
-                        // + " = " + fea_val[1]);
-                        fea_val[1] = phTrans.replaceBackTrickyPhones(fea_val[1]);
-                        // System.out.println(" --> " + fea_val[0] + " = " +
-                        // fea_val[1]);
-                    }
 
                     // add featureName and featureValue to the decision nod
-                    ((BinaryByteDecisionNode) node).setFeatureAndFeatureValue(fea_val[0], fea_val[1]);
+                    node.setFeatureAndFeatureValue(fea_val[0], fea_val[1]);
 
                     // add NO and YES indexes to the daughther nodes
                     /* NO index */
@@ -240,13 +178,13 @@ public class HTSCARTReader {
                     if (buf.startsWith("-")) { // Decision node
                         iaux = Integer.parseInt(buf.substring(1));
                         // create an empty binary decision node with unique id
-                        BinaryByteDecisionNode auxnode = new DecisionNode.BinaryByteDecisionNode(iaux, featDef);
-                        ((DecisionNode) node).replaceChild(auxnode, 1);
+                        DecisionNodeX auxnode = new DecisionNodeX(iaux);
+                        node.replaceChild(auxnode, 1);
                     } else { // LeafNode
                         iaux = Integer.parseInt(buf.substring(buf.lastIndexOf("_") + 1, buf.length() - 1));
                         // create an empty PdfLeafNode
                         PdfLeafNode auxnode = new LeafNode.PdfLeafNode(iaux, pdf[iaux - 1]);
-                        ((DecisionNode) node).replaceChild(auxnode, 1);
+                        node.replaceChild(auxnode, 1);
                         nleaf++;
                     }
 
@@ -255,53 +193,43 @@ public class HTSCARTReader {
                     if (buf.startsWith("-")) { // Decision node
                         iaux = Integer.parseInt(buf.substring(1));
                         // create an empty binary decision node with unique id=0
-                        BinaryByteDecisionNode auxnode = new DecisionNode.BinaryByteDecisionNode(iaux, featDef);
-                        ((DecisionNode) node).replaceChild(auxnode, 0);
+                        DecisionNodeX auxnode = new DecisionNodeX(iaux);
+                        node.replaceChild(auxnode, 0);
                     } else { // LeafNode
                         iaux = Integer.parseInt(buf.substring(buf.lastIndexOf("_") + 1, buf.length() - 1));
                         // create an empty PdfLeafNode
                         PdfLeafNode auxnode = new LeafNode.PdfLeafNode(iaux, pdf[iaux - 1]);
-                        ((DecisionNode) node).replaceChild(auxnode, 0);
+                        node.replaceChild(auxnode, 0);
                         nleaf++;
                     }
-                } /* if node not null */
+                }
                 sline = null;
-            } /* while there is another line and the line does not contain } */
-        } /* if not "{" */
+            }
+        }
 
         System.out.println("loadStateTree: loaded CART contains " + (ndec + 1) + " Decision nodes and " + nleaf
                 + " Leaf nodes.");
         return rootNode;
 
-    } /* method loadTree() */
+    }
 
-    /**
-     * @param node
-     *            , decision node
-     * @param numId
-     *            , index to look for.
-     * @return
-     */
-    private Node findDecisionNode(Node node, int numId) {
 
-        Node aux = null;
-
-        if (node instanceof DecisionNode) {
-            // System.out.print(" id=" +
-            // ((DecisionNode)node).getUniqueDecisionNodeId());
-            if (((DecisionNode) node).getUniqueDecisionNodeId() == numId)
-                return node;
+    private DecisionNodeX findDecisionNode(Node node, int numId) {
+        if (node instanceof DecisionNodeX) {
+            DecisionNodeX r = (DecisionNodeX) node;
+            if (r.getId() == numId)
+                return r;
             else {
-                for (int i = 0; i < ((DecisionNode) node).getNumberOfChildren(); i++) {
-                    aux = findDecisionNode(((DecisionNode) node).getChild(i), numId);
-                    if (aux != null)
-                        return aux;
+                for (int i = 0; i < r.getNumberOfChildren(); i++) {
+                    DecisionNodeX r2 = findDecisionNode(r.getChild(i), numId);
+                    if (r2 != null)
+                        return r2;
                 }
             }
         }
-        return aux;
+        return null;
 
-    } /* method findDecisionNode */
+    }
 
     /**
      * Load pdf's, mean and variance the #leaves corresponds to the unique leaf
@@ -365,7 +293,7 @@ public class HTSCARTReader {
             numStream = data_in.readInt();
             vectorSize = data_in.readInt();
             // ---vectorSize = numState;
-            // System.out.println("loadPdfs: nstate = " + nstate);
+            System.out.println("loadPdfs: " + numMSDFlag + " " + numStream + " " + vectorSize);
 
             numState = numStream;
 
@@ -379,27 +307,13 @@ public class HTSCARTReader {
 
             /*
              * Now we know the number of duration pdfs and the vector size which
-             * is
-             */
-            /*
-             * the number of states in each HMM. Here the vector size is
-             * 2*nstate because
-             */
-            /*
-             * the first nstate correspond to the mean and the second nstate
-             * correspond
-             */
-            /*
-             * to the diagonal variance vector, the mean and variance are copied
-             * here in
-             */
-            /* only one vector. */
-            /*
-             * 2*nstate because the vector size for duration is the number of
-             * states
+             * is  number of states in each HMM. Here the vector size is
+             * 2*nstate because the first nstate correspond to the mean and the second nstate
+             * correspond to the diagonal variance vector, the mean and variance are copied
+             * here in only one vector. 2*nstate because the vector size for duration is the number of states
              */
             pdf = new double[1][numDurPdf][1][2 * numState]; // just one state
-                                                             // and one stream
+            // and one stream
             vsize = (2 * numState);
             /* read pdfs (mean & variance) */
             // NOTE: Here (hts_engine v1.04) the order is different as before,
@@ -408,7 +322,7 @@ public class HTSCARTReader {
                 for (j = 0; j < numState; j++) {
                     pdf[0][i][0][j] = data_in.readFloat(); // read mean
                     pdf[0][i][0][j + numState] = data_in.readFloat(); // read
-                                                                      // variance
+                    // variance
                     // System.out.println("durpdf[" + i + "]" + "[" + j + "]:" +
                     // pdf[0][i][0][j]);
                 }
@@ -542,10 +456,10 @@ public class HTSCARTReader {
                     // vari[1], etc...
                     for (k = 0; k < vsize; k++) {
                         pdf[i][j][0][k] = data_in.readFloat(); // [0]
-                                                               // corresponds to
-                                                               // stream, in
-                                                               // this case just
-                                                               // one.
+                        // corresponds to
+                        // stream, in
+                        // this case just
+                        // one.
                         // System.out.println("pdf["+ i + "][" + j + "][0][" + k
                         // + "] =" + pdf[i][j][0][k]);
                         pdf[i][j][0][k + vsize] = data_in.readFloat();
@@ -559,41 +473,20 @@ public class HTSCARTReader {
 
         return pdf;
 
-    } /* method loadPdfs */
+    }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        /* configure log info */
+    public static String BP = "/Users/posttool/Documents/github/hmi-www/app/build/data/jbw-voca";
 
-        String contextFile = "lib/voices/hsmm-slt/cmu_us_arctic_slt_a0001.pfeats";
-        Scanner context = new Scanner(new BufferedReader(new FileReader(contextFile)));
-        String strContext = "";
-        while (context.hasNext()) {
-            strContext += context.nextLine();
-            strContext += "\n";
-        }
-        context.close();
-        // System.out.println(strContext);
-        FeatureDefinition feaDef = FeatureIO.read(new BufferedReader(new StringReader(strContext)), false);
+    public static void main(String[] args) throws Exception {
 
-        CART[] mgcTree = null;
         int numStates = 5;
-        String trickyPhones = "lib/voices/hsmm-slt/trickyPhones.txt";
-        String treefile = "lib/voices/hsmm-slt/tree-dur.inf";
-        String pdffile = "ib/voices/hsmm-slt/dur.pdf";
-        int vSize;
-
-        // Check if there are tricky phones, and create a PhoneTranslator object
-        PhoneTranslator phTranslator = new PhoneTranslator(new FileInputStream(trickyPhones));
+        String treefile = BP + "/hts/voices/qst001/ver1/tree-dur.inf";
+        String pdffile = BP + "/hts/voices/qst001/ver1/dur.pdf";
 
         HTSCARTReader htsReader = new HTSCARTReader();
-        try {
-            mgcTree = htsReader.load(numStates, new FileInputStream(treefile), new FileInputStream(pdffile),
-                    PdfFileFormat.dur, feaDef, phTranslator);
-            vSize = htsReader.getVectorSize();
-            System.out.println("loaded " + pdffile + "  vector size=" + vSize);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+        CART[] mgcTree = htsReader.load(numStates, new FileInputStream(treefile), new FileInputStream(pdffile), PdfFileFormat.dur);
+        int vSize = htsReader.getVectorSize();
+        System.out.println("loaded " + pdffile + "  vector size=" + vSize);
 
     }
 

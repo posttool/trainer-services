@@ -5,28 +5,18 @@ import hmi.ml.feature.FeatureVector;
 
 import java.util.Properties;
 
-/**
- * Classification and Regression Tree
- * 
- * @see C45PruneableClassifierTreeWithUnary
- * @see TreeConverter
- *
- */
+
 public class CART extends DirectedGraph {
 
     public CART() {
     }
 
-    public CART(FeatureDefinition featDef) {
-        super(featDef);
+    public CART(Node rootNode) {
+        super(rootNode);
     }
 
-    public CART(Node rootNode, FeatureDefinition featDef) {
-        super(rootNode, featDef);
-    }
-
-    public CART(Node rootNode, FeatureDefinition featDef, Properties properties) {
-        super(rootNode, featDef, properties);
+    public CART(Node rootNode, Properties properties) {
+        super(rootNode, properties);
     }
 
     // public Node interpretToNode(Target target, int minNumberOfData) {

@@ -1,5 +1,6 @@
 package hmi.synth.voc;
 
+import hmi.features.Features;
 import hmi.ml.cart.CART;
 import hmi.ml.cart.LeafNode.PdfLeafNode;
 import hmi.ml.cart.io.HTSCARTReader;
@@ -45,22 +46,22 @@ public class CARTSet {
 
     public int getVsize(PData.FeatureType type) {
         switch (type) {
-        case MGC:
-            return mcepVsize;
-        case STR:
-            return strVsize;
-        case MAG:
-            return magVsize;
-        default:
-            return 1; // DUR and LF0
+            case MGC:
+                return mcepVsize;
+            case STR:
+                return strVsize;
+            case MAG:
+                return magVsize;
+            default:
+                return 1; // DUR and LF0
         }
     }
 
-    /** Loads all the CART trees */
-    public void loadTreeSet(PData htsData, FeatureDefinition featureDef, PhoneTranslator trickyPhones)
+    /**
+     * Loads all the CART trees
+     */
+    public void loadTreeSet(PData htsData)
             throws IOException, Exception {
-        // Check if there are tricky phones, and create a PhoneTranslator object
-        PhoneTranslator phTranslator = trickyPhones;
 
         HTSCARTReader htsReader = new HTSCARTReader();
         /*
@@ -70,36 +71,29 @@ public class CARTSet {
          */
         if (htsData.getTreeDurStream() != null) {
             System.out.println("Loading duration tree...");
-            durTree = htsReader.load(1, htsData.getTreeDurStream(), htsData.getPdfDurStream(), PdfFileFormat.dur,
-                    featureDef, phTranslator);
+            durTree = htsReader.load(1, htsData.getTreeDurStream(), htsData.getPdfDurStream(), PdfFileFormat.dur);
             numStates = htsReader.getVectorSize();
         }
-
         if (htsData.getTreeLf0Stream() != null) {
             System.out.println("Loading log F0 tree...");
-            lf0Tree = htsReader.load(numStates, htsData.getTreeLf0Stream(), htsData.getPdfLf0Stream(),
-                    PdfFileFormat.lf0, featureDef, phTranslator);
+            lf0Tree = htsReader.load(numStates, htsData.getTreeLf0Stream(), htsData.getPdfLf0Stream(), PdfFileFormat.lf0);
             lf0Stream = htsReader.getVectorSize();
         }
-
         if (htsData.getTreeMgcStream() != null) {
             System.out.println("Loading mgc tree...");
-            mgcTree = htsReader.load(numStates, htsData.getTreeMgcStream(), htsData.getPdfMgcStream(),
-                    PdfFileFormat.mgc, featureDef, phTranslator);
+            mgcTree = htsReader.load(numStates, htsData.getTreeMgcStream(), htsData.getPdfMgcStream(), PdfFileFormat.mgc);
             mcepVsize = htsReader.getVectorSize();
         }
 
         /* STR and MAG are optional for generating mixed excitation */
         if (htsData.getTreeStrStream() != null) {
             System.out.println("Loading str tree...");
-            strTree = htsReader.load(numStates, htsData.getTreeStrStream(), htsData.getPdfStrStream(),
-                    PdfFileFormat.str, featureDef, phTranslator);
+            strTree = htsReader.load(numStates, htsData.getTreeStrStream(), htsData.getPdfStrStream(), PdfFileFormat.str);
             strVsize = htsReader.getVectorSize();
         }
         if (htsData.getTreeMagStream() != null) {
             System.out.println("Loading mag tree...");
-            magTree = htsReader.load(numStates, htsData.getTreeMagStream(), htsData.getPdfMagStream(),
-                    PdfFileFormat.mag, featureDef, phTranslator);
+            magTree = htsReader.load(numStates, htsData.getTreeMagStream(), htsData.getPdfMagStream(), PdfFileFormat.mag);
             magVsize = htsReader.getVectorSize();
         }
     }
@@ -107,13 +101,10 @@ public class CARTSet {
     /***
      * Searches fv in durTree CART[] set of trees, per state, and fill the
      * information in the HTSModel m.
-     * 
-     * @param m
-     *            HTSModel where mean and variances per state are copied
-     * @param fv
-     *            context feature vector
-     * @param htsData
-     *            HMMData with configuration settings
+     *
+     * @param m       HTSModel where mean and variances per state are copied
+     * @param fv      context feature vector
+     * @param htsData HMMData with configuration settings
      * @return duration
      * @throws Exception
      */
@@ -122,7 +113,7 @@ public class CARTSet {
     }
 
     public double searchDurInCartTree(PModel m, FeatureVector fv, PData htsData, boolean firstPh, boolean lastPh,
-            double diffdur) {
+                                      double diffdur) {
         double data, dd;
         double rho = htsData.getRho();
         double durscale = htsData.getDurationScale();
@@ -163,16 +154,12 @@ public class CARTSet {
     /***
      * Searches fv in Lf0Tree CART[] set of trees, per state, and fill the
      * information in the HTSModel m.
-     * 
-     * @param m
-     *            HTSModel where mean and variances per state are copied
-     * @param fv
-     *            context feature vector
-     * @param featureDef
-     *            Feature definition
+     *
+     * @param m          HTSModel where mean and variances per state are copied
+     * @param fv         context feature vector
      * @throws Exception
      */
-    public void searchLf0InCartTree(PModel m, FeatureVector fv, FeatureDefinition featureDef, double uvthresh) {
+    public void searchLf0InCartTree(PModel m, FeatureVector fv, double uvthresh) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) lf0Tree[s].interpretToNode(fv, 1);
             m.setLf0Mean(s, node.getMean());
@@ -189,16 +176,12 @@ public class CARTSet {
     /***
      * Searches fv in mgcTree CART[] set of trees, per state, and fill the
      * information in the HTSModel m.
-     * 
-     * @param m
-     *            HTSModel where mean and variances per state are copied
-     * @param fv
-     *            context feature vector
-     * @param featureDef
-     *            Feature definition
+     *
+     * @param m          HTSModel where mean and variances per state are copied
+     * @param fv         context feature vector
      * @throws Exception
      */
-    public void searchMgcInCartTree(PModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchMgcInCartTree(PModel m, FeatureVector fv) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) mgcTree[s].interpretToNode(fv, 1);
             m.setMcepMean(s, node.getMean());
@@ -209,16 +192,12 @@ public class CARTSet {
     /***
      * Searches fv in StrTree CART[] set of trees, per state, and fill the
      * information in the HTSModel m.
-     * 
-     * @param m
-     *            HTSModel where mean and variances per state are copied
-     * @param fv
-     *            context feature vector
-     * @param featureDef
-     *            Feature definition
+     *
+     * @param m          HTSModel where mean and variances per state are copied
+     * @param fv         context feature vector
      * @throws Exception
      */
-    public void searchStrInCartTree(PModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchStrInCartTree(PModel m, FeatureVector fv) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) strTree[s].interpretToNode(fv, 1);
             m.setStrMean(s, node.getMean());
@@ -229,16 +208,12 @@ public class CARTSet {
     /***
      * Searches fv in MagTree CART[] set of trees, per state, and fill the
      * information in the HTSModel m.
-     * 
-     * @param m
-     *            HTSModel where mean and variances per state are copied
-     * @param fv
-     *            context feature vector
-     * @param featureDef
-     *            Feature definition
+     *
+     * @param m          HTSModel where mean and variances per state are copied
+     * @param fv         context feature vector
      * @throws Exception
      */
-    public void searchMagInCartTree(PModel m, FeatureVector fv, FeatureDefinition featureDef) {
+    public void searchMagInCartTree(PModel m, FeatureVector fv) {
         for (int s = 0; s < numStates; s++) {
             PdfLeafNode node = (PdfLeafNode) magTree[s].interpretToNode(fv, 1);
             m.setMagMean(s, node.getMean());
@@ -271,24 +246,24 @@ public class CARTSet {
             // of this model are voiced or unvoiced
             // even if f0 is taken from xml here we need to set the
             // voived/unvoiced values per model and state
-            searchLf0InCartTree(m, fv, feaDef, htsData.getUV());
+            searchLf0InCartTree(m, fv, htsData.getUV());
 
             /* Find pdf for MGC, this function sets the pdf for each state. */
-            searchMgcInCartTree(m, fv, feaDef);
+            searchMgcInCartTree(m, fv);
 
             /*
              * Find pdf for strengths, this function sets the pdf for each
              * state.
              */
             if (htsData.getTreeStrStream() != null)
-                searchStrInCartTree(m, fv, feaDef);
+                searchStrInCartTree(m, fv);
 
             /*
              * Find pdf for Fourier magnitudes, this function sets the pdf for
              * each state.
              */
             if (htsData.getTreeMagStream() != null)
-                searchMagInCartTree(m, fv, feaDef);
+                searchMagInCartTree(m, fv);
 
         } catch (Exception e) {
             e.printStackTrace();

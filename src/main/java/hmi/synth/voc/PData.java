@@ -1,7 +1,5 @@
 package hmi.synth.voc;
 
-import hmi.ml.feature.FeatureDefinition;
-import hmi.ml.feature.FeatureIO;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -26,11 +24,15 @@ public class PData {
         LF0, // log(fundamental frequency)
         STR, // strength of excitation?
         MAG, // fourier magnitudes for pulse generation
-    };
+    }
+
+    ;
 
     public enum PdfFileFormat {
         dur, lf0, mgc, str, mag, join
-    };
+    }
+
+    ;
 
     /**
      * Global variables for some functions, initialised with default values, so
@@ -49,7 +51,7 @@ public class PData {
      */
     private int stage = 0; /* defines gamma=-1/stage : if stage=0 then Gamma=0 */
     private double alpha = 0.55; // 0.42; /* variable for frequency warping
-                                 // parameter */
+    // parameter */
     private double beta = 0.0; /* variable for postfiltering */
     private boolean useLogGain = false; /* log gain flag (for LSP) */
 
@@ -62,7 +64,9 @@ public class PData {
                                             * generation
                                             */
 
-    /** Global variance (GV) settings */
+    /**
+     * Global variance (GV) settings
+     */
     private boolean useGV = false; /*
                                     * use global variance in parameter
                                     * generation
@@ -114,17 +118,14 @@ public class PData {
                                          * 1.0 is slower, min=0.1 max=3.0
                                          */
 
-    /** Tree files and TreeSet object */
+    /**
+     * Tree files and TreeSet object
+     */
     private InputStream treeDurStream; /* durations tree file */
     private InputStream treeLf0Stream; /* lf0 tree file */
     private InputStream treeMgcStream; /* Mgc tree file */
     private InputStream treeStrStream; /* Strengths tree file */
     private InputStream treeMagStream; /* Fourier magnitudes tree file */
-
-    private FeatureDefinition feaDef; /*
-                                       * The feature definition is used for
-                                       * loading the tree using questions
-                                       */
 
     /**
      * CartTreeSet contains the tree-xxx.inf, xxx: dur, lf0, Mgc, str and mag
@@ -133,7 +134,9 @@ public class PData {
      */
     private CARTSet cart = new CARTSet();
 
-    /** HMM pdf model files and ModelSet object */
+    /**
+     * HMM pdf model files and ModelSet object
+     */
     private InputStream pdfDurStream; /* durations Pdf file */
     private InputStream pdfLf0Stream; /* lf0 Pdf file */
     private InputStream pdfMgcStream; /* Mgc Pdf file */
@@ -168,13 +171,13 @@ public class PData {
      */
     private GVModelSet gv = new GVModelSet();
 
-    /** Variables for mixed excitation */
+    /**
+     * Variables for mixed excitation
+     */
     private int numFilters;
     private int orderFilters;
     private double mixFilters[][]; /* filters for mixed excitation */
 
-    /** tricky phones file if generated during training of HMMs. */
-    private PhoneTranslator trickyPhones;
 
     public int getRate() {
         return rate;
@@ -256,9 +259,6 @@ public class PData {
         return treeMagStream;
     }
 
-    public FeatureDefinition getFeatureDefinition() {
-        return feaDef;
-    }
 
     public InputStream getPdfDurStream() {
         return pdfDurStream;
@@ -501,11 +501,11 @@ public class PData {
     }
 
     public void loadCartTreeSet() throws IOException, Exception {
-        cart.loadTreeSet(this, feaDef, trickyPhones);
+        cart.loadTreeSet(this);
     }
 
     public void loadGVModelSet() throws IOException {
-        gv.loadGVModelSet(this, feaDef);
+        gv.loadGVModelSet(this);
     }
 
     public InputStream getStream(String path, String file) throws FileNotFoundException {
@@ -567,19 +567,16 @@ public class PData {
         }
 
         /* targetfeatures file, for testing */
-        /* Example context feature file in TARGETFEATURES format */
-        String ff = p.getProperty("featuresFile", "b0487.pfeats");
-        InputStream featureStream = getStream(bp, ff);
-        feaDef = FeatureIO.read(featureStream, false);
+//        String ff = p.getProperty("featuresFile", "b0487.fea");
+//        InputStream featureStream = getStream(bp, ff);
+//        feaDef = FeatureIO.read(featureStream, false);
 
-        /* trickyPhones file if any */
-        trickyPhones = new PhoneTranslator(getStream(bp, p.getProperty("trickyPhonesFile", "trickyPhones.txt")));
 
         /* Configuration for mixed excitation */
         InputStream mixFiltersStream = getStream(bp, p.getProperty("excitationFilters", "mix_excitation_filters.txt"));
         if (mixFiltersStream != null) {
             numFilters = Integer.parseInt(p.getProperty("numExcitationFilters", "5"));
-            System.out.println("Loading Mixed Excitation Filters File: "+numFilters);
+            System.out.println("Loading Mixed Excitation Filters File: " + numFilters);
             readMixedExcitationFilters(mixFiltersStream);
         }
 
@@ -699,7 +696,9 @@ public class PData {
 
     } /* method readMixedExcitationFiltersFile() */
 
-    /** return the set of FeatureTypes that are available in this HMMData object */
+    /**
+     * return the set of FeatureTypes that are available in this HMMData object
+     */
     public Set<FeatureType> getFeatureSet() {
         Set<FeatureType> featureTypes = EnumSet.noneOf(FeatureType.class);
         if (getPdfDurStream() != null)

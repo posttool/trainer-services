@@ -3,6 +3,7 @@ package hmi.ml.cart;
 import java.util.Iterator;
 import java.util.Properties;
 
+import hmi.features.Features;
 import hmi.ml.feature.FeatureDefinition;
 import hmi.ml.feature.FeatureVector;
 
@@ -18,25 +19,18 @@ public class DirectedGraph {
 
     protected Node rootNode;
 
-    // knows the index numbers and types of the features used in DecisionNodes
-    protected FeatureDefinition featDef;
 
     protected Properties properties;
 
     public DirectedGraph() {
     }
 
-    public DirectedGraph(FeatureDefinition featDef) {
-        this(null, featDef);
+    public DirectedGraph(Node rootNode) {
+        this(rootNode,  null);
     }
 
-    public DirectedGraph(Node rootNode, FeatureDefinition featDef) {
-        this(rootNode, featDef, null);
-    }
-
-    public DirectedGraph(Node rootNode, FeatureDefinition featDef, Properties properties) {
+    public DirectedGraph(Node rootNode, Properties properties) {
         this.rootNode = rootNode;
-        this.featDef = featDef;
         this.properties = properties;
     }
 
@@ -175,10 +169,6 @@ public class DirectedGraph {
 
     public void setRootNode(Node rNode) {
         rootNode = rNode;
-    }
-
-    public FeatureDefinition getFeatureDefinition() {
-        return featDef;
     }
 
     public int getNumNodes() {
