@@ -11,6 +11,7 @@ cp /Users/posttool/Documents/github/adapt2/deploy/HDecode-3.4.1.tar.gz .
 mkdir -p HTS-patch
 cd HTS-patch
 wget http://hts.sp.nitech.ac.jp/archives/2.2/HTS-2.2_for_HTK-3.4.1.tar.bz2
+# http://hts.sp.nitech.ac.jp/archives/2.3beta/HTS-2.3beta_for_HTK-3.4.1.tar.bz2
 tar -jxvf HTS-2.2_for_HTK-3.4.1.tar.bz2
 cd ..
 tar -zxf HTK-3.4.1.tar.gz
@@ -18,7 +19,8 @@ tar -zxf HDecode-3.4.1.tar.gz
 cd htk
 cp $ROOT/HTS-patch/HTS-2.2_for_HTK-3.4.1.patch .
 patch -p1 -d . < HTS-2.2_for_HTK-3.4.1.patch
-# replace HTKLib/strarr.c <malloc.h> with <stdlib.h>
+sed 's/malloc.h/stdlib.h/' <HTKLib/strarr.c >strarr.c
+cp strarr.c HTKLib/strarr.c
 ./configure -build=i686-apple-macos LDFLAGS=-L/opt/X11/lib CFLAGS='-I/opt/X11/include -I/usr/include/malloc -DARCH=\"darwin\"' --prefix=$ROOT MAXSTRLEN=2048
 make
 make install
