@@ -1,4 +1,4 @@
-package hmi.synth.voc.train;
+package hmi.train;
 
 
 import hmi.data.VoiceRepo;
@@ -54,7 +54,8 @@ public class CInitHTS {
     }
 
     public void init() throws Exception {
-        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), false);
+//        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), false);
+        FileUtils.copyFolderRecursive(Resource.path("/hts-q/hts-1"), repo.path("hts"), false);
         convertWav2Raw(repo.path("wav"), repo.path("hts/data/raw"));
     }
 
@@ -66,7 +67,7 @@ public class CInitHTS {
         for (File f : wavDir.listFiles()) {
             String n = f.getName();
             n = n.substring(0, n.lastIndexOf('.'));
-            Command.bash(repo.prop("soxPath") + "/sox -v 0.7 " + f.getAbsolutePath() + " " + rawDirName + "/" + n + ".raw");
+            Command.bash(repo.prop("soxPath") + "/sox " + f.getAbsolutePath() + " " + rawDirName + "/" + n + ".raw"); //-v 0.7
         }
     }
 

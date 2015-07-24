@@ -1,4 +1,4 @@
-package hmi.synth.voc.train;
+package hmi.train;
 
 import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
@@ -135,39 +135,19 @@ public class DDataAll {
     private void monoAndFullLabels(SentenceFeatures sf, SpeechMarkup sm, String outFeaFileName,
                                    String outLabFileName) throws Exception {
 
-        FileWriter outFea = new FileWriter(outFeaFileName);
         FileWriter outLab = new FileWriter(outLabFileName);
+        FileWriter outFea = new FileWriter(outFeaFileName);
 
         List<SegmentFeatures> segfs = sf.getFeatures(sm);
 
         for (SegmentFeatures feat : segfs) {
-
             Segment s = feat.getSegment();
-            List<FeatureValue> values = feat.getValues();
-
-            // HTK time units, hundreds of nanoseconds.
             outLab.write((s.getBegin() * 1E7) + "  " + (s.getEnd() * 1E7) + " " + s.getPhone() + "\n");
-
-            Segment pp = s.getPrevPrevSegment();
-            Segment p = s.getPrevSegment();
-            Segment n = s.getNextSegment();
-            Segment nn = s.getNextNextSegment();
-
-            outFea.write((s.getBegin() * 1E7) + "  " + (s.getEnd() * 1E7) + " "
-                    + (pp != null ? pp.getPhone() : "_") + "^"
-                    + (p != null ? p.getPhone() : "_") + "-"
-                    + s.getPhone() + "+"
-                    + (n != null ? n.getPhone() : "_") + "="
-                    + (nn != null ? nn.getPhone() : "_") + "|");
-
-            for (FeatureValue fv : values) {
-                if (fv.hasValue())
-                    outFea.write("|" + fv.getName() + "=" + fv.getValue());
-            }
-            outFea.write("||\n");
+            outFea.write(feat.fullLabels());
         }
 
         outLab.close();
+
         outFea.close();
 
     }

@@ -1,4 +1,4 @@
-package hmi.synth.voc.train;
+package hmi.train;
 
 
 import hmi.annotate.SpeechMarkupAnnotater;
@@ -6,10 +6,7 @@ import hmi.data.*;
 import hmi.util.FileList;
 import hmi.util.FileUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 

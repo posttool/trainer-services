@@ -8,5 +8,5 @@ import malloc.h -> import stdlib.h
 
 to start phonetisaurus
 $ cd /home/vagrant/Phonetisaurus/script; /usr/bin/twistd -y g2pservice.tac
-to kill
+to restart
 $ kill -9 `pgrep twistd`; twistd -y g2pservice.tac -l log.txt; tail -f log.txt

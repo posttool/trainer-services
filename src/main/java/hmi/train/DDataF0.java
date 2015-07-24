@@ -1,4 +1,4 @@
-package hmi.synth.voc.train;
+package hmi.train;
 
 
 import com.google.common.primitives.Floats;

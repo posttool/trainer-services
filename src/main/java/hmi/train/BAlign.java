@@ -1,4 +1,4 @@
-package hmi.synth.voc.train;
+package hmi.train;
 
 import hmi.data.*;
 import hmi.phone.PhoneSet;
