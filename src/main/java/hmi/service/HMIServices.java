@@ -1,8 +1,13 @@
 package hmi.service;
 
 import hmi.annotate.SpeechMarkupAnnotater;
+import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
 import hmi.data.VoiceRepo;
+import hmi.features.FeatureAlias;
+import hmi.features.FeatureValue;
+import hmi.features.SegmentFeatures;
+import hmi.features.SentenceFeatures;
 import hmi.util.HandlebarsTemplateEngine;
 import hmi.util.SparkAccess;
 import spark.ModelAndView;
@@ -10,6 +15,7 @@ import spark.utils.IOUtils;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static spark.Spark.get;
@@ -18,7 +24,7 @@ import static spark.Spark.staticFileLocation;
 public class HMIServices {
 
     public static void main(String[] args) throws Exception {
-        final SpeechMarkupAnnotater annotater = null;//new SpeechMarkupAnnotater("en_US");
+        final SpeechMarkupAnnotater annotater = new SpeechMarkupAnnotater("en_US");
 
         staticFileLocation("/public");
 
@@ -29,6 +35,18 @@ public class HMIServices {
         get("/annotate", "application/json", (req, res) -> {
             SpeechMarkup sm = annotater.annotate(req.queryParams("s"));
             return sm.toJSON();
+        });
+
+        get("/features", (req, res) -> {
+            SpeechMarkup sm = annotater.annotate(req.queryParams("s"));
+            FeatureAlias fa = new FeatureAlias();
+            SentenceFeatures sf = new SentenceFeatures(fa);
+            List<SegmentFeatures> segfs = sf.getFeatures(sm);
+            StringBuilder b = new StringBuilder();
+            for (SegmentFeatures feat : segfs) {
+                b.append(feat.fullLabels());
+            }
+            return b;
         });
 
         get("/view", (req, res) -> {

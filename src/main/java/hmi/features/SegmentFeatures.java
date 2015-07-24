@@ -49,4 +49,32 @@ public class SegmentFeatures {
             b.append(fv.name + "=" + fv.value + " ");
         return b.toString();
     }
+
+    public String fullLabels() {
+        StringBuilder b = new StringBuilder();
+        Segment pp = seg.getPrevPrevSegment();
+        Segment p = seg.getPrevSegment();
+        Segment n = seg.getNextSegment();
+        Segment nn = seg.getNextNextSegment();
+        b.append(seg.getBegin() * 1E7);
+        b.append(" ");
+        b.append(seg.getEnd() * 1E7);
+        b.append(" ");
+        b.append(pp != null ? pp.getPhone() : "_");
+        b.append("^");
+        b.append(p != null ? p.getPhone() : "_");
+        b.append("-");
+        b.append(seg.getPhone());
+        b.append("+");
+        b.append(n != null ? n.getPhone() : "_");
+        b.append("=");
+        b.append(nn != null ? nn.getPhone() : "_");
+        b.append("|");
+        for (FeatureValue fv : values) {
+            if (fv.hasValue())
+                b.append("|" + fv.getName() + "=" + fv.getValue());
+        }
+        b.append("||\n");
+        return b.toString();
+    }
 }
