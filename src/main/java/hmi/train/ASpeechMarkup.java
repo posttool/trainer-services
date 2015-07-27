@@ -42,7 +42,7 @@ public class ASpeechMarkup {
         }
     }
 
-    public void impose() throws Exception {
+    public void impose(String pfx) throws Exception {
         Map<String, String> mlf2nn = new HashMap<>();
         FileList mlfs = new FileList(root.path("mlf"), ".txt");
         for (int c = 0; c < mlfs.length(); c++) {
@@ -53,7 +53,7 @@ public class ASpeechMarkup {
             pp.addSentence(s);
             sm.addParagraph(pp);
             String name = mlfs.name(c);
-            String newName = "hmi_us_a0_xxx_" + ln(c, 5);
+            String newName = pfx + ln(c, 5);
             mlf2nn.put(name, newName);
             sm.writeJSON(root.path("sm", newName + ".json"));
             FileUtils.copy(root.path("wavm", name + ".wav"), root.path("wav", newName + ".wav"));
@@ -106,9 +106,7 @@ public class ASpeechMarkup {
     }
 
     public static void main(String... args) throws Exception {
-        String dataDir = "tom-src";
-        ASpeechMarkup asm = new ASpeechMarkup(dataDir);
-        //asm.compute();
-        asm.impose();
+        ASpeechMarkup asm = new ASpeechMarkup("jbw-vocb");
+        asm.compute();
     }
 }

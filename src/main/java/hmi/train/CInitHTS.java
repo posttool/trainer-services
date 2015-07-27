@@ -53,8 +53,15 @@ public class CInitHTS {
     }
 
     public void init() throws Exception {
-//        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), false);
-        FileUtils.copyFolderRecursive(Resource.path("/hts-q/hts-1"), repo.path("hts"), false);
+        installHTS();
+        addRawAudio();
+    }
+
+    public void installHTS() throws Exception {
+        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), false);
+    }
+
+    public void addRawAudio() throws Exception {
         convertWav2Raw(repo.path("wav"), repo.path("hts/data/raw"));
     }
 

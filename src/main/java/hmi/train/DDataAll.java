@@ -15,7 +15,8 @@ public class DDataAll {
 
     public final boolean MGC = true;
     public final boolean LF0 = true;
-    public final boolean STR = false;
+    public final boolean STR = true;
+    public final boolean MAG = true;
     public final boolean CMP = true;
     public final boolean LABEL = true;
     public final boolean QUESTIONS = true;
@@ -32,19 +33,6 @@ public class DDataAll {
 
     public boolean compute(PhoneSet phoneSet) throws Exception {
         String voiceDir = repo.path("/");
-
-        if (MGC) {
-            Command.bash("cd " + voiceDir + "hts/data; make mgc;");
-        }
-        if (LF0) {
-            Command.bash("cd " + voiceDir + "hts/data; make lf0;");
-        }
-        if (STR) {
-            Command.bash("cd " + voiceDir + "hts/data; make str;");
-        }
-        if (CMP) {
-            Command.bash("cd " + voiceDir + "hts/data; make cmp;");
-        }
         if (LABEL) {
             if (!ADAPTSCRIPTS)
                 makeLabels();
@@ -54,12 +42,21 @@ public class DDataAll {
         if (QUESTIONS) {
             makeQuestions(phoneSet);
         }
-        if (LIST) {
+
+        if (MGC)
+            Command.bash("cd " + voiceDir + "hts/data; make mgc;");
+        if (LF0)
+            Command.bash("cd " + voiceDir + "hts/data; make lf0;");
+        if (STR)
+            Command.bash("cd " + voiceDir + "hts/data; make str;");
+        if (MAG)
+            Command.bash("cd " + voiceDir + "hts/data; make mag;");
+        if (CMP)
+            Command.bash("cd " + voiceDir + "hts/data; make cmp3;");
+        if (LIST)
             Command.bash("cd " + voiceDir + "hts/data; make list;");
-        }
-        if (SCP) {
+        if (SCP)
             Command.bash("cd " + voiceDir + "hts/data; make scp;");
-        }
 
         return true;
     }

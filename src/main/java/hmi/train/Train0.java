@@ -1,6 +1,5 @@
 package hmi.train;
 
-import hmi.data.VoiceRepo;
 import hmi.phone.PhoneSet;
 import hmi.util.Resource;
 
