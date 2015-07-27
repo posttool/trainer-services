@@ -71,7 +71,7 @@ public class DDataAll {
             qdir.mkdir();
         FeatureAlias fa = new FeatureAlias();
         PhoneFeatures fp = new PhoneFeatures(ps);
-        SentenceFeatures sf = new SentenceFeatures(fa);
+        SpeechMarkupFeatures sf = new SpeechMarkupFeatures(fa);
         FileWriter qfile = new FileWriter(repo.path("hts/data/questions/questions_qst001.hed"));
         qfile.write(fp.get_questions_qst001_hed());
         qfile.write(sf.questions_qst001_hed());
@@ -86,7 +86,7 @@ public class DDataAll {
 
         System.out.println("\n Making labels:");
         FeatureAlias fa = new FeatureAlias();
-        SentenceFeatures sf = new SentenceFeatures(fa);
+        SpeechMarkupFeatures sf = new SpeechMarkupFeatures(fa);
 
         // hts/data/labels/full
         // hts/data/labels/mono
@@ -132,7 +132,7 @@ public class DDataAll {
         }
     }
 
-    private void monoAndFullLabels(SentenceFeatures sf, SpeechMarkup sm, String outFeaFileName,
+    private void monoAndFullLabels(SpeechMarkupFeatures sf, SpeechMarkup sm, String outFeaFileName,
                                    String outLabFileName) throws Exception {
 
         FileWriter outLab = new FileWriter(outLabFileName);

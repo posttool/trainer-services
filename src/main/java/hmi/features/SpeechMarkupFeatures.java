@@ -5,7 +5,7 @@ import hmi.data.*;
 
 import java.util.*;
 
-public class SentenceFeatures {
+public class SpeechMarkupFeatures {
     static String[] features = {
             "phrase_numsyls",
             "phrase_numwords",
@@ -35,7 +35,7 @@ public class SentenceFeatures {
     };
     FeatureAlias fa;
 
-    public SentenceFeatures(FeatureAlias fa) {
+    public SpeechMarkupFeatures(FeatureAlias fa) {
         this.fa = fa;
         for (String f : features)
             fa.add(f);

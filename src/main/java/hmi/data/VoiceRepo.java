@@ -22,7 +22,6 @@ public class VoiceRepo {
     // FileList textFiles;
     Properties properties;
 
-    // TODO  constructor to declare requirements ["wav", "sm", "etc"]
     public VoiceRepo(String voiceId) throws IOException {
         this.voiceId = voiceId;
         File wav = getFile("wav");

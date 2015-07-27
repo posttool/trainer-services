@@ -5,13 +5,11 @@ import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
 import hmi.data.VoiceRepo;
 import hmi.features.FeatureAlias;
-import hmi.features.FeatureValue;
 import hmi.features.SegmentFeatures;
-import hmi.features.SentenceFeatures;
+import hmi.features.SpeechMarkupFeatures;
 import hmi.util.HandlebarsTemplateEngine;
 import hmi.util.SparkAccess;
 import spark.ModelAndView;
-import spark.utils.IOUtils;
 
 import java.io.*;
 import java.util.HashMap;
@@ -39,14 +37,25 @@ public class HMIServices {
 
         get("/features", (req, res) -> {
             SpeechMarkup sm = annotater.annotate(req.queryParams("s"));
-            FeatureAlias fa = new FeatureAlias();
-            SentenceFeatures sf = new SentenceFeatures(fa);
-            List<SegmentFeatures> segfs = sf.getFeatures(sm);
-            StringBuilder b = new StringBuilder();
-            for (SegmentFeatures feat : segfs) {
-                b.append(feat.fullLabels());
+            // TODO predict durations
+            float b = .2f;
+            float d = .02f;
+            List<Segment> segs = sm.getSegments();
+            for (Segment s : segs) {
+                s.setBegin(b);
+                b += d;
+                s.setEnd(b);
+                s.setDuration(d);
             }
-            return b;
+            // TODO predict f0s
+            FeatureAlias fa = new FeatureAlias();
+            SpeechMarkupFeatures sf = new SpeechMarkupFeatures(fa);
+            List<SegmentFeatures> segfs = sf.getFeatures(sm);
+            StringBuilder s = new StringBuilder();
+            for (SegmentFeatures feat : segfs) {
+                s.append(feat.fullLabels());
+            }
+            return s.toString();
         });
 
         get("/view", (req, res) -> {

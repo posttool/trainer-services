@@ -9,9 +9,16 @@ public abstract class Segment {
 
     public abstract float getBegin();
 
+    public abstract void setBegin(float f);
+
     public abstract float getEnd();
 
+
+    public abstract void setEnd(float f);
+
     public abstract float getDuration();
+
+    public abstract void setDuration(float f);
 
     @SuppressWarnings("unchecked")
     public <T> T getContainer(Class<T> clazz) {

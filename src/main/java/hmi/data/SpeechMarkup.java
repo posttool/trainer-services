@@ -87,11 +87,6 @@ public class SpeechMarkup {
         return b.toString();
     }
 
-    public String getLocale() {
-        // TODO
-        return "en";
-    }
-
     public String getText() {
         return text;
     }
