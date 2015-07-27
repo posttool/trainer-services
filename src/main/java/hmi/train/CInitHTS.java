@@ -1,7 +1,6 @@
 package hmi.train;
 
 
-import hmi.data.VoiceRepo;
 import hmi.util.Command;
 import hmi.util.FileUtils;
 import hmi.util.Resource;

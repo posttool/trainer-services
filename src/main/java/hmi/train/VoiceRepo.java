@@ -1,8 +1,8 @@
-package hmi.data;
+package hmi.train;
 
 
+import hmi.data.SpeechMarkup;
 import hmi.util.FileList;
-import hmi.util.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,7 +83,6 @@ public class VoiceRepo {
         return b.toString();
     }
 
-    //
     public SpeechMarkup getSpeechMarkup(int idx) throws IOException {
         SpeechMarkup sm = new SpeechMarkup();
         sm.readJSON(path("sm", wavFiles.name(idx) + ".json"));

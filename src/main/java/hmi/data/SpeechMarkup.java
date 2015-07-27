@@ -13,10 +13,10 @@ import java.util.List;
 // pp
 //   sentence
 //     phrase
-//       text
+//       word
 //         syllable
 //           ph
-
+//       boundary
 public class SpeechMarkup {
     Document document;
     String text;
@@ -103,8 +103,9 @@ public class SpeechMarkup {
     }
 
     public void readJSON(String filepath) throws IOException {
-            fromJSON((JSONObject) JSONValue.parse(FileUtils.getFileAsString(new File(filepath), "UTF-8")));
+        fromJSON((JSONObject) JSONValue.parse(FileUtils.getFileAsString(new File(filepath), "UTF-8")));
     }
+
     public void writeJSON(String filepath) {
         FileUtils.writeTextFile(new String[]{this.toJSON().toJSONString()}, filepath);
 

@@ -3,7 +3,7 @@ package hmi.service;
 import hmi.annotate.SpeechMarkupAnnotater;
 import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
-import hmi.data.VoiceRepo;
+import hmi.train.VoiceRepo;
 import hmi.features.FeatureAlias;
 import hmi.features.SegmentFeatures;
 import hmi.features.SpeechMarkupFeatures;
