@@ -58,7 +58,9 @@ public class CInitHTS {
     }
 
     public void installHTS() throws Exception {
-        FileUtils.copyFolderRecursive(Resource.path("/HTS-1"), repo.path("hts"), false);
+        String t = repo.prop("htsTemplate");
+        if (t == null) t = "/HTS-1";
+        FileUtils.copyFolderRecursive(Resource.path(t), repo.path("hts"), false);
     }
 
     public void addRawAudio() throws Exception {
@@ -82,33 +84,35 @@ public class CInitHTS {
 //        if (!repo.prop("adaptScripts").equals("true")) {
                 /* if previous files and directories exist then run configure */
                 /* first it should go to the hts directory and there run ./configure */
-            System.out.println("Running make configure: ");
-            Command.bash("chmod +x " + configureFile);
-            Command.bash("cd " + repo.path("hts") + "\n"
-                    + configureFile
-                    + " --with-sptk-search-path=" + repo.prop("sptkPath")
-                    + " --with-hts-search-path=" + repo.prop("htsPath")
-                    + " --with-hts-engine-search-path=" + repo.prop("htsEnginePath")
-                    + " SPEAKER=" + repo.prop("speaker")
-                    + " DATASET=" + repo.prop("dataset")
-                    + " LOWERF0=" + repo.prop("lowerF0")
-                    + " UPPERF0=" + repo.prop("upperF0")
-                    + " VER=" + repo.prop("ver")
-                    + " QNUM=" + repo.prop("qnum")
-                    + " FRAMELEN=" + frameLen
-                    + " FRAMESHIFT=" + frameShift
-                    + " WINDOWTYPE=" + repo.prop("windowType")
-                    + " NORMALIZE=" + repo.prop("normalize")
-                    + " FFTLEN=" + fftLen
-                    + " FREQWARP=" + freqWarp
-                    + " GAMMA=" + repo.prop("gamma")
-                    + " MGCORDER=" + repo.prop("mgcOrder")
-                    + " STRORDER=" + repo.prop("strOrder")
-                    + " STRFILTERNAME=" + strFilterName
-                    + " LNGAIN=" + repo.prop("lnGain")
-                    + " SAMPFREQ=" + sampRate
-                    + " NSTATE=" + repo.prop("nState")
-                    + " NITER=" + repo.prop("nIter"));
+        System.out.println("Running make configure: ");
+        Command.bash("chmod +x " + configureFile);
+        Command.bash("cd " + repo.path("hts") + "\n"
+                + configureFile
+                + " --with-sptk-search-path=" + repo.prop("sptkPath")
+                + " --with-hts-search-path=" + repo.prop("htsPath")
+                + " --with-hts-engine-search-path=" + repo.prop("htsEnginePath")
+                + " SPEAKER=" + repo.prop("speaker")
+                + " DATASET=" + repo.prop("dataset")
+                + " LOWERF0=" + repo.prop("lowerF0")
+                + " UPPERF0=" + repo.prop("upperF0")
+                + " VER=" + repo.prop("ver")
+                + " QNUM=" + repo.prop("qnum")
+                + " FRAMELEN=" + frameLen
+                + " FRAMESHIFT=" + frameShift
+                + " WINDOWTYPE=" + repo.prop("windowType")
+                + " NORMALIZE=" + repo.prop("normalize")
+                + " FFTLEN=" + fftLen
+                + " FREQWARP=" + freqWarp
+                + " GAMMA=" + repo.prop("gamma")
+                + " MGCORDER=" + repo.prop("mgcOrder")
+                + " STRORDER=" + repo.prop("strOrder")
+                + " STRFILTERNAME=" + strFilterName
+                + " LNGAIN=" + repo.prop("lnGain")
+                + " SAMPFREQ=" + sampRate
+                + " NSTATE=" + repo.prop("nState")
+                + " NITER=" + repo.prop("nIter")
+                + " MATLAB=" + repo.prop("matlab")
+                + " STRAIGHT=" + repo.prop("straight"));
 
 //        } else {
 //            System.out.println("Running make configure: ");

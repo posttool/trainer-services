@@ -37,6 +37,7 @@ public class HMIServices {
 
         get("/features", (req, res) -> {
             SpeechMarkup sm = annotater.annotate(req.queryParams("s"));
+            //Prosody p = new Prosody(sm);
             // TODO predict durations
             float b = .2f;
             float d = .02f;
@@ -57,6 +58,8 @@ public class HMIServices {
             }
             return s.toString();
         });
+
+
 
         get("/view", (req, res) -> {
             Map<String, Object> data = new HashMap<>();

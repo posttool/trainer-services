@@ -13,11 +13,7 @@ import java.util.*;
 
 public class DDataAll {
 
-    public final boolean MGC = true;
-    public final boolean LF0 = true;
-    public final boolean STR = true;
-    public final boolean MAG = true;
-    public final boolean CMP = true;
+    public final boolean ANALYSIS = true;
     public final boolean LABEL = true;
     public final boolean QUESTIONS = true;
     public final boolean LIST = true;
@@ -35,7 +31,7 @@ public class DDataAll {
         String voiceDir = repo.path("/");
         if (LABEL) {
             if (!ADAPTSCRIPTS)
-                makeLabels();
+                makeLabels(phoneSet);
 //            else
 //                makeLabelsAdapt(voiceDir);
         }
@@ -43,16 +39,8 @@ public class DDataAll {
             makeQuestions(phoneSet);
         }
 
-        if (MGC)
-            Command.bash("cd " + voiceDir + "hts/data; make mgc;");
-        if (LF0)
-            Command.bash("cd " + voiceDir + "hts/data; make lf0;");
-        if (STR)
-            Command.bash("cd " + voiceDir + "hts/data; make str;");
-        if (MAG)
-            Command.bash("cd " + voiceDir + "hts/data; make mag;");
-        if (CMP)
-            Command.bash("cd " + voiceDir + "hts/data; make cmp3;");
+        if (ANALYSIS)
+            Command.bash("cd " + voiceDir + "hts/data; make analysis;");
         if (LIST)
             Command.bash("cd " + voiceDir + "hts/data; make list;");
         if (SCP)
@@ -78,7 +66,7 @@ public class DDataAll {
         qfile.close();
     }
 
-    public void makeLabels() throws Exception {
+    public void makeLabels(PhoneSet ps) throws Exception {
 
         System.out.println("\n Making labels:");
         FeatureAlias fa = new FeatureAlias();
@@ -103,7 +91,7 @@ public class DDataAll {
         for (int i = 0; (i < repo.files().length()); i++) {
             String basename = repo.files().name(i);
             SpeechMarkup sm = repo.getSpeechMarkup(i);
-            monoAndFullLabels(sf, sm,
+            monoAndFullLabels(ps, sf, sm,
                     repo.path("/hts/data/labels/full/" + basename + ".lab"),
                     repo.path("/hts/data/labels/mono/" + basename + ".lab"));
         }
@@ -128,7 +116,7 @@ public class DDataAll {
         }
     }
 
-    private void monoAndFullLabels(SpeechMarkupFeatures sf, SpeechMarkup sm, String outFeaFileName,
+    private void monoAndFullLabels(PhoneSet ps, SpeechMarkupFeatures sf, SpeechMarkup sm, String outFeaFileName,
                                    String outLabFileName) throws Exception {
 
         FileWriter outLab = new FileWriter(outLabFileName);
@@ -140,6 +128,10 @@ public class DDataAll {
             Segment s = feat.getSegment();
             outLab.write((s.getBegin() * 1E7) + "  " + (s.getEnd() * 1E7) + " " + s.getPhone() + "\n");
             outFea.write(feat.fullLabels());
+            if (!ps.isValid(s.getPhone())) {
+                System.out.println(outFeaFileName+"XXXX");
+                System.out.println(outFeaFileName+" "+(s.getBegin() * 1E7) + "  " + (s.getEnd() * 1E7) + " " + s.getPhone());
+            }
         }
 
         outLab.close();
@@ -150,12 +142,12 @@ public class DDataAll {
 
 
     public static void main(String[] args) throws Exception {
-        VoiceRepo repo = new VoiceRepo("jbw-vocb");
+        VoiceRepo repo = new VoiceRepo("gri-voca");
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
         DDataAll data = new DDataAll(repo);
-        data.compute(phoneSet);
+//        data.compute(phoneSet);
 //        data.makeQuestions(phoneSet);
-//        data.makeLabels();
+        data.makeLabels(phoneSet);
     }
 
 }

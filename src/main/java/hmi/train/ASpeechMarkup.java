@@ -42,7 +42,7 @@ public class ASpeechMarkup {
         }
     }
 
-    public void impose(String pfx) throws Exception {
+    public void importFromMlf(String pfx) throws Exception {
         Map<String, String> mlf2nn = new HashMap<>();
         FileList mlfs = new FileList(root.path("mlf"), ".txt");
         for (int c = 0; c < mlfs.length(); c++) {

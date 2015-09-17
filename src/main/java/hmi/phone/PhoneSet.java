@@ -99,11 +99,15 @@ public class PhoneSet {
             featureValueMap.put(feature, featureValues);
         }
         // Special "vc" feature:
-        featureValueMap.put("vc", new String[] { "0", "+", "-" });
+        featureValueMap.put("vc", new String[]{"0", "+", "-"});
     }
 
     public Locale getLocale() {
         return locale;
+    }
+
+    public boolean isValid(String ph) {
+        return _phones.get(ph) != null;
     }
 
     public PhoneEl getPhone(Phone ph) {
@@ -131,14 +135,14 @@ public class PhoneSet {
         }
     }
 
-    public Set<String> getPhones(){
+    public Set<String> getPhones() {
         Set<String> phs = new HashSet<>();
         for (String ph : _phones.keySet())
             phs.add(ph);
         return phs;
     }
 
-    public Map<String, PhoneEl> getPhoneEls(){
+    public Map<String, PhoneEl> getPhoneEls() {
         return _phones;
     }
 
@@ -225,7 +229,7 @@ public class PhoneSet {
                     if (_phones.containsKey(ph)) {
                         // OK, found a symbol of length l.
                         i += l - 1; // together with the i++ in the for loop,
-                                    // move by l
+                        // move by l
                         break;
                     }
                 }

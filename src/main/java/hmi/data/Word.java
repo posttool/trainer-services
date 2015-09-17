@@ -69,6 +69,10 @@ public class Word implements Container, IsContained {
         return segs;
     }
 
+    public boolean isEmpty() {
+        return getSegments().isEmpty();
+    }
+
     public String getPartOfSpeech() {
         return pos;
     }

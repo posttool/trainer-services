@@ -18,7 +18,7 @@ public class Train0 {
         hts.compute();
         DDataAll data = new DDataAll(repo);
         data.makeQuestions(phoneSet);
-        data.makeLabels();
+        data.makeLabels(phoneSet);
     }
 
 }

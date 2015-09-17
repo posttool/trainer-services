@@ -1,7 +1,5 @@
 package hmi.data;
 
-import org.json.simple.JSONArray;
-
 import java.util.List;
 
 public abstract class Segment {
@@ -12,7 +10,6 @@ public abstract class Segment {
     public abstract void setBegin(float f);
 
     public abstract float getEnd();
-
 
     public abstract void setEnd(float f);
 

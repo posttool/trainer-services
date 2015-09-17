@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BAlign {
-    private boolean DEBUG = true; // TODO add logger
+    private boolean DEBUG = true; // TODO  logger
 
     private String htkBinDir = "//";
     private VoiceRepo repo;
@@ -33,7 +33,6 @@ public class BAlign {
     protected int MAX_VP_ITERATION = 20;
     protected int MAX_MIX_ITERATION = 30;
 
-    protected int noIterCompleted = 0;
 
     private String htkStandardOptions = "-A -D -V -T 1"; // Main HTK standard Options htkStandardOptions
     private String Extract_FEAT = "MFCC_0"; // MFCC_E
@@ -74,7 +73,7 @@ public class BAlign {
 
         createRequiredFiles();
         createPhoneDictionary(phones);
-        getPhoneSequence();
+        getPhoneSequence(phoneSet);
 
         // remove multiple sp
         for (int i = 3; i < 8; i++) {
@@ -697,14 +696,12 @@ public class BAlign {
 
     }
 
-    private void getPhoneSequence() throws Exception {
+    private void getPhoneSequence(PhoneSet phoneSet) throws Exception {
 
         // open transcription file used for labeling
         PrintWriter transLabelOut = new PrintWriter(new FileOutputStream(new File(outputDir + "/" + "htk.phones.mlf")));
-        PrintWriter transLabelOut1 = new PrintWriter(
-                new FileOutputStream(new File(outputDir + "/" + "htk.phones2.mlf")));
-        PrintWriter transLabelOut2 = new PrintWriter(
-                new FileOutputStream(new File(outputDir + "/" + "htk.phones3.mlf")));
+        PrintWriter transLabelOut1 = new PrintWriter(new FileOutputStream(new File(outputDir + "/" + "htk.phones2.mlf")));
+        PrintWriter transLabelOut2 = new PrintWriter(new FileOutputStream(new File(outputDir + "/" + "htk.phones3.mlf")));
 
         String phoneSeq;
         transLabelOut.println("#!MLF!#");
@@ -715,11 +712,11 @@ public class BAlign {
             transLabelOut1.println("\"*/" + files().name(i) + labExt + "\"");
             transLabelOut2.println("\"*/" + files().name(i) + labExt + "\"");
 
-            phoneSeq = getLineFromSM(files().name(i), false, false);
+            phoneSeq = getLineFromSM(phoneSet, files().name(i), false, false);
             transLabelOut.println(phoneSeq.trim());
-            phoneSeq = getLineFromSM(files().name(i), true, false);
+            phoneSeq = getLineFromSM(phoneSet, files().name(i), true, false);
             transLabelOut1.println(phoneSeq.trim());
-            phoneSeq = getLineFromSM(files().name(i), true, true);
+            phoneSeq = getLineFromSM(phoneSet, files().name(i), true, true);
             transLabelOut2.println(phoneSeq.trim());
 
         }
@@ -728,7 +725,7 @@ public class BAlign {
         transLabelOut2.close();
     }
 
-    private String getLineFromSM(String filename, boolean spause, boolean vpause) throws Exception {
+    private String getLineFromSM(PhoneSet phoneSet, String filename, boolean spause, boolean vpause) throws Exception {
 
         SpeechMarkup sm = new SpeechMarkup();
         sm.readJSON(getSmDir() + "/" + filename + ".json");
@@ -740,8 +737,11 @@ public class BAlign {
                 for (Word w : ph.getWords()) {
                     for (Syllable s : w.getSyllables()) {
                         for (Phone phone : s.getPhones()) {
-                            b.append(phone.getPhone());
-                            b.append("\n");
+                            String phs = phone.getPhone();
+                            if (phoneSet.isValid(phs)) {
+                                b.append(phs);
+                                b.append("\n");
+                            }
                         }
                     }
                     if (vpause)
@@ -830,54 +830,61 @@ public class BAlign {
 
     }
 
-    public void copyToSpeechMarkup() throws IOException{
+    public void copyToSpeechMarkup() {
         int s = files().length();
         for (int i = 0; i < s; i++) {
             String smjson = repo.path("sm", files().name(i) + ".json");
-            SpeechMarkup sm = new SpeechMarkup();
-            sm.readJSON(smjson);
-            List<Segment> segs = sm.getSegments();
-            int segi = 0;
             String o = repo.path("htk", "tmplab", files().name(i) + ".lab");
             try {
-                String fs = FileUtils.getFile(new File(o));
-                String[] lines = fs.split("\n");
-                for (int c = 1; c < lines.length; c++) {
-                    String[] line = lines[c].split(" ");
-                    float t = Float.parseFloat(line[0]);
-                    String phstr = line[2];
-                    float duration = 0, pt = 0;
-                    if (c != 1) {
-                        String[] pline = lines[c - 1].split(" ");
-                        pt = Float.parseFloat(pline[0]);
-                        duration = t - pt;
-                    }
-                    if (segi < segs.size()) {
-                        Segment seg = segs.get(segi);
-                        if (seg instanceof Phone) {
-                            Phone ph = (Phone) seg;
-                            if (ph.getPhone().equals(phstr)) {
-                                ph.setBegin(pt);
-                                ph.setEnd(t);
-                                ph.setDuration(duration);
-                                segi++;
-                            }
-                        } else {
-                            Boundary b = (Boundary) seg;
-                            if (phstr.equals("_")) {
-                                b.setDuration(duration);
-                                b.setBegin(pt);
-                                b.setEnd(t);
-                                segi++;
-                            }
-                        }
-                    }
-                }
-                sm.writeJSON(smjson);
-            } catch (IOException e) {
-                System.err.println("COULDNT READ " + o);
+                copyToSpeechMarkup(smjson, o);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("CANT READ " + o + " OR " + smjson);
             }
         }
+    }
+
+    public void copyToSpeechMarkup(String smfile, String labfile) throws IOException {
+        SpeechMarkup sm = new SpeechMarkup();
+        sm.readJSON(smfile);
+        List<Segment> segs = sm.getSegments();
+        int segi = 0;
+        String fs = FileUtils.getFile(new File(labfile));
+        String[] lines = fs.split("\n");
+        for (int c = 1; c < lines.length; c++) {
+            String[] line = lines[c].split(" ");
+            float t = Float.parseFloat(line[0]);
+            String phstr = line[2];
+            float duration = 0, pt = 0;
+            if (c != 1) {
+                String[] pline = lines[c - 1].split(" ");
+                pt = Float.parseFloat(pline[0]);
+                duration = t - pt;
+            }
+            if (segi < segs.size()) {
+                Segment seg = segs.get(segi);
+                if (seg instanceof Phone) {
+                    Phone ph = (Phone) seg;
+                    //System.out.println(segi+" "+segs.size()+" "+ph.getPhone()+" "+phstr);
+                    if (ph.getPhone().equals(phstr)) {
+                        ph.setBegin(pt);
+                        ph.setEnd(t);
+                        ph.setDuration(duration);
+                        segi++;
+                    }
+                } else {
+                    Boundary b = (Boundary) seg;
+                    //System.out.println("B"+phstr);
+                    if (phstr.equals("_")) {
+                        b.setDuration(duration);
+                        b.setBegin(pt);
+                        b.setEnd(t);
+                        segi++;
+                    }
+                }
+            }
+        }
+        sm.writeJSON(smfile);
     }
 
     private String getAwkBinPath() {
@@ -931,10 +938,14 @@ public class BAlign {
 
 
     public static void main(String... args) throws Exception {
+        VoiceRepo repo = new VoiceRepo("gri-voca");
         PhoneSet phoneSet = new PhoneSet(Resource.path("/en_US/phones.xml"));
-        BAlign aligner = new BAlign(new VoiceRepo("jbw-vocb"));
+        BAlign aligner = new BAlign(repo);
         aligner.compute(phoneSet);
         aligner.copyToSpeechMarkup();
+//        String s = repo.path("sm", "hmi_us_a0_gri_01405.json");
+//        String o = repo.path("htk", "tmplab", "hmi_us_a0_gri_01405.lab");
+//        aligner.copyToSpeechMarkup(s, o);
     }
 
 }
