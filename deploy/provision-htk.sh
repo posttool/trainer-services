@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-BASE=/Users/posttool/Documents/github/la/deploy
+BASE=/Users/david/la/deploy
 ROOT=$BASE/install
 PATH=$BASE/bin:$PATH
-HTK=HTK-3.4
-HTS=HTS-2.1
+HTK=HTK-3.4.1
+HTS=HTS-2.2
 H4H=${HTS}_for_${HTK}
-H4H_URL=http://hts.sp.nitech.ac.jp/archives/2.1/${H4H}.tar.bz2
+H4H_URL=http://hts.sp.nitech.ac.jp/archives/2.2/${H4H}.tar.bz2
 AR=ar-for-hts-0.8_for_${HTS}
 AR_URL=http://mi.eng.cam.ac.uk/research/emime/ar-for-hts/archive/${AR}.tar.gz
 ################# HTK
@@ -14,23 +14,22 @@ echo "$HTK $HTS"
 cd $ROOT
 
 rm -rf htk
-cp /Users/posttool/Documents/github/adapt2/deploy/${HTK}.tar.gz .
-tar -zxf ${HTK}.tar.gz
-cp /Users/posttool/Documents/github/adapt2/deploy/HDecode-3.4.1.tar.gz .
-tar -zxf HDecode-3.4.1.tar.gz
+tar -zxf ../${HTK}.tar.gz
+tar -zxf ../HDecode-3.4.1.tar.gz
 
+rm -rf htk-patches
 mkdir -p htk-patches
 cd htk-patches
 wget ${H4H_URL}
 tar -jxvf ${H4H}.tar.bz2
-wget ${AR_URL}
-tar -zxf ${AR}.tar.gz
+#wget ${AR_URL}
+#tar -zxf ${AR}.tar.gz
 
 cd ../htk
 cp ../htk-patches/${H4H}.patch .
 patch -p1 -d . < ${H4H}.patch
-cp ../htk-patches/${AR}/${AR}.patch .
-patch -p1 -d . < ${AR}.patch
+#cp ../htk-patches/${AR}/${AR}.patch .
+#patch -p1 -d . < ${AR}.patch
 
 # dk adjust for os x
 sed 's/malloc.h/stdlib.h/' <HTKLib/strarr.c >strarr.c
@@ -41,7 +40,6 @@ make install
 make hdecode
 make install-hdecode
 
-exit
 #
 #
 #
