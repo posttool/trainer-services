@@ -60,6 +60,7 @@ public class CInitHTS {
     public void installHTS() throws Exception {
         String t = repo.prop("htsTemplate");
         if (t == null) t = "/HTS-1";
+        System.out.println("USING HTS template [" + t + "]");
         FileUtils.copyFolderRecursive(Resource.path(t), repo.path("hts"), false);
     }
 
@@ -74,8 +75,10 @@ public class CInitHTS {
         File wavDir = new File(wavDirName);
         for (File f : wavDir.listFiles()) {
             String n = f.getName();
-            n = n.substring(0, n.lastIndexOf('.'));
-            Command.bash(repo.prop("soxPath") + "/sox " + f.getAbsolutePath() + " " + rawDirName + "/" + n + ".raw"); //-v 0.7
+            if (!n.startsWith(".")) {
+                n = n.substring(0, n.lastIndexOf('.'));
+                Command.bash(repo.prop("soxPath") + "/sox " + f.getAbsolutePath() + " " + rawDirName + "/" + n + ".raw"); //-v 0.7
+            }
         }
     }
 

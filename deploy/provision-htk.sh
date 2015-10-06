@@ -4,13 +4,17 @@ BASE=/Users/david/la/deploy
 ROOT=$BASE/install
 PATH=$BASE/bin:$PATH
 HTK=HTK-3.4.1
-HTS=HTS-2.2
+HTS_VERSION=2.3beta
+HTS=HTS-${HTS_VERSION}
 H4H=${HTS}_for_${HTK}
-H4H_URL=http://hts.sp.nitech.ac.jp/archives/2.2/${H4H}.tar.bz2
+H4H_URL=http://hts.sp.nitech.ac.jp/archives/${HTS_VERSION}/${H4H}.tar.bz2
+#http://hts.sp.nitech.ac.jp/archives/2.3beta/HTS-2.3beta_for_HTK-3.4.1.tar.bz2
 AR=ar-for-hts-0.8_for_${HTS}
 AR_URL=http://mi.eng.cam.ac.uk/research/emime/ar-for-hts/archive/${AR}.tar.gz
 ################# HTK
 echo "$HTK $HTS"
+cd $BASE
+mkdir $ROOT
 cd $ROOT
 
 rm -rf htk
@@ -56,9 +60,8 @@ make install
 
 #SPTK
 cd $ROOT
-wget http://downloads.sourceforge.net/sp-tk/SPTK-3.8.tar.gz
-tar -zxvf SPTK-3.8.tar.gz
-cd SPTK-3.8
+tar -zxvf ../SPTK-3.4.1.tar.gz
+cd SPTK-3.4.1
 ./configure
 make
 sudo make install

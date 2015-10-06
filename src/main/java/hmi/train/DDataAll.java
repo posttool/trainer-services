@@ -50,6 +50,7 @@ public class DDataAll {
     }
 
     public void makeQuestions(PhoneSet ps) throws IOException {
+        System.out.println("Making questions:");
         File qdir = new File(repo.path("/hts/data/questions"));
         if (!qdir.exists())
             qdir.mkdir();
@@ -68,7 +69,7 @@ public class DDataAll {
 
     public void makeLabels(PhoneSet ps) throws Exception {
 
-        System.out.println("\n Making labels:");
+        System.out.println("Making labels:");
         FeatureAlias fa = new FeatureAlias();
         SpeechMarkupFeatures sf = new SpeechMarkupFeatures(fa);
 
