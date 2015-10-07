@@ -53,10 +53,8 @@ public class ProsodyTrainer {
     }
 
     public void train(VoiceRepo repo) throws Exception {
-        // Above is Used to 'prime' the LSTM with a character sequence to continue/complete.
-        // Initialization characters must all be in CharacterIterator.getMinimalCharacterSet() by default
         Random rng = new Random(12345);
-        ProsodyIterator iter = new ProsodyIterator(repo, miniBatchSize, examplesPerEpoch, 20, 200);
+        ProsodyIterator iter = new ProsodyIterator(repo, miniBatchSize, examplesPerEpoch, 60, 200);
         int nOut = iter.totalOutcomes();
 
         //Set up network configuration:
@@ -87,7 +85,6 @@ public class ProsodyTrainer {
         net.init();
         net.setListeners(new ScoreIterationListener(1));
 
-        //Print the  number of parameters in the network (and for each layer)
         Layer[] layers = net.getLayers();
         int totalNumParams = 0;
         for (int i = 0; i < layers.length; i++) {
@@ -97,14 +94,12 @@ public class ProsodyTrainer {
         }
         System.out.println("Total number of network parameters: " + totalNumParams);
 
-        //Do training, and then generate and print samples from network
         for (int i = 0; i < numEpochs; i++) {
             net.fit(iter);
-
             System.out.println("--------------------");
             System.out.println("Completed epoch " + i);
             System.out.println("Sampling characters from network given initialization \"" + (generationInitialization == null ? "" : generationInitialization) + "\"");
-            double[][] samples = sampleCharactersFromNetwork(new double[]{0}, net, iter, rng, nCharactersToSample, nSamplesToGenerate);
+            double[][] samples = getSamples(new double[]{0}, net, iter, rng, nCharactersToSample, nSamplesToGenerate);
             for (int j = 0; j < samples.length; j++) {
                 System.out.println("----- Sample " + j + " -----");
                 for (int k = 0; k < samples[j].length; k++) {
@@ -112,12 +107,10 @@ public class ProsodyTrainer {
                 }
                 System.out.println();
             }
-
-            iter.reset();    //Reset iterator for another epoch
+            iter.reset();
         }
 
-
-        System.out.println("\n\nExample complete");
+        System.out.println("complete");
 
         OutputStream fos = Files.newOutputStream(Paths.get(BP + "/coefficient-prosody.bin"));
         DataOutputStream dos = new DataOutputStream(fos);
@@ -126,7 +119,7 @@ public class ProsodyTrainer {
         dos.close();
         FileUtils.writeStringToFile(new File(BP + "/conf-prosody.json"), net.getLayerWiseConfigurations().toJson());
 
-        System.out.println("\n\nModel saved");
+        System.out.println("model saved");
     }
 
 //    public void loadTrainedModel() throws Exception {
@@ -140,7 +133,7 @@ public class ProsodyTrainer {
 //        System.out.println(net.params());
 //        Random rng = new Random(12345);
 //        ProsodyIterator iter = new ProsodyIterator( 20, 200);
-//        double[][] samples = sampleCharactersFromNetwork(null, net, iter, rng, nCharactersToSample, nSamplesToGenerate);
+//        double[][] samples = getSamples(null, net, iter, rng, nCharactersToSample, nSamplesToGenerate);
 //        for (int j = 0; j < samples.length; j++) {
 //            System.out.println("----- Sample " + j + " -----");
 //            System.out.println(samples[j]);
@@ -151,16 +144,16 @@ public class ProsodyTrainer {
 
 
     /**
-     * Generate a sample from the network, given an (optional, possibly null) initialization. Initialization
-     * can be used to 'prime' the RNN with a sequence you want to extend/continue.<br>
+     * Generate a sample from the network, given an initialization. Initialization
+     * is used to 'prime' the RNN with a sequence you want to extend/continue.<br>
      *
      * @param initialIntervals   initial intervals :-)
      * @param charactersToSample Number of characters to sample from network (excluding initialization)
      * @param net                MultiLayerNetwork with one or more GravesLSTM/RNN layers and a softmax output layer
      * @param iter               CharacterIterator. Used for going from indexes back to characters
      */
-    private double[][] sampleCharactersFromNetwork(double[] initialIntervals, MultiLayerNetwork net,
-                                                   ProsodyIterator iter, Random rng, int charactersToSample, int numSamples) {
+    private double[][] getSamples(double[] initialIntervals, MultiLayerNetwork net,
+                                  ProsodyIterator iter, Random rng, int charactersToSample, int numSamples) {
 
         //Create input for initialization
         INDArray initializationInput = Nd4j.zeros(numSamples, iter.inputColumns(), initialIntervals.length);
@@ -194,7 +187,7 @@ public class ProsodyTrainer {
                     outputProbDistribution[j] = output.getDouble(s, j);
                 int sampledCharacterIdx = sampleFromDistribution(outputProbDistribution, rng);
                 nextInput.putScalar(new int[]{s, sampledCharacterIdx}, 1.0f);        //Prepare next time step input
-                intervalResults[s][i] = iter.gridToInterval(sampledCharacterIdx);    //Add sampled character to StringBuilder (human readable output)
+                intervalResults[s][i] = iter.gridToInterval(sampledCharacterIdx);
             }
             output = net.rnnTimeStep(nextInput);    //Do one time step of forward pass
         }
