@@ -1,6 +1,6 @@
 package hmi.service;
 
-import hmi.annotate.SpeechMarkupAnnotater;
+import hmi.annotate.SpeechMarkupAnnotator;
 import hmi.data.Segment;
 import hmi.data.SpeechMarkup;
 import hmi.train.VoiceRepo;
@@ -22,7 +22,7 @@ import static spark.Spark.staticFileLocation;
 public class HMIServices {
 
     public static void main(String[] args) throws Exception {
-        final SpeechMarkupAnnotater annotater = new SpeechMarkupAnnotater("en_US");
+        final SpeechMarkupAnnotator annotater = new SpeechMarkupAnnotator("en_US");
 
         staticFileLocation("/public");
 

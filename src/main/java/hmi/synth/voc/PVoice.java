@@ -1,32 +1,10 @@
 package hmi.synth.voc;
 
 import hmi.data.Segment;
-import hmi.data.SpeechMarkup;
 import hmi.features.Features;
-import hmi.ml.feature.FeatureDefinition;
-import hmi.ml.feature.FeatureVector;
-import hmi.sig.AudioPlayer;
-import hmi.synth.target.Target;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Vector;
-
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.traversal.NodeIterator;
 
 public class PVoice {
 

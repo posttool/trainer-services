@@ -1,4 +1,4 @@
-package hmi.nlp;
+package hmi.ml.nlp;
 
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;

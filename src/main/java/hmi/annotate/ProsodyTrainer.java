@@ -150,7 +150,7 @@ public class ProsodyTrainer {
      * @param initialIntervals   initial intervals :-)
      * @param charactersToSample Number of characters to sample from network (excluding initialization)
      * @param net                MultiLayerNetwork with one or more GravesLSTM/RNN layers and a softmax output layer
-     * @param iter               CharacterIterator. Used for going from indexes back to characters
+     * @param iter               ProsodyIterator. Used for conversions
      */
     private double[][] getSamples(double[] initialIntervals, MultiLayerNetwork net,
                                   ProsodyIterator iter, Random rng, int charactersToSample, int numSamples) {

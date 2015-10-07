@@ -1,7 +1,7 @@
 package hmi.phone;
 
 import hmi.data.Word;
-import hmi.nlp.NLPipeline;
+import hmi.ml.nlp.NLPipeline;
 
 import java.io.*;
 import java.net.Socket;

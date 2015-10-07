@@ -1,7 +1,7 @@
 package hmi.train;
 
 
-import hmi.annotate.SpeechMarkupAnnotater;
+import hmi.annotate.SpeechMarkupAnnotator;
 import hmi.data.*;
 import hmi.util.FileList;
 import hmi.util.FileUtils;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class ASpeechMarkup {
     VoiceRepo root;
-    SpeechMarkupAnnotater ann;
+    SpeechMarkupAnnotator ann;
 
     public ASpeechMarkup(String dataDir) throws IOException {
         this(new VoiceRepo(dataDir));
@@ -25,7 +25,7 @@ public class ASpeechMarkup {
 
     public void compute() throws IOException {
         if (ann == null)
-            ann = new SpeechMarkupAnnotater("en_US");
+            ann = new SpeechMarkupAnnotator("en_US");
 
         FileList textFiles = root.textFiles();
         int s = textFiles.length();

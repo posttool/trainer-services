@@ -3,8 +3,8 @@ package hmi.annotate;
 import hmi.data.SpeechMarkup;
 import hmi.data.Syllable;
 import hmi.data.Word;
-import hmi.nlp.NLPipeline;
-import hmi.nlp.SpeechMarkupProcessor;
+import hmi.ml.nlp.NLPipeline;
+import hmi.ml.nlp.SpeechMarkupProcessor;
 import hmi.phone.PhoneSet;
 import hmi.phone.Phonetizer;
 import hmi.phone.Syllabifier;
@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SpeechMarkupAnnotater {
+public class SpeechMarkupAnnotator {
     NLPipeline nlp;
     SpeechMarkupProcessor markup;
     Phonetizer phonetizer;
     PhoneSet phoneSet;
 
-    public SpeechMarkupAnnotater(String lng) throws IOException {
+    public SpeechMarkupAnnotator(String lng) throws IOException {
         nlp = new NLPipeline(lng);
         markup = new SpeechMarkupProcessor(nlp);
         phonetizer = new Phonetizer(nlp, Resource.path("/" + lng + "/dict.txt"));
@@ -91,7 +91,7 @@ public class SpeechMarkupAnnotater {
     }
 
     public static void main(String[] args) throws Exception {
-        SpeechMarkupAnnotater annotater = new SpeechMarkupAnnotater("en_US");
+        SpeechMarkupAnnotator annotater = new SpeechMarkupAnnotator("en_US");
         SpeechMarkup sm = annotater.annotate("This is one. NLP is crazy, you know? Tis is two. How do you do, if you don't mind me asking? "
                 + "Furthermore, it stands to reason that I wouldn't use a comma here but would in San Francisco, California, USA especially while drive 60. "
                 + "Why would you eat out when you could eat on Mars? A sentence without a break -- like this one here -- "

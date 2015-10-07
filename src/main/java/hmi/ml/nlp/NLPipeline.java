@@ -1,4 +1,4 @@
-package hmi.nlp;
+package hmi.ml.nlp;
 
 import java.util.Properties;
 
